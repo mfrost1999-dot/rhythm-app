@@ -288,8 +288,8 @@ export default function App() {
   const [data, setData] = useState(() => {
     try {
       const saved = localStorage.getItem("rhythm-data");
-      return saved ? JSON.parse(saved) : makeSeedData();
-    } catch { return makeSeedData(); }
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
   });
   const [expanded,    setExpanded]    = useState(null);
   const [dayOffset,   setDayOffset]   = useState(0);
