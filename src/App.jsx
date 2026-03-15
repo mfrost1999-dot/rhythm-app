@@ -7,7 +7,7 @@ const PILLARS = [
   { id:"air",         label:"Fresh air",     prompt:"Did you get outside, even briefly?" },
   { id:"rest",        label:"Rest",          prompt:"Did you wind down intentionally?" },
   { id:"connection",  label:"Connection",    prompt:"Did you share time with someone?" },
-  { id:"creative",    label:"Creative work", prompt:"Did you make or learn something yours?" },
+  { id:"creative",    label:"Creative work", prompt:"Did you give time to your creative self today?" },
   { id:"joy",         label:"Small joy",     prompt:"Did something delight you today?" },
 ];
 
@@ -69,12 +69,12 @@ const SEASONAL = [
 ];
 
 const C = {
-  cream:"#F7F4EF", parchment:"#EDE8DF", parchDark:"#D8D0C2",
-  sage:"#7D9E7A", sagePale:"#C8D9C6", sageDark:"#4E6E4B",
-  ink:"#2C2416", inkMid:"#6B5E47", inkLight:"#A0916F",
-  clay:"#B5724A", clayPale:"#EDD9CC",
-  dustBlue:"#7A99A8", dustBluePale:"#C6D8E0", dustBlueDark:"#3E6070",
-  gold:"#C49A3C", goldPale:"#F0E2B6",
+  cream:"#F8F6F1", parchment:"#EEEAE2", parchDark:"#CEC8BC",
+  sage:"#5C8A58", sagePale:"#B0CCAD", sageDark:"#2E5C2A",
+  ink:"#1C1C18", inkMid:"#3D3D30", inkLight:"#747060",
+  clay:"#9E5A2E", clayPale:"#EDD9C0",
+  dustBlue:"#5A7E90", dustBluePale:"#B0CCD8", dustBlueDark:"#2A5060",
+  gold:"#A87C1E", goldPale:"#F0E4A8",
 };
 const serif = "'Georgia','Times New Roman',serif";
 const sans  = "'Inter','Helvetica Neue',sans-serif";
@@ -375,18 +375,18 @@ export default function App() {
 
         <div style={{marginBottom:20,paddingBottom:18,borderBottom:`1px solid ${C.parchDark}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-            <h1 style={{fontFamily:serif,fontSize:38,fontWeight:400,margin:0,letterSpacing:"-0.5px"}}>Rhythm</h1>
-            <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:0,letterSpacing:"0.08em",textTransform:"uppercase"}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p>
+            <h1 style={{fontFamily:serif,fontSize:42,fontWeight:400,margin:0,letterSpacing:"-0.5px"}}>Rhythm</h1>
+            <p style={{fontFamily:sans,fontSize:14,color:C.inkMid,margin:0,letterSpacing:"0.06em",textTransform:"uppercase"}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p>
           </div>
           <div style={{marginTop:14,paddingTop:14,borderTop:`1px dashed ${C.parchDark}`}}>
-            <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.inkMid,lineHeight:1.7,margin:"0 0 5px"}}>"{quote.text}"</p>
-            <p style={{fontFamily:sans,fontSize:12,color:C.inkLight,margin:0,letterSpacing:"0.05em",textTransform:"uppercase"}}>{quote.source}</p>
+            <p style={{fontFamily:serif,fontStyle:"italic",fontSize:16,color:C.inkMid,lineHeight:1.7,margin:"0 0 5px"}}>"{quote.text}"</p>
+            <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:0,letterSpacing:"0.05em",textTransform:"uppercase"}}>{quote.source}</p>
           </div>
         </div>
 
         <div style={{display:"flex",gap:24,marginBottom:24,borderBottom:`1px solid ${C.parchDark}`,paddingBottom:14}}>
           {[["today","Journal"],["week","This week"],["month","Month"]].map(([v,l])=>(
-            <button key={v} onClick={()=>setView(v)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 2px",fontFamily:serif,fontSize:18,color:view===v?C.sageDark:C.inkLight,borderBottom:view===v?"2px solid "+C.sage:"2px solid transparent",transition:"all .15s"}}>{l}</button>
+            <button key={v} onClick={()=>setView(v)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 2px",fontFamily:serif,fontSize:20,color:view===v?C.sageDark:C.inkLight,borderBottom:view===v?"2px solid "+C.sage:"2px solid transparent",transition:"all .15s"}}>{l}</button>
           ))}
         </div>
 
@@ -395,8 +395,8 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
               <NavBtn onClick={()=>setDayOffset(d=>d-1)} label="Earlier" disabled={false}/>
               <div style={{textAlign:"center"}}>
-                <div style={{fontFamily:serif,fontSize:16,color:C.ink}}>{isToday?"Today":fmtDate(viewDate)}</div>
-                {!isToday&&<button onClick={()=>setDayOffset(0)} style={{background:"none",border:"none",cursor:"pointer",fontFamily:sans,fontSize:11,color:C.inkLight,padding:"2px 0 0",textDecoration:"underline"}}>Back to today</button>}
+                <div style={{fontFamily:serif,fontSize:18,color:C.ink}}>{isToday?"Today":fmtDate(viewDate)}</div>
+                {!isToday&&<button onClick={()=>setDayOffset(0)} style={{background:"none",border:"none",cursor:"pointer",fontFamily:sans,fontSize:13,color:C.inkMid,padding:"2px 0 0",textDecoration:"underline"}}>Back to today</button>}
               </div>
               <NavBtn onClick={()=>setDayOffset(d=>d+1)} label="Later" disabled={dayOffset>=0}/>
             </div>
@@ -421,8 +421,8 @@ export default function App() {
               </div>
             )}
 
-            {isToday  && <p style={{fontFamily:serif,fontSize:17,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
-            {!isToday && <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,marginBottom:16,marginTop:0,fontStyle:"italic"}}>{fmtDate(viewDate)} -- a past entry, read only.</p>}
+            {isToday  && <p style={{fontFamily:serif,fontSize:19,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
+            {!isToday && <p style={{fontFamily:serif,fontSize:16,color:C.inkMid,marginBottom:16,marginTop:0,fontStyle:"italic"}}>{fmtDate(viewDate)} -- a past entry, read only.</p>}
 
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
               {PILLARS.map(p => {
@@ -432,8 +432,8 @@ export default function App() {
                   <div key={p.id} style={{borderRadius:4,border:"1px solid "+(glasses>0?C.dustBluePale:C.parchDark),background:glasses>=WATER_GOAL?"#EAF3F7":C.parchment,overflow:"hidden"}}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px 10px"}}>
                       <div>
-                        <div style={{fontFamily:serif,fontSize:17,color:glasses>=WATER_GOAL?C.sageDark:C.ink}}>Water</div>
-                        <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,marginTop:3}}>{glasses===0?"Tap a glass to log":glasses>=WATER_GOAL?"Well hydrated today":glasses+" of "+WATER_GOAL+" glasses"}</div>
+                        <div style={{fontFamily:serif,fontSize:19,color:glasses>=WATER_GOAL?C.sageDark:C.ink}}>Water</div>
+                        <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{glasses===0?"Tap a glass to log":glasses>=WATER_GOAL?"Well hydrated today":glasses+" of "+WATER_GOAL+" glasses"}</div>
                       </div>
                       {isToday && (
                         <div style={{display:"flex",gap:6,alignItems:"center"}}>
@@ -463,8 +463,8 @@ export default function App() {
                     <div key={p.id} style={{borderRadius:4,border:"1px solid "+(nDone?C.sagePale:C.parchDark),background:nDone?"#EDF4EC":C.parchment,overflow:"hidden"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
                         <div style={{flex:1}}>
-                          <div style={{fontFamily:serif,fontSize:17,color:nDone?C.sageDark:C.ink}}>Nourishment</div>
-                          <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,marginTop:3}}>{nSummary}</div>
+                          <div style={{fontFamily:serif,fontSize:19,color:nDone?C.sageDark:C.ink}}>Nourishment</div>
+                          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{nSummary}</div>
                         </div>
                         <button onClick={e=>{e.stopPropagation();setExpanded(open?null:p.id);}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
                       </div>
@@ -496,29 +496,27 @@ export default function App() {
                     <div key={p.id} style={{borderRadius:4,border:"1px solid "+(mDone?C.sagePale:C.parchDark),background:mDone?"#EDF4EC":C.parchment,overflow:"hidden"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
                         <div style={{flex:1}}>
-                          <div style={{fontFamily:serif,fontSize:17,color:mDone?C.sageDark:C.ink}}>Movement</div>
-                          <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,marginTop:3}}>{mSummary}</div>
+                          <div style={{fontFamily:serif,fontSize:19,color:mDone?C.sageDark:C.ink}}>Movement</div>
+                          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{mSummary}</div>
                         </div>
                         <button onClick={e=>{e.stopPropagation();setExpanded(open?null:p.id);}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
                       </div>
                       <div style={{padding:"0 16px 14px"}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                          <span style={{fontFamily:sans,fontSize:13,color:C.inkLight}}>Minutes walked</span>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                          <span style={{fontFamily:sans,fontSize:14,color:C.inkMid}}>Minutes walked</span>
                           <div style={{display:"flex",alignItems:"center",gap:6}}>
                             {isToday ? (
-                              <div style={{display:"flex",alignItems:"center",gap:4}}>
-                                <input type="number" min="0" max="240" value={walkMins||""} placeholder="0" onChange={e=>setMinutes(e.target.value)} onClick={e=>e.stopPropagation()} style={{width:52,padding:"2px 6px",borderRadius:3,textAlign:"right",border:"1px solid "+C.parchDark,background:C.cream,fontFamily:serif,fontSize:13,color:C.ink,outline:"none"}}/>
-                                <span style={{fontFamily:sans,fontSize:11,color:C.inkLight}}>min</span>
-                              </div>
+                              <input type="number" min="0" max="240" value={walkMins||""} placeholder="0" onChange={e=>setMinutes(e.target.value)} onClick={e=>e.stopPropagation()} style={{width:56,padding:"4px 8px",borderRadius:4,textAlign:"right",border:"1px solid "+C.parchDark,background:C.cream,fontFamily:serif,fontSize:15,color:C.ink,outline:"none"}}/>
                             ) : (
-                              <span style={{fontFamily:serif,fontSize:13,color:C.inkMid}}>{walkMins} min</span>
+                              <span style={{fontFamily:serif,fontSize:15,color:C.inkMid}}>{walkMins}</span>
                             )}
-                            <span style={{fontFamily:serif,fontSize:12,color:walkMins>=90?C.sage:walkMins>=WALK_GOAL?C.sageDark:C.inkLight}}>
+                            <span style={{fontFamily:sans,fontSize:13,color:C.inkMid}}>min</span>
+                            <span style={{fontFamily:sans,fontSize:13,color:walkMins>=90?C.sage:walkMins>=WALK_GOAL?C.sageDark:C.inkLight}}>
                               {walkMins>=90?"goal met":walkMins>=WALK_GOAL?"goal met":walkMins>0?(WALK_GOAL-walkMins)+" to go":"goal "+WALK_GOAL+" min"}
                             </span>
                           </div>
                         </div>
-                        <div style={{height:5,borderRadius:3,background:C.parchDark,overflow:"hidden",marginBottom:open?10:0}}>
+                        <div style={{height:6,borderRadius:3,background:C.parchDark,overflow:"hidden",marginBottom:open?12:0}}>
                           <div style={{height:"100%",borderRadius:3,width:Math.min(100,(walkMins/90)*100)+"%",background:walkMins>=90?C.sage:walkMins>=WALK_GOAL?C.sagePale:C.gold,transition:"width .3s"}}/>
                         </div>
                         {open && (
