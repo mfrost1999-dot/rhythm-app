@@ -143,10 +143,10 @@ function dayScore(data, key) {
 }
 
 function buildNudge(data, todayKey, yKey) {
-  const tE  = data[todayKey]||{};
-  const yE  = data[yKey]||{};
-  const y2Key = getDateKey(offsetDate(TODAY, -2));
-  const y2E = data[y2Key]||{};
+  const tE    = data[todayKey]||{};
+  const yE    = data[yKey]||{};
+  const y2Key = getDateKey(offsetDate(new Date(todayKey), -1));
+  const y2E   = data[y2Key]||{};
   const neglected = PILLARS.filter(p =>
     !pillarDone(p, tE[p.id]) &&
     !pillarDone(p, yE[p.id]) &&
@@ -154,7 +154,9 @@ function buildNudge(data, todayKey, yKey) {
   );
   if (!neglected.length) return null;
   const pick = neglected[Math.floor(Date.now()/86400000) % neglected.length];
-  return { pillar:pick.label, text:NUDGES[pick.id][Math.floor(Date.now()/86400000) % NUDGES[pick.id].length] };
+  const pool = NUDGES[pick.id];
+  if (!pool || !pool.length) return null;
+  return { pillar:pick.label, text:pool[Math.floor(Date.now()/86400000) % pool.length] };
 }
 
 function buildEncouragement(data) {
@@ -163,6 +165,7 @@ function buildEncouragement(data) {
   const best = scored.reduce((a,b) => b.count>a.count ? b : a, scored[0]);
   if (best.count < 3) return null;
   const pool = ENCOURAGEMENT[best.id];
+  if (!pool || !pool.length) return null;
   return { pillar:best.label, count:best.count, text:pool[Math.floor(Date.now()/86400000) % pool.length] };
 }
 
@@ -463,7 +466,7 @@ export default function App() {
             {nudge && (
               <div style={{marginBottom:12,padding:"12px 16px",borderRadius:4,background:C.goldPale,borderLeft:"3px solid "+C.gold}}>
                 <p style={{fontFamily:serif,fontStyle:"italic",fontSize:13,color:C.inkMid,lineHeight:1.7,margin:0}}>{nudge.text}</p>
-                <p style={{fontFamily:sans,fontSize:12,color:C.gold,margin:"8px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{nudge.pillar} · yesterday you had this one</p>
+                <p style={{fontFamily:sans,fontSize:12,color:C.gold,margin:"8px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{nudge.pillar} · hasn't shown up in a few days</p>
               </div>
             )}
 
