@@ -577,7 +577,7 @@ export default function App() {
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <FlagRow label="Added sugar" hint="sweets, syrups, sweet drinks" options={["none","a little","quite a bit"]} value={nutrition.sugar} onChange={v=>setNutrition("sugar",v)} readOnly={!isToday}/>
                           <FlagRow label="Processed food" hint="packaged, fast food" options={["none","some","a lot"]} value={nutrition.processed} onChange={v=>setNutrition("processed",v)} readOnly={!isToday}/>
-                          <FlagRow label="Caffeine" hint="coffee, soda, energy drinks" options={["none","one or two","several"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)} readOnly={!isToday}/>
+                          <FlagRow label="Caffeine" hint="soda, energy drinks, tea" options={["none","one or two","several"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)} readOnly={!isToday}/>
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <BoolRow label="Ate slowly" hint="sat down, present, no rush" value={nutrition.slow} onChange={v=>setNutrition("slow",v)} readOnly={!isToday}/>
                           <div style={{marginTop:10}}>
