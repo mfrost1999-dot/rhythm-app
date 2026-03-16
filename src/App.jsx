@@ -143,10 +143,17 @@ function dayScore(data, key) {
 }
 
 function buildNudge(data, todayKey, yKey) {
-  const tE = data[todayKey]||{}, yE = data[yKey]||{};
-  const missed = PILLARS.filter(p => !pillarDone(p,tE[p.id]) && pillarDone(p,yE[p.id]));
-  if (!missed.length) return null;
-  const pick = missed[Math.floor(Date.now()/86400000) % missed.length];
+  const tE  = data[todayKey]||{};
+  const yE  = data[yKey]||{};
+  const y2Key = getDateKey(offsetDate(TODAY, -2));
+  const y2E = data[y2Key]||{};
+  const neglected = PILLARS.filter(p =>
+    !pillarDone(p, tE[p.id]) &&
+    !pillarDone(p, yE[p.id]) &&
+    !pillarDone(p, y2E[p.id])
+  );
+  if (!neglected.length) return null;
+  const pick = neglected[Math.floor(Date.now()/86400000) % neglected.length];
   return { pillar:pick.label, text:NUDGES[pick.id][Math.floor(Date.now()/86400000) % NUDGES[pick.id].length] };
 }
 
