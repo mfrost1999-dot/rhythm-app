@@ -2,8 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 
 const WATER_GOAL    = 8;
 const WALK_GOAL     = 60;
-const EIGHTY_PCT    = 6;
-const TOTAL_PILLARS = 8;
+const EIGHTY_PCT    = 7;
+const TOTAL_PILLARS = 9;
 const DAYS_SHORT    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -16,6 +16,7 @@ const PILLARS = [
   { id:"connection",  label:"Connection",    prompt:"Did you share time with someone?" },
   { id:"creative",    label:"Creative work", prompt:"Did you give time to your creative self today?" },
   { id:"joy",         label:"Small joy",     prompt:"Did something delight you today?" },
+  { id:"faith",       label:"Faith",         prompt:"Did you connect with God today?" },
 ];
 
 const QUOTES = [
@@ -65,7 +66,7 @@ const NUDGES = {
   rest:        ["An early wind-down tonight might be just what you need.", "Rest is not laziness. It is preparation.", "Try setting everything down a little earlier this evening."],
   connection:  ["Reach out to someone today, even briefly.", "A short conversation can change the whole color of a day.", "Who have you not spoken to in a while?"],
   creative:    ["Make something small today. It does not have to be important.", "Even ten minutes of something creative is enough.", "Your hands and mind want a little of their own work."],
-  joy:         ["Look for one small thing today that makes you smile.", "Delight has a way of hiding in plain sight.", "What small pleasure have you been walking past?"],
+  faith:       ["Take a moment today to be still and listen.", "Even a short prayer counts. God is in the quiet moments too.", "Your spiritual life is worth tending today, even briefly."],
 };
 
 const ENCOURAGEMENT = {
@@ -76,7 +77,7 @@ const ENCOURAGEMENT = {
   rest:        ["Rest has been part of your week. You are learning to honor that.", "You have been winding down with intention. Your sleep will thank you.", "Rest is showing up in your rhythm. That is one of the most important things."],
   connection:  ["You have been showing up for the people in your life this week.", "Connection has been a thread in your days lately. Hold onto that.", "You have not been doing this alone. That matters more than you know."],
   creative:    ["Your creative work has been showing up this week. That part of you is alive.", "You have been making things, learning things, doing things that are yours. Keep that.", "Something creative has found its place in your week. Do not let it go."],
-  joy:         ["Small joys have been finding you this week. That is a skill, and you are practicing it.", "You have been noticing delight. That is quietly one of the hardest and best things.", "Joy has shown up in your days this week. You are paying attention to the right things."],
+  faith:       ["Your faith has been a thread in your days this week. That quiet practice matters.", "You have been showing up for your spiritual life. That is no small thing.", "Connecting with God has been part of your rhythm this week. Keep tending to it."],
 };
 
 const SEASONAL = [
