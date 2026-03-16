@@ -81,18 +81,18 @@ const ENCOURAGEMENT = {
 };
 
 const SEASONAL = [
-  { season:"Winter", text:"January is for quietude. The Edwardians called it the restorative month. Rest more than you think you need to." },
-  { season:"Winter", text:"February light is thin but returning. Even a short walk outside catches it. Blue Zones elders drink herbal teas all winter, warming and hydrating." },
-  { season:"Spring", text:"March is for opening windows. The Okinawan garden comes alive this month. If you can, put your hands in some soil." },
+  { season:"Winter", text:"January is for quietude. Marmee always said the new year deserves a slow beginning. Rest more than you think you need to." },
+  { season:"Winter", text:"February light is thin but returning. The March girls kept busy in February -- sewing, reading, making music. Find your version of that warmth." },
+  { season:"Spring", text:"March is for opening windows. Jo flung hers open every spring morning. If you can, put your hands in some soil and feel the season turning." },
   { season:"Spring", text:"April showers mean walking in rain gear, not staying inside. The Edwardians were firm on this. Add color back to your plate this month." },
   { season:"Spring", text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew or picked." },
-  { season:"Summer", text:"June evenings are long. The Edwardians used them for after-dinner walks. Okinawan summers are built around the sea, community, and eating light." },
-  { season:"Summer", text:"July heat calls for water, more than you think. The Edwardians retreated to gardens and riversides. Find your cool, quiet place." },
-  { season:"Summer", text:"August is for slowing down before the turn. Blue Zones elders rest more in August. The March girls spent it picking berries and reading under trees." },
+  { season:"Summer", text:"June evenings are long. The March family spent theirs on the porch, talking until dark. Okinawan summers are built around community too. Follow their lead." },
+  { season:"Summer", text:"July heat calls for water, more than you think. Find your cool, quiet place and linger there the way Amy lingered over her sketching." },
+  { season:"Summer", text:"August is for slowing down before the turn. The March girls spent it picking berries and reading under trees. Blue Zones elders rest more in August. Do the same." },
   { season:"Autumn", text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. The air is crisp enough now for long walks." },
-  { season:"Autumn", text:"October in Blue Zones is for gratitude feasts, communal and unhurried. The days are shortening. Tend to your rest now." },
-  { season:"Autumn", text:"November asks you to go inward. Warming soups and stews are the Blue Zones answer to cold weather. Be generous with connection." },
-  { season:"Winter", text:"December is for candlelight and company. Blue Zones elders treat it as a time of rest and reflection, not acceleration." },
+  { season:"Autumn", text:"October in Blue Zones is for gratitude feasts, communal and unhurried. Marmee would have approved. The days are shortening. Tend to your rest now." },
+  { season:"Autumn", text:"November asks you to go inward. Beth loved the quiet of November -- the firelight, the knitting, the closeness of family. Be generous with connection this month." },
+  { season:"Winter", text:"December is for candlelight and company. The March Christmas had very little, and it was everything. Blue Zones elders treat December as a time of rest and reflection. What is enough for you?" },
 ];
 
 const C = {
