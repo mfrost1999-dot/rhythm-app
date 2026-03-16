@@ -1,8 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
 
+const WATER_GOAL    = 8;
+const WALK_GOAL     = 60;
+const EIGHTY_PCT    = 6;
+const TOTAL_PILLARS = 8;
+const DAYS_SHORT    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 const PILLARS = [
-  { id:"movement",    label:"Movement",      prompt:"Did you move naturally today?",        hasMinutes:true },
-  { id:"nourishment", label:"Nourishment",   prompt:"Did you eat something real and slow?", hasNutrition:true },
+  { id:"movement",    label:"Movement",      prompt:"Did you move naturally today?",           hasMinutes:true },
+  { id:"nourishment", label:"Nourishment",   prompt:"Did you eat something real and slow?",    hasNutrition:true },
   { id:"water",       label:"Water",         isWater:true },
   { id:"air",         label:"Fresh air",     prompt:"Did you get outside, even briefly?" },
   { id:"rest",        label:"Rest",          prompt:"Did you wind down intentionally?" },
@@ -10,11 +17,6 @@ const PILLARS = [
   { id:"creative",    label:"Creative work", prompt:"Did you give time to your creative self today?" },
   { id:"joy",         label:"Small joy",     prompt:"Did something delight you today?" },
 ];
-
-const DAYS_SHORT  = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const WATER_GOAL  = 8;
-const WALK_GOAL   = 60;
 
 const QUOTES = [
   { text:"The secret of health for both mind and body is not to mourn for the past, nor to worry about the future, but to live the present moment wisely.", source:"Buddhist proverb, Okinawa" },
@@ -29,6 +31,30 @@ const QUOTES = [
   { text:"Family is the cornerstone of a long life well-lived.", source:"Blue Zones, Sardinia" },
   { text:"I want to do something splendid before I go into my castle, something heroic or wonderful.", source:"Louisa May Alcott, Little Women" },
   { text:"Move, eat, sleep, repeat. But do each one as if it were the only thing.", source:"Sardinian proverb" },
+  { text:"She is too fond of books, and it has turned her brain.", source:"Louisa May Alcott, worn as a badge of honor" },
+  { text:"To keep the body in good health is a duty, otherwise we shall not be able to keep our mind strong and clear.", source:"Buddhist proverb" },
+  { text:"There is no sincerer love than the love of food.", source:"George Bernard Shaw, c. 1903" },
+  { text:"Walking is a man's best medicine.", source:"Hippocrates" },
+  { text:"Jo's ambition was to do something very splendid. What it was she had yet to decide.", source:"Louisa May Alcott, Little Women" },
+  { text:"The people who live the longest do not try to live longer. They live fully.", source:"Blue Zones research" },
+  { text:"Wherever you go, go with all your heart.", source:"Confucian proverb, Okinawa" },
+  { text:"An early morning walk is a blessing for the whole day.", source:"Henry David Thoreau, c. 1850" },
+  { text:"I cannot live without books.", source:"Thomas Jefferson, c. 1815" },
+  { text:"In seed time learn, in harvest teach, in winter enjoy.", source:"William Blake, c. 1790" },
+  { text:"The cure for anything is salt water: sweat, tears, or the sea.", source:"Isak Dinesen, c. 1934" },
+  { text:"Let food be thy medicine and medicine be thy food.", source:"Hippocrates" },
+  { text:"She resolved to be the maker of her own happiness.", source:"Louisa May Alcott, Little Women" },
+  { text:"Drink your tea slowly and reverently, as if it is the axis on which the whole earth revolves.", source:"Thich Nhat Hanh" },
+  { text:"A gentle walk among old trees is worth more than an hour in any doctor's office.", source:"Edwardian naturalist, c. 1907" },
+  { text:"To find joy in work is to discover the fountain of youth.", source:"Pearl S. Buck" },
+  { text:"The greatest wealth is health.", source:"Virgil" },
+  { text:"She was not made for sitting still.", source:"Louisa May Alcott, Little Women" },
+  { text:"Good friends, good books, and a sleepy conscience. That is the ideal life.", source:"Mark Twain, c. 1898" },
+  { text:"Sleep is the golden chain that ties health and our bodies together.", source:"Thomas Dekker, c. 1609" },
+  { text:"In Okinawa, they say that the reason they live so long is that they never retire from life.", source:"Blue Zones research" },
+  { text:"I took a walk in the woods and came out taller than the trees.", source:"Henry David Thoreau" },
+  { text:"Simplicity is the ultimate sophistication.", source:"Leonardo da Vinci" },
+  { text:"One cannot think well, love well, sleep well, if one has not dined well.", source:"Virginia Woolf, c. 1929" },
 ];
 
 const NUDGES = {
@@ -93,13 +119,26 @@ const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 
 function pillarDone(p, entry) {
   if (!entry) return false;
-  if (p.isWater) return (entry.glasses||0) >= WATER_GOAL;
+  if (p.isWater)    return (entry.glasses||0) >= WATER_GOAL;
+  if (p.hasMinutes) return (entry.minutes||0) >= WALK_GOAL;
+  if (p.hasNutrition) {
+    const n = entry.nutrition||{};
+    const score =
+      Math.min(parseInt(n.fruits)||0, 5) +
+      Math.min(parseInt(n.protein)||0, 2) +
+      Math.min(parseInt(n.whole)||0, 3) +
+      (n.slow ? 2 : 0) +
+      (n.sugar === "a little" ? -1 : n.sugar === "quite a bit" ? -3 : 0) +
+      (n.processed === "some" ? -1 : n.processed === "a lot" ? -3 : 0) +
+      (n.caffeine === "several" ? -1 : 0);
+    return score >= 5;
+  }
   return !!entry.checked;
 }
 
 function dayScore(data, key) {
   if (!data[key]) return null;
-  return PILLARS.map(p => pillarDone(p,data[key][p.id]) ? 1 : 0).reduce((a,b)=>a+b,0) / PILLARS.length;
+  return PILLARS.map(p => pillarDone(p,data[key][p.id]) ? 1 : 0).reduce((a,b)=>a+b,0) / TOTAL_PILLARS;
 }
 
 function buildNudge(data, todayKey, yKey) {
@@ -120,23 +159,23 @@ function buildEncouragement(data) {
 }
 
 function warmthBg(s) {
-  if (s===null) return "#EDE8DF";
-  if (s<0.3)  return "#D4CFC8";
-  if (s<0.55) return "#F0E2B6";
-  if (s<0.75) return "#E8C96A";
+  if (s===null) return "#EEEAE2";
+  if (s < 0.3)                      return "#D4CFC8";
+  if (s < 0.55)                     return "#F0E2B6";
+  if (s < EIGHTY_PCT/TOTAL_PILLARS) return "#E8C96A";
   return "#D4A017";
 }
 function warmthFg(s) {
-  if (s===null) return "#A0916F";
-  if (s<0.3)  return "#6B5E47";
-  if (s<0.55) return "#9A6E10";
-  if (s<0.75) return "#7A4E08";
+  if (s===null) return "#747060";
+  if (s < 0.3)                      return "#3D3D30";
+  if (s < 0.55)                     return "#9A6E10";
+  if (s < EIGHTY_PCT/TOTAL_PILLARS) return "#7A4E08";
   return "#4A2E04";
 }
 
 function NavBtn({ onClick, label, disabled }) {
   return (
-    <button onClick={onClick} disabled={disabled} style={{background:"none",border:`1px solid ${C.parchDark}`,borderRadius:4,padding:"6px 14px",cursor:disabled?"default":"pointer",fontFamily:sans,fontSize:14,color:disabled?C.parchDark:C.inkMid,opacity:disabled?0.4:1}}>
+    <button onClick={onClick} disabled={disabled} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,padding:"6px 14px",cursor:disabled?"default":"pointer",fontFamily:sans,fontSize:14,color:disabled?C.parchDark:C.inkMid,opacity:disabled?0.4:1}}>
       {label}
     </button>
   );
@@ -153,7 +192,7 @@ function GlassIcon({ filled }) {
 
 function CheckBox({ on }) {
   return (
-    <div style={{width:22,height:22,borderRadius:3,flexShrink:0,border:`1.5px solid ${on?C.sage:C.inkLight}`,background:on?C.sage:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
+    <div style={{width:22,height:22,borderRadius:3,flexShrink:0,border:"1.5px solid "+(on?C.sage:C.inkLight),background:on?C.sage:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}}>
       {on && <svg width="12" height="12" viewBox="0 0 10 10"><path d="M1.5 5.5l2.5 2.5 5-5" stroke={C.cream} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
     </div>
   );
@@ -161,7 +200,7 @@ function CheckBox({ on }) {
 
 function NoteField({ value, onChange, onClick }) {
   return (
-    <textarea placeholder="A note for today..." value={value||""} onChange={onChange} onClick={onClick} rows={2} style={{width:"100%",boxSizing:"border-box",resize:"none",border:`1px solid ${C.parchDark}`,borderRadius:4,padding:"10px 12px",fontSize:15,fontFamily:serif,fontStyle:"italic",background:C.cream,color:C.ink,outline:"none",lineHeight:1.7}}/>
+    <textarea placeholder="A note for today..." value={value||""} onChange={onChange} onClick={onClick} rows={2} style={{width:"100%",boxSizing:"border-box",resize:"none",border:"1px solid "+C.parchDark,borderRadius:4,padding:"10px 12px",fontSize:15,fontFamily:serif,fontStyle:"italic",background:C.cream,color:C.ink,outline:"none",lineHeight:1.7}}/>
   );
 }
 
@@ -174,20 +213,21 @@ function ClearBtn({ onClear }) {
 }
 
 function CountRow({ label, hint, value, goal, onChange, readOnly }) {
-  const pct = Math.min(1, value/goal);
+  const v = parseInt(value)||0;
+  const pct = Math.min(1, v/goal);
   const color = pct>=1 ? C.sage : pct>=0.5 ? C.gold : C.parchDark;
   return (
     <div style={{marginBottom:14}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
         <span style={{fontFamily:sans,fontSize:14,color:C.ink}}>{label} <span style={{color:C.inkLight,fontSize:13}}>{hint}</span></span>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          {!readOnly && <button onClick={()=>onChange(Math.max(0,value-1))} style={{background:"none",border:`1px solid ${C.parchDark}`,borderRadius:4,width:28,height:28,cursor:"pointer",color:C.inkLight,fontSize:16,lineHeight:"26px",textAlign:"center",padding:0}}>-</button>}
-          <span style={{fontFamily:serif,fontSize:16,color:C.inkMid,minWidth:20,textAlign:"center"}}>{value}</span>
-          {!readOnly && <button onClick={()=>onChange(value+1)} style={{background:"none",border:`1px solid ${C.parchDark}`,borderRadius:4,width:28,height:28,cursor:"pointer",color:C.inkLight,fontSize:16,lineHeight:"26px",textAlign:"center",padding:0}}>+</button>}
+          {!readOnly && <button onClick={()=>onChange(Math.max(0,v-1))} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,width:28,height:28,cursor:"pointer",color:C.inkLight,fontSize:16,lineHeight:"26px",textAlign:"center",padding:0}}>-</button>}
+          <span style={{fontFamily:serif,fontSize:16,color:C.inkMid,minWidth:20,textAlign:"center"}}>{v}</span>
+          {!readOnly && <button onClick={()=>onChange(v+1)} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,width:28,height:28,cursor:"pointer",color:C.inkLight,fontSize:16,lineHeight:"26px",textAlign:"center",padding:0}}>+</button>}
         </div>
       </div>
       <div style={{height:5,borderRadius:3,background:C.parchDark,overflow:"hidden"}}>
-        <div style={{height:"100%",borderRadius:3,width:`${pct*100}%`,background:color,transition:"width .3s"}}/>
+        <div style={{height:"100%",borderRadius:3,width:(pct*100)+"%",background:color,transition:"width .3s"}}/>
       </div>
     </div>
   );
@@ -225,7 +265,7 @@ function BoolRow({ label, hint, value, onChange, readOnly }) {
 function SeasonalCard({ month }) {
   const s = SEASONAL[month];
   return (
-    <div style={{padding:"20px 22px",borderRadius:4,background:C.parchment,borderLeft:`3px solid ${C.sagePale}`}}>
+    <div style={{padding:"20px 22px",borderRadius:4,background:C.parchment,borderLeft:"3px solid "+C.sagePale}}>
       <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>{s.text}</p>
       <p style={{fontFamily:sans,fontSize:12,color:C.inkLight,margin:"12px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{s.season} · {MONTHS_LONG[month]}</p>
     </div>
@@ -237,19 +277,19 @@ function MonthStats({ monthDays, data }) {
   const count  = scores.length;
   const avg    = count ? Math.round(scores.reduce((a,b)=>a+b,0)/count*100) : 0;
   const best   = count ? Math.round(Math.max(...scores)*100) : 0;
-  const full   = scores.filter(s=>s>=0.75).length;
+  const at80   = scores.filter(s=>s>=EIGHTY_PCT/TOTAL_PILLARS).length;
   const stats  = [
-    { label:"Days logged",      val:count },
-    { label:"Full days (75%+)", val:full },
-    { label:"Average",          val:count ? avg+"%" : "--" },
-    { label:"Best day",         val:count ? best+"%" : "--" },
+    { label:"Days logged",    val:count },
+    { label:"Days at 80%+",   val:at80 },
+    { label:"Average",        val:count?avg+"%":"--" },
+    { label:"Best day",       val:count?best+"%":"--" },
   ];
   return (
-    <div style={{borderTop:`1px solid ${C.parchDark}`,paddingTop:20,marginBottom:24}}>
+    <div style={{borderTop:"1px solid "+C.parchDark,paddingTop:20,marginBottom:24}}>
       <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,fontStyle:"italic",margin:"0 0 14px"}}>This month at a glance</p>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         {stats.map(item => (
-          <div key={item.label} style={{padding:"14px 16px",borderRadius:4,background:C.parchment,border:`1px solid ${C.parchDark}`}}>
+          <div key={item.label} style={{padding:"14px 16px",borderRadius:4,background:C.parchment,border:"1px solid "+C.parchDark}}>
             <div style={{fontFamily:serif,fontSize:24,color:C.ink,marginBottom:4}}>{item.val}</div>
             <div style={{fontFamily:sans,fontSize:13,color:C.inkLight}}>{item.label}</div>
           </div>
@@ -266,13 +306,13 @@ function ConfirmModal({ target, onConfirm, onCancel }) {
     <div style={{position:"fixed",inset:0,background:"rgba(44,36,22,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"0 24px"}}>
       <div style={{background:C.cream,borderRadius:12,padding:"28px 24px",maxWidth:320,width:"100%"}}>
         <p style={{fontFamily:serif,fontSize:17,color:C.ink,margin:"0 0 8px",fontWeight:400}}>
-          {isDay ? "Clear this whole day?" : "Clear " + (pillar ? pillar.label : "entry") + "?"}
+          {isDay ? "Clear this whole day?" : "Clear "+(pillar?pillar.label:"entry")+"?"}
         </p>
         <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:"0 0 24px",lineHeight:1.6}}>
           {isDay ? "All entries for this day will be reset to blank." : "This pillar's data and notes will be reset to blank."}
         </p>
         <div style={{display:"flex",gap:10}}>
-          <button onClick={onCancel} style={{flex:1,padding:"10px 0",borderRadius:6,border:`1px solid ${C.parchDark}`,background:"transparent",fontFamily:sans,fontSize:14,color:C.inkMid,cursor:"pointer"}}>Cancel</button>
+          <button onClick={onCancel} style={{flex:1,padding:"10px 0",borderRadius:6,border:"1px solid "+C.parchDark,background:"transparent",fontFamily:sans,fontSize:14,color:C.inkMid,cursor:"pointer"}}>Cancel</button>
           <button onClick={onConfirm} style={{flex:1,padding:"10px 0",borderRadius:6,border:"none",background:C.clay,fontFamily:sans,fontSize:14,color:C.cream,cursor:"pointer"}}>Clear</button>
         </div>
       </div>
@@ -312,9 +352,18 @@ export default function App() {
   const quote        = QUOTES[Math.floor(Date.now()/86400000) % QUOTES.length];
   const nowMonth     = new Date().getMonth();
   const glasses      = viewData.water?.glasses||0;
-  const walkMins     = viewData.movement?.minutes||0;
-  const nutrition    = viewData.nourishment?.nutrition||{fruits:0,protein:0,whole:0,sugar:"none",processed:"none",caffeine:"none",slow:false};
-  const hasDayData   = data[viewKey] && Object.keys(data[viewKey]).length>0;
+  const walkMins     = parseInt(viewData.movement?.minutes)||0;
+  const rawN         = viewData.nourishment?.nutrition||{};
+  const nutrition    = {
+    fruits:    parseInt(rawN.fruits)||0,
+    protein:   parseInt(rawN.protein)||0,
+    whole:     parseInt(rawN.whole)||0,
+    sugar:     rawN.sugar||"none",
+    processed: rawN.processed||"none",
+    caffeine:  rawN.caffeine||"none",
+    slow:      !!rawN.slow,
+  };
+  const hasDayData = data[viewKey] && Object.keys(data[viewKey]).length>0;
 
   useEffect(() => { try { localStorage.setItem("rhythm-data",JSON.stringify(data)); } catch {} }, [data]);
 
@@ -326,10 +375,9 @@ export default function App() {
     if (!isToday) return;
     setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:{...prev[viewKey]?.[pid],note:val}}}));
   }
-  function setMinutes(val) {
+  function setMinutes(n) {
     if (!isToday) return;
-    const n=Math.max(0,Math.min(240,parseInt(val)||0));
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],movement:{...prev[viewKey]?.movement,minutes:n}}}));
+    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],movement:{...prev[viewKey]?.movement,minutes:Math.max(0,Math.min(240,n))}}}));
   }
   function setGlasses(n) {
     if (!isToday) return;
@@ -343,7 +391,7 @@ export default function App() {
     const p=PILLARS.find(p=>p.id===pid);
     let blank;
     if (p.isWater)           blank={glasses:0,note:""};
-    else if (p.hasMinutes)   blank={checked:false,minutes:0,note:""};
+    else if (p.hasMinutes)   blank={minutes:0,note:""};
     else if (p.hasNutrition) blank={checked:false,note:"",nutrition:{fruits:0,protein:0,whole:0,sugar:"none",processed:"none",caffeine:"none",slow:false}};
     else                     blank={checked:false,note:""};
     setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:blank}}));
@@ -354,37 +402,34 @@ export default function App() {
     setConfirmClear(null);
   }
 
-  const greet = !isToday?null:checkedCount===0?"How is today unfolding?":checkedCount<4?"A gentle start -- "+checkedCount+" of 8.":checkedCount<7?"You are tending well -- "+checkedCount+" of 8.":"A truly full day.";
-  const isCurrentMonth = monthOffset===0;
-  const monthLabel     = MONTHS_LONG[monthRef.getMonth()]+" "+monthRef.getFullYear();
+  const greet = !isToday ? null
+    : checkedCount === 0            ? "How is today unfolding?"
+    : checkedCount < 4              ? "Every habit counts. Keep going."
+    : checkedCount < EIGHTY_PCT     ? "More than halfway there. You are doing well."
+    : checkedCount === TOTAL_PILLARS? "A perfect day. Soak it in. ✦"
+    :                                 "You reached your 80 today. That is enough. ✦";
 
+  const isCurrentMonth = monthOffset===0;
+  const monthLabel = MONTHS_LONG[monthRef.getMonth()]+" "+monthRef.getFullYear();
   function jumpToDay(dt) { setView("today"); setDayOffset(Math.round((dt-TODAY)/86400000)); }
 
   return (
     <div style={{background:C.cream,minHeight:"100vh",color:C.ink}}>
-
-      {confirmClear && (
-        <ConfirmModal
-          target={confirmClear}
-          onConfirm={()=>confirmClear==="day"?clearDay():clearPillar(confirmClear)}
-          onCancel={()=>setConfirmClear(null)}
-        />
-      )}
-
+      {confirmClear && <ConfirmModal target={confirmClear} onConfirm={()=>confirmClear==="day"?clearDay():clearPillar(confirmClear)} onCancel={()=>setConfirmClear(null)}/>}
       <div style={{maxWidth:460,margin:"0 auto",padding:"36px 20px 64px"}}>
 
-        <div style={{marginBottom:20,paddingBottom:18,borderBottom:`1px solid ${C.parchDark}`}}>
+        <div style={{marginBottom:20,paddingBottom:18,borderBottom:"1px solid "+C.parchDark}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
             <h1 style={{fontFamily:serif,fontSize:42,fontWeight:400,margin:0,letterSpacing:"-0.5px"}}>Rhythm</h1>
             <p style={{fontFamily:sans,fontSize:14,color:C.inkMid,margin:0,letterSpacing:"0.06em",textTransform:"uppercase"}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p>
           </div>
-          <div style={{marginTop:14,paddingTop:14,borderTop:`1px dashed ${C.parchDark}`}}>
+          <div style={{marginTop:14,paddingTop:14,borderTop:"1px dashed "+C.parchDark}}>
             <p style={{fontFamily:serif,fontStyle:"italic",fontSize:16,color:C.inkMid,lineHeight:1.7,margin:"0 0 5px"}}>"{quote.text}"</p>
             <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:0,letterSpacing:"0.05em",textTransform:"uppercase"}}>{quote.source}</p>
           </div>
         </div>
 
-        <div style={{display:"flex",gap:24,marginBottom:24,borderBottom:`1px solid ${C.parchDark}`,paddingBottom:14}}>
+        <div style={{display:"flex",gap:24,marginBottom:24,borderBottom:"1px solid "+C.parchDark,paddingBottom:14}}>
           {[["today","Journal"],["week","This week"],["month","Month"]].map(([v,l])=>(
             <button key={v} onClick={()=>setView(v)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 2px",fontFamily:serif,fontSize:20,color:view===v?C.sageDark:C.inkLight,borderBottom:view===v?"2px solid "+C.sage:"2px solid transparent",transition:"all .15s"}}>{l}</button>
           ))}
@@ -415,18 +460,28 @@ export default function App() {
             )}
 
             {encourage && (
-              <div style={{marginBottom:18,padding:"12px 16px",borderRadius:4,background:"#EDF4EC",borderLeft:"3px solid "+C.sage}}>
+              <div style={{marginBottom:12,padding:"12px 16px",borderRadius:4,background:"#EDF4EC",borderLeft:"3px solid "+C.sage}}>
                 <p style={{fontFamily:serif,fontStyle:"italic",fontSize:13,color:C.inkMid,lineHeight:1.7,margin:0}}>{encourage.text}</p>
                 <p style={{fontFamily:sans,fontSize:12,color:C.sageDark,margin:"8px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{encourage.pillar} · {encourage.count} of the last 7 days</p>
               </div>
             )}
 
-            {isToday  && <p style={{fontFamily:serif,fontSize:19,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
+            {isToday && checkedCount >= EIGHTY_PCT && (
+              <div style={{marginBottom:18,padding:"12px 16px",borderRadius:4,background:"#EDF4EC",borderLeft:"3px solid "+C.sageDark}}>
+                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.sageDark,lineHeight:1.7,margin:0}}>
+                  {checkedCount === TOTAL_PILLARS ? "A truly full day. Every pillar tended to. ✦" : "You reached your 80 today. That is enough. ✦"}
+                </p>
+              </div>
+            )}
+
+            {isToday && checkedCount < EIGHTY_PCT && <p style={{fontFamily:serif,fontSize:19,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
             {!isToday && <p style={{fontFamily:serif,fontSize:16,color:C.inkMid,marginBottom:16,marginTop:0,fontStyle:"italic"}}>{fmtDate(viewDate)} -- a past entry, read only.</p>}
 
             <div style={{display:"flex",flexDirection:"column",gap:5}}>
               {PILLARS.map(p => {
-                const st=viewData[p.id], on=pillarDone(p,st), open=expanded===p.id;
+                const st   = viewData[p.id];
+                const on   = pillarDone(p,st);
+                const open = expanded===p.id;
 
                 if (p.isWater) return (
                   <div key={p.id} style={{borderRadius:4,border:"1px solid "+(glasses>0?C.dustBluePale:C.parchDark),background:glasses>=WATER_GOAL?"#EAF3F7":C.parchment,overflow:"hidden"}}>
@@ -451,13 +506,18 @@ export default function App() {
                         </button>
                       ))}
                     </div>
-                    {isToday && glasses>0 && <div style={{padding:"0 16px 14px"}}><ClearBtn onClear={()=>setConfirmClear("water")}/></div>}
+                    {isToday&&glasses>0&&<div style={{padding:"0 16px 14px"}}><ClearBtn onClear={()=>setConfirmClear("water")}/></div>}
                   </div>
                 );
 
                 if (p.hasNutrition) {
-                  const nDone = nutrition.fruits>=3||nutrition.protein>=2||nutrition.whole>=2||nutrition.slow;
-                  const parts = [nutrition.fruits>0&&(nutrition.fruits+" fruit/veg"), nutrition.slow&&"ate slowly", nutrition.caffeine&&nutrition.caffeine!=="none"&&("caffeine: "+nutrition.caffeine), nutrition.sugar!=="none"&&("sugar: "+nutrition.sugar)].filter(Boolean);
+                  const nDone = pillarDone(p, st);
+                  const parts = [
+                    nutrition.fruits>0&&(nutrition.fruits+" fruit/veg"),
+                    nutrition.slow&&"ate slowly",
+                    nutrition.caffeine!=="none"&&("caffeine: "+nutrition.caffeine),
+                    nutrition.sugar!=="none"&&("sugar: "+nutrition.sugar),
+                  ].filter(Boolean);
                   const nSummary = parts.length>0 ? parts.join(" · ") : p.prompt;
                   return (
                     <div key={p.id} style={{borderRadius:4,border:"1px solid "+(nDone?C.sagePale:C.parchDark),background:nDone?"#EDF4EC":C.parchment,overflow:"hidden"}}>
@@ -476,13 +536,13 @@ export default function App() {
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <FlagRow label="Added sugar" hint="sweets, syrups, sweet drinks" options={["none","a little","quite a bit"]} value={nutrition.sugar} onChange={v=>setNutrition("sugar",v)} readOnly={!isToday}/>
                           <FlagRow label="Processed food" hint="packaged, fast food" options={["none","some","a lot"]} value={nutrition.processed} onChange={v=>setNutrition("processed",v)} readOnly={!isToday}/>
-                          <FlagRow label="Caffeine" hint="coffee, soda, energy drinks" options={["none","one or two","several"]} value={nutrition.caffeine||"none"} onChange={v=>setNutrition("caffeine",v)} readOnly={!isToday}/>
+                          <FlagRow label="Caffeine" hint="coffee, soda, energy drinks" options={["none","one or two","several"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)} readOnly={!isToday}/>
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <BoolRow label="Ate slowly" hint="sat down, present, no rush" value={nutrition.slow} onChange={v=>setNutrition("slow",v)} readOnly={!isToday}/>
                           <div style={{marginTop:10}}>
                             <NoteField value={st?.note} onChange={e=>setNote(p.id,e.target.value)} onClick={e=>e.stopPropagation()}/>
                           </div>
-                          {isToday && <ClearBtn onClear={()=>setConfirmClear(p.id)}/>}
+                          {isToday&&<ClearBtn onClear={()=>setConfirmClear(p.id)}/>}
                         </div>
                       )}
                     </div>
@@ -490,39 +550,32 @@ export default function App() {
                 }
 
                 if (p.hasMinutes) {
-                  const mDone = walkMins>=WALK_GOAL;
-                  const mSummary = walkMins>0 ? (walkMins+" min walked"+(walkMins>=90?" ✦":walkMins>=WALK_GOAL?" · goal met":" · "+(WALK_GOAL-walkMins)+" to go")) : ("goal: "+WALK_GOAL+" min");
+                  const mDone = walkMins >= WALK_GOAL;
+                  const status = mDone ? "goal met" : walkMins>0 ? (WALK_GOAL-walkMins)+" to go" : "";
                   return (
                     <div key={p.id} style={{borderRadius:4,border:"1px solid "+(mDone?C.sagePale:C.parchDark),background:mDone?"#EDF4EC":C.parchment,overflow:"hidden"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
                         <div style={{flex:1}}>
                           <div style={{fontFamily:serif,fontSize:19,color:mDone?C.sageDark:C.ink}}>Movement</div>
-                          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{mSummary}</div>
+                          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{p.prompt}</div>
                         </div>
                         <button onClick={e=>{e.stopPropagation();setExpanded(open?null:p.id);}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
                       </div>
                       <div style={{padding:"0 16px 14px"}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                          <span style={{fontFamily:sans,fontSize:14,color:C.inkMid}}>Minutes walked</span>
-                          <div style={{display:"flex",alignItems:"center",gap:6}}>
-                            {isToday ? (
-                              <input type="number" min="0" max="240" value={walkMins||""} placeholder="0" onChange={e=>setMinutes(e.target.value)} onClick={e=>e.stopPropagation()} style={{width:56,padding:"4px 8px",borderRadius:4,textAlign:"right",border:"1px solid "+C.parchDark,background:C.cream,fontFamily:serif,fontSize:15,color:C.ink,outline:"none"}}/>
-                            ) : (
-                              <span style={{fontFamily:serif,fontSize:15,color:C.inkMid}}>{walkMins}</span>
-                            )}
-                            <span style={{fontFamily:sans,fontSize:13,color:C.inkMid}}>min</span>
-                            <span style={{fontFamily:sans,fontSize:13,color:walkMins>=90?C.sage:walkMins>=WALK_GOAL?C.sageDark:C.inkLight}}>
-                              {walkMins>=90?"goal met":walkMins>=WALK_GOAL?"goal met":walkMins>0?(WALK_GOAL-walkMins)+" to go":"goal "+WALK_GOAL+" min"}
-                            </span>
-                          </div>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                          {isToday&&<button onClick={()=>setMinutes(walkMins-5)} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,width:28,height:28,cursor:"pointer",fontSize:16,color:C.inkLight,lineHeight:"26px",textAlign:"center",padding:0}}>-</button>}
+                          <span style={{fontFamily:serif,fontSize:16,color:C.ink,minWidth:32,textAlign:"center"}}>{walkMins}</span>
+                          {isToday&&<button onClick={()=>setMinutes(walkMins+5)} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,width:28,height:28,cursor:"pointer",fontSize:16,color:C.inkLight,lineHeight:"26px",textAlign:"center",padding:0}}>+</button>}
+                          <span style={{fontFamily:sans,fontSize:13,color:C.inkMid}}>min</span>
+                          {status&&<span style={{fontFamily:sans,fontSize:13,color:mDone?C.sageDark:C.inkLight}}>{status}</span>}
                         </div>
                         <div style={{height:6,borderRadius:3,background:C.parchDark,overflow:"hidden",marginBottom:open?12:0}}>
-                          <div style={{height:"100%",borderRadius:3,width:Math.min(100,(walkMins/90)*100)+"%",background:walkMins>=90?C.sage:walkMins>=WALK_GOAL?C.sagePale:C.gold,transition:"width .3s"}}/>
+                          <div style={{height:"100%",borderRadius:3,width:Math.min(100,(walkMins/90)*100)+"%",background:walkMins>=90?C.sage:mDone?C.sagePale:C.gold,transition:"width .3s"}}/>
                         </div>
-                        {open && (
+                        {open&&(
                           <div style={{marginTop:10}}>
                             <NoteField value={st?.note} onChange={e=>setNote(p.id,e.target.value)} onClick={e=>e.stopPropagation()}/>
-                            {isToday && <ClearBtn onClear={()=>setConfirmClear(p.id)}/>}
+                            {isToday&&<ClearBtn onClear={()=>setConfirmClear(p.id)}/>}
                           </div>
                         )}
                       </div>
@@ -535,15 +588,15 @@ export default function App() {
                     <div style={{display:"flex",alignItems:"center",padding:"14px 16px",gap:14,cursor:isToday?"pointer":"default"}} onClick={()=>toggle(p.id)}>
                       <CheckBox on={on}/>
                       <div style={{flex:1}}>
-                        <div style={{fontFamily:serif,fontSize:17,color:on?C.sageDark:C.ink}}>{p.label}</div>
-                        <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,marginTop:3}}>{p.prompt}</div>
+                        <div style={{fontFamily:serif,fontSize:19,color:on?C.sageDark:C.ink}}>{p.label}</div>
+                        <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{p.prompt}</div>
                       </div>
                       <button onClick={e=>{e.stopPropagation();setExpanded(open?null:p.id);}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
                     </div>
-                    {open && (
+                    {open&&(
                       <div style={{padding:"0 16px 14px"}}>
                         <NoteField value={st?.note} onChange={e=>setNote(p.id,e.target.value)} onClick={e=>e.stopPropagation()}/>
-                        {isToday && <ClearBtn onClear={()=>setConfirmClear(p.id)}/>}
+                        {isToday&&<ClearBtn onClear={()=>setConfirmClear(p.id)}/>}
                       </div>
                     )}
                   </div>
@@ -569,21 +622,29 @@ export default function App() {
                 return (
                   <div key={i} style={{textAlign:"center"}}>
                     <div style={{fontFamily:sans,fontSize:11,color:C.inkLight,marginBottom:5,textTransform:"uppercase",letterSpacing:"0.05em"}}>{DAYS_SHORT[i]}</div>
-                    <div onClick={()=>jumpToDay(dt)} style={{height:52,borderRadius:3,cursor:"pointer",background:warmthBg(score),border:(isTodayCell?"2px":"1px")+" solid "+(isTodayCell?C.sage:C.parchDark),display:"flex",alignItems:"center",justifyContent:"center",fontFamily:sans,fontSize:12,color:warmthFg(score),fontWeight:isTodayCell?600:400}}>
+                    <div onClick={()=>jumpToDay(dt)} style={{height:52,borderRadius:3,cursor:"pointer",background:warmthBg(score),border:(isTodayCell?"2":"1")+"px solid "+(isTodayCell?C.sage:C.parchDark),display:"flex",alignItems:"center",justifyContent:"center",fontFamily:sans,fontSize:12,color:warmthFg(score),fontWeight:isTodayCell?600:400}}>
                       {score!==null?Math.round(score*100)+"%":"--"}
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div style={{display:"flex",gap:14,marginBottom:28,flexWrap:"wrap"}}>
-              {[["#D4CFC8","Quiet"],["#F0E2B6","Stirring"],["#E8C96A","Tending"],["#D4A017","Full"]].map(([bg,l])=>(
+            <div style={{display:"flex",gap:14,marginBottom:12,flexWrap:"wrap"}}>
+              {[["#D4CFC8","Just starting"],["#F0E2B6","Building momentum"],["#E8C96A","Almost there"],["#D4A017","80% reached"]].map(([bg,l])=>(
                 <div key={l} style={{display:"flex",alignItems:"center",gap:6,fontFamily:sans,fontSize:13,color:C.inkLight}}>
                   <div style={{width:12,height:12,borderRadius:2,background:bg,border:"1px solid "+C.parchDark}}/>
                   {l}
                 </div>
               ))}
             </div>
+            {(()=>{
+              const at80 = weekDates.filter(dt => { const s=dayScore(data,getDateKey(dt)); return s!==null && s>=EIGHTY_PCT/TOTAL_PILLARS; }).length;
+              return at80>0 ? (
+                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:14,color:C.inkMid,margin:"0 0 20px"}}>
+                  {at80} of 7 days at 80% this week{at80>=5?" -- a strong week. ✦":at80>=3?" -- good momentum.":"."}
+                </p>
+              ) : null;
+            })()}
             <div style={{borderTop:"1px solid "+C.parchDark,marginBottom:24}}/>
             <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,fontStyle:"italic",margin:"0 0 16px"}}>By pillar</p>
             <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:32}}>
