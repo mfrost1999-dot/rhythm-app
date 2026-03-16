@@ -81,18 +81,18 @@ const ENCOURAGEMENT = {
 };
 
 const SEASONAL = [
-  { season:"Winter", text:"January is for quietude. Marmee always said the new year deserves a slow beginning. Rest more than you think you need to." },
-  { season:"Winter", text:"February light is thin but returning. The March girls kept busy in February -- sewing, reading, making music. Find your version of that warmth." },
-  { season:"Spring", text:"March is for opening windows. Jo flung hers open every spring morning. If you can, put your hands in some soil and feel the season turning." },
-  { season:"Spring", text:"April showers mean walking in rain gear, not staying inside. The Edwardians were firm on this. Add color back to your plate this month." },
-  { season:"Spring", text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew or picked." },
-  { season:"Summer", text:"June evenings are long. The March family spent theirs on the porch, talking until dark. Okinawan summers are built around community too. Follow their lead." },
-  { season:"Summer", text:"July heat calls for water, more than you think. Find your cool, quiet place and linger there the way Amy lingered over her sketching." },
-  { season:"Summer", text:"August is for slowing down before the turn. The March girls spent it picking berries and reading under trees. Blue Zones elders rest more in August. Do the same." },
-  { season:"Autumn", text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. The air is crisp enough now for long walks." },
-  { season:"Autumn", text:"October in Blue Zones is for gratitude feasts, communal and unhurried. Marmee would have approved. The days are shortening. Tend to your rest now." },
-  { season:"Autumn", text:"November asks you to go inward. Beth loved the quiet of November -- the firelight, the knitting, the closeness of family. Be generous with connection this month." },
-  { season:"Winter", text:"December is for candlelight and company. The March Christmas had very little, and it was everything. Blue Zones elders treat December as a time of rest and reflection. What is enough for you?" },
+  { season:"Winter",  text:"January is a good month to tend your faith. Marmee began each new year with prayer and intention. What do you want to carry into this one?" },
+  { season:"Winter",  text:"February is for connection. The March girls wrote letters, paid visits, and gathered close. The Edwardians called it the social season for good reason. Who have you been meaning to reach out to?" },
+  { season:"Spring",  text:"March is for opening windows. Jo flung hers open every spring morning. If you can, put your hands in some soil and feel the season turning." },
+  { season:"Spring",  text:"April is for movement. The Edwardians cycled, walked, and played lawn games the moment the weather turned. Find your version of that and get outside." },
+  { season:"Spring",  text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew, picked, or bought from someone who did." },
+  { season:"Summer",  text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. Eat the season fully this month." },
+  { season:"Summer",  text:"July is for water. More than you think, more than you track. The Edwardians retreated to riversides and the sea. Find your cool, quiet place and linger there." },
+  { season:"Summer",  text:"August is for creative work. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. Make something this month, even something small." },
+  { season:"Autumn",  text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. The air is crisp enough now for long walks." },
+  { season:"Autumn",  text:"October is for connection. In Sardinia, October means communal feasts and long evenings with family. The Edwardians called on neighbors before the dark months set in. Gather your people." },
+  { season:"Autumn",  text:"November is for faith. The days are short and the light is thin. Marmee always said November was the month to count your blessings out loud. What are yours?" },
+  { season:"Winter",  text:"December is for rest and reflection, yes, but also for joy. The March Christmas had very little and it was everything. Blue Zones elders say the secret to a long life is knowing what is enough. What is enough for you?" },
 ];
 
 const C = {
