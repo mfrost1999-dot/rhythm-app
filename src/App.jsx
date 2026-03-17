@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 
-const WATER_GOAL    = 8;
+const WATER_GOAL    = 8;  // 8 glasses x 8oz = 64oz
+const WATER_OZ      = 8;  // oz per glass
 const WALK_GOAL     = 60;
-const EIGHTY_PCT    = 7;
-const TOTAL_PILLARS = 9;
+const EIGHTY_PCT    = 6;
+const TOTAL_PILLARS = 8;
 const DAYS_SHORT    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -14,15 +15,14 @@ const NUTRITION_BOOLS = [
 ];
 
 const PILLARS = [
-  { id:"movement",    label:"Movement",      prompt:"Did you move naturally today?",         hasMinutes:true },
-  { id:"nourishment", label:"Nourishment",   prompt:"Did you eat something real and slow?",  hasNutrition:true },
-  { id:"water",       label:"Water",         isWater:true },
-  { id:"air",         label:"Fresh air",     prompt:"Did you get outside, even briefly?" },
-  { id:"rest",        label:"Rest",          prompt:"Did you wind down intentionally?" },
-  { id:"connection",  label:"Connection",    prompt:"Did you share time with someone?" },
-  { id:"creative",    label:"Creative work", prompt:"Did you give time to your creative self today?" },
-  { id:"joy",         label:"Small joy",     prompt:"Did something delight you today?" },
-  { id:"faith",       label:"Faith",         prompt:"Did you connect with God today?" },
+  { id:"movement",    label:"Movement & Fresh Air", prompt:"Did you move your body outside today?",      hasMinutes:true },
+  { id:"nourishment", label:"Nourishment",          prompt:"Did you eat something real and slow?",       hasNutrition:true },
+  { id:"water",       label:"Water",                isWater:true },
+  { id:"rest",        label:"Rest",                 prompt:"Did you wind down intentionally?" },
+  { id:"connection",  label:"Connection",           prompt:"Did you share time with someone?" },
+  { id:"creative",    label:"Creative work",        prompt:"Did you give time to your creative self today?" },
+  { id:"joy",         label:"Joy & Hygge",          prompt:"Did you notice or create a moment of warmth and delight today?" },
+  { id:"faith",       label:"Faith",                prompt:"Did you connect with God today?" },
 ];
 
 const QUOTES = [
@@ -32,7 +32,7 @@ const QUOTES = [
   { text:"It is not how much we have, but how much we enjoy, that makes happiness.", source:"Blue Zones wisdom" },
   { text:"She had a gift for making the most of small pleasures.", source:"Louisa May Alcott, Little Women" },
   { text:"Eat until you are eight parts full, and let the other two parts nourish your soul.", source:"Hara hachi bu, Okinawa" },
-  { text:"Sunshine is delicious, rain is refreshing, wind braces us up. There is really no such thing as bad weather.", source:"John Ruskin, c. 1870" },
+  { text:"There is no bad weather, only bad clothing.", source:"Norwegian proverb" },
   { text:"Belonging to a community is one of the most powerful medicines we have.", source:"Blue Zones research" },
   { text:"The best rooms are those in which one has laughed, cried, and lingered over tea.", source:"Edwardian domestic writing, c. 1908" },
   { text:"Family is the cornerstone of a long life well-lived.", source:"Blue Zones, Sardinia" },
@@ -40,10 +40,10 @@ const QUOTES = [
   { text:"Move, eat, sleep, repeat. But do each one as if it were the only thing.", source:"Sardinian proverb" },
   { text:"She is too fond of books, and it has turned her brain.", source:"Louisa May Alcott, worn as a badge of honor" },
   { text:"To keep the body in good health is a duty, otherwise we shall not be able to keep our mind strong and clear.", source:"Buddhist proverb" },
-  { text:"There is no sincerer love than the love of food.", source:"George Bernard Shaw, c. 1903" },
+  { text:"Hygge is not about things. It is about togetherness, presence, and the pleasure of simple moments.", source:"Danish proverb" },
   { text:"Walking is a man's best medicine.", source:"Hippocrates" },
   { text:"The people who live the longest do not try to live longer. They live fully.", source:"Blue Zones research" },
-  { text:"Wherever you go, go with all your heart.", source:"Confucian proverb, Okinawa" },
+  { text:"Friluftsliv is not a hobby. It is a way of being in the world.", source:"Norwegian tradition" },
   { text:"An early morning walk is a blessing for the whole day.", source:"Henry David Thoreau, c. 1850" },
   { text:"In seed time learn, in harvest teach, in winter enjoy.", source:"William Blake, c. 1790" },
   { text:"The cure for anything is salt water: sweat, tears, or the sea.", source:"Isak Dinesen, c. 1934" },
@@ -64,45 +64,50 @@ const QUOTES = [
   { text:"Have regular hours for work and play. Make each day both useful and pleasant.", source:"Marmee, Little Women" },
   { text:"A garden, a walk, a book, a friend. That is a very good life.", source:"Edwardian domestic writing, c. 1906" },
   { text:"There is always light, if only we are brave enough to see it.", source:"Louisa May Alcott" },
+  { text:"Lagom is not settling for less. It is knowing that enough is exactly right.", source:"Swedish proverb" },
+  { text:"The Nordic secret is simple: go outside, come back in, light something warm, and be with someone you love.", source:"Scandinavian folk wisdom" },
+  { text:"Nature is not a place to visit. It is home.", source:"Gary Snyder, reflecting friluftsliv" },
+  { text:"A cup of tea shared is worth more than a feast eaten alone.", source:"Danish saying" },
+  { text:"Sunshine is delicious, rain is refreshing, wind braces us up. There is really no such thing as bad weather.", source:"John Ruskin, c. 1870" },
+  { text:"The body needs movement the way the mind needs stillness.", source:"Scandinavian folk wisdom" },
+  { text:"To find joy in work is to discover the fountain of youth.", source:"Pearl S. Buck" },
 ];
 
 const NUDGES = {
-  movement:    ["Jo March would not have stayed inside on a day like this. The lane is waiting.", "The Edwardians considered a daily walk as essential as breakfast. It has been a few days.", "In Okinawa, movement is simply life. Your body is asking for a little of it today."],
+  movement:    ["Jo March would not have stayed inside on a day like this. The lane is waiting.", "The Norwegians say there is no bad weather, only bad clothing. Get outside today.", "In Okinawa, movement is simply life. Step outside and let your body do what it was made for."],
   nourishment: ["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.", "The Edwardians ate what was in season and avoided excess. More whole food, a little less packaged.", "In Blue Zones, the plate is mostly plants and the meal is unhurried. One small step today is enough."],
-  water:       ["A glass of water first thing sets the tone for the whole day. Start there.", "The Edwardians drank water and weak tea steadily all day. Small sips, often.", "Your afternoon might feel quite different with a little more water in it."],
-  air:         ["It has been a few days since you stepped outside. Even five minutes of fresh air will do.", "Edwardian doctors prescribed fresh air before almost anything else. The door is right there.", "In Okinawa, the outdoors is where life happens. Step into it today, even briefly."],
-  rest:        ["A proper wind-down has been missing lately. Try setting everything down a little earlier tonight.", "The Edwardians kept strict hours. Work ended, and rest began. Give yourself that boundary tonight.", "Blue Zones elders sleep when it is dark. Your body is probably asking for the same."],
-  connection:  ["It has been a little while since you reached out to someone. A short message is enough.", "The Edwardians built social life into every single day. Who could you check in with today?", "In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],
-  creative:    ["Your creative self has been quiet lately. Even ten minutes of something made is enough.", "The Edwardians believed purposeful leisure was as important as work. Make something small today.", "Jo wrote even on the hard days. Your hands and mind want a little of their own work."],
-  joy:         ["Small joys have been a little scarce lately. What simple pleasure have you been walking past?", "The Edwardians made an art of small pleasures. Tea, a book, a walk. Find yours today.", "In Okinawa, delight is not chased. It is noticed. Look for one small thing today."],
+  water:       ["A glass of water first thing sets the tone for the whole day. Start there.", "The Edwardians drank water and weak tea steadily all day. Small sips, often.", "Scandinavians drink herbal teas and cold water all day. Your afternoon might feel quite different with a little more of it."],
+  rest:        ["A proper wind-down has been missing lately. The Danes call it hygge. Create a little of it tonight.", "The Edwardians kept strict hours. Work ended, and rest began. Give yourself that boundary tonight.", "Blue Zones elders sleep when it is dark. Your body is probably asking for the same."],
+  connection:  ["It has been a little while since you reached out to someone. A short message is enough.", "The Scandinavians have a word, samvær, for simply being together without agenda. Who could you do that with today?", "In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],
+  creative:    ["Your creative self has been quiet lately. Even ten minutes of something made is enough.", "Scandinavians have a deep tradition of craft and making. Your hands want a little of their own work today.", "Jo wrote even on the hard days. Make something small, even if it feels unimportant."],
+  joy:         ["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.", "The Danes call it hygge. The Okinawans call it ikigai. Both ask the same question: did you find warmth today?", "In Scandinavia, coziness is not an accident. It is something you build. What could you create today?"],
   faith:       ["It has been a few days since you took time for your faith. Even a short prayer is enough.", "The Edwardian day began and ended with stillness. Take a moment to be present with God today.", "Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly."],
 };
 
 const ENCOURAGEMENT = {
-  movement:    ["Movement has been showing up in your days this week. The Edwardians would approve.", "You have been keeping yourself in motion. Jo March never sat still for long either.", "Walking has become part of your rhythm. In Okinawa, that is simply called living."],
+  movement:    ["Getting outside and moving has been part of your week. The Edwardians and the Scandinavians both knew this was non-negotiable.", "You have been keeping yourself in motion outdoors. Jo March never sat still for long either.", "Outdoor movement has become part of your rhythm. In Okinawa and Scandinavia alike, that is simply called living."],
   nourishment: ["You have been tending to your meals with care. Marmee would call that good housekeeping of the soul.", "Nourishment has been a priority lately. The Edwardians believed a well-fed body was a well-ordered life.", "Something is shifting in how you are feeding yourself. Blue Zones elders would recognize that shift."],
   water:       ["You have been drinking your water consistently. Simple, steady, good.", "Hydration has been a quiet win this week. The kind the Edwardians called good constitution.", "Water has been showing up in your days. In Okinawa, that is one of the first secrets they name."],
-  air:         ["Fresh air has found its way into your week. The Edwardians considered this non-negotiable.", "You have been getting outside. Jo March spent every spare hour out of doors too.", "You stepped out into the world this week. In Blue Zones, the outdoors is where life is lived."],
   rest:        ["Rest has been part of your week. Beth always knew the value of a quiet evening.", "You have been winding down with intention. The Edwardians kept strict hours for exactly this reason.", "Rest is showing up in your rhythm. Blue Zones elders have always known it is not a luxury."],
   connection:  ["You have been showing up for the people in your life. The March family made that their whole practice.", "Connection has been a thread in your days. The Edwardians built entire lives around regular small gatherings.", "You have not been doing this alone. In Sardinia, that is considered the whole point."],
   creative:    ["Your creative work has been showing up. Jo never let a week pass without writing something.", "You have been making things. The Edwardians believed purposeful making was essential to a full life.", "Something creative has found its place in your week. In Blue Zones, work and making are not so different."],
-  joy:         ["Small joys have been finding you this week. Amy March made an art of noticing them.", "You have been finding delight. The Edwardians considered this a discipline worth practicing daily.", "Joy has shown up in your days. In Okinawa, they call this the reason to get up in the morning."],
+  joy:         ["Warmth and delight have been finding their way into your days. That is hygge and ikigai working together.", "You have been creating and noticing small joys this week. Amy March and the Danes would both approve.", "Joy and coziness have shown up in your days. That is one of the oldest wellness secrets there is."],
   faith:       ["Your faith has been a thread in your days. Marmee wove hers through everything she did.", "You have been showing up for your spiritual life. The Edwardians began and ended each day with that same intention.", "Connecting with God has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],
 };
 
 const SEASONAL = [
-  { season:"Winter", text:"January is a good month to tend your faith. Marmee began each new year with prayer and intention. What do you want to carry into this one?" },
-  { season:"Winter", text:"February is for connection. The March girls wrote letters, paid visits, and gathered close. Who have you been meaning to reach out to?" },
-  { season:"Spring", text:"March is for opening windows. Jo flung hers open every spring morning. If you can, put your hands in some soil and feel the season turning." },
-  { season:"Spring", text:"April is for movement. The Edwardians cycled, walked, and played lawn games the moment the weather turned. Find your version of that and get outside." },
+  { season:"Winter", text:"January is for hygge. The Danes and Norwegians do not hibernate in winter. They light candles, gather close, and make the indoors feel like a gift. Tend your faith and your warmth this month." },
+  { season:"Winter", text:"February is for connection. The March girls wrote letters and paid visits. The Scandinavians call it showing up. The Edwardians called it the social season. Who have you been meaning to reach out to?" },
+  { season:"Spring", text:"March is for opening windows and going outside. Jo March flung hers open every spring morning. In Norway, the first warm day is practically a national holiday. Step out and feel the season turning." },
+  { season:"Spring", text:"April is for movement. The Edwardians cycled and walked the moment the weather turned. Scandinavians head into the forest. Find your version and get outside." },
   { season:"Spring", text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew, picked, or bought from someone who did." },
-  { season:"Summer", text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. Eat the season fully this month." },
-  { season:"Summer", text:"July is for water. More than you think, more than you track. Find your cool, quiet place and linger there." },
-  { season:"Summer", text:"August is for creative work. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. Make something this month." },
-  { season:"Autumn", text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. The air is crisp enough now for long walks." },
-  { season:"Autumn", text:"October is for connection. In Sardinia, October means communal feasts and long evenings with family. Gather your people." },
-  { season:"Autumn", text:"November is for faith. The days are short and the light is thin. Marmee always said November was the month to count your blessings out loud. What are yours?" },
-  { season:"Winter", text:"December is for rest and reflection, yes, but also for joy. The March Christmas had very little and it was everything. What is enough for you?" },
+  { season:"Summer", text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. In Scandinavia, June means long light and meals that go on for hours. Eat the season fully." },
+  { season:"Summer", text:"July is for water and friluftsliv. Scandinavians swim in cold lakes, walk barefoot, and sleep with the windows open. Find your version of being fully outside this month." },
+  { season:"Summer", text:"August is for creative work. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. The Scandinavians call this the season of making. Use it." },
+  { season:"Autumn", text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. In Scandinavia, September is for foraging. In Blue Zones, it is for gathering. Both are right." },
+  { season:"Autumn", text:"October is for connection. In Sardinia, October means communal feasts. In Scandinavia, it means pulling the people you love inside before the dark comes. Gather your people." },
+  { season:"Autumn", text:"November is for faith and hygge. The days are short. Marmee counted her blessings out loud in November. The Scandinavians light every candle they own. What are yours?" },
+  { season:"Winter", text:"December is the heart of hygge season. The March Christmas had very little and it was everything. Blue Zones elders know what enough looks like. Scandinavians know what warmth feels like. Build both this month." },
 ];
 
 const C = {
@@ -527,12 +532,14 @@ export default function App() {
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px 10px"}}>
                       <div>
                         <div style={{fontFamily:serif,fontSize:19,color:glasses>=WATER_GOAL?C.sageDark:C.ink}}>Water</div>
-                        <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{glasses===0?"Tap a glass to log":glasses>=WATER_GOAL?"Well hydrated today":glasses+" of "+WATER_GOAL+" glasses"}</div>
+                        <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>
+                          {glasses===0?"Tap a glass to log":glasses>=WATER_GOAL?"64 oz — well hydrated today":(glasses*WATER_OZ)+" of 64 oz"}
+                        </div>
                       </div>
                       {isToday&&(
                         <div style={{display:"flex",gap:6,alignItems:"center"}}>
                           <button onClick={()=>setGlasses(glasses-1)} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,width:30,height:30,cursor:"pointer",fontSize:18,color:C.inkLight,lineHeight:"28px",textAlign:"center",padding:0}}>-</button>
-                          <span style={{fontFamily:serif,fontSize:18,color:C.dustBlueDark,minWidth:22,textAlign:"center"}}>{glasses}</span>
+                          <span style={{fontFamily:serif,fontSize:18,color:C.dustBlueDark,minWidth:22,textAlign:"center"}}>{glasses*WATER_OZ} oz</span>
                           <button onClick={()=>setGlasses(glasses+1)} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,width:30,height:30,cursor:"pointer",fontSize:18,color:C.inkLight,lineHeight:"28px",textAlign:"center",padding:0}}>+</button>
                         </div>
                       )}
@@ -597,7 +604,7 @@ export default function App() {
                     <div key={p.id} style={{borderRadius:4,border:"1px solid "+(mDone?C.sagePale:C.parchDark),background:mDone?"#EDF4EC":C.parchment,overflow:"hidden"}}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
                         <div style={{flex:1}}>
-                          <div style={{fontFamily:serif,fontSize:19,color:mDone?C.sageDark:C.ink}}>Movement</div>
+                          <div style={{fontFamily:serif,fontSize:19,color:mDone?C.sageDark:C.ink}}>Movement & Fresh Air</div>
                           <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{p.prompt}</div>
                         </div>
                         <button onClick={e=>{e.stopPropagation();setExpanded(open?null:p.id);}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
@@ -744,6 +751,13 @@ export default function App() {
                   Louisa May Alcott published Little Women in 1868, and it has never been out of print. It belongs here not as a wellness manual but as a portrait of a life well-lived on very little. The March family is poor, but their days are full. They read, write, play music, sew, cook, go outdoors, gather in the evenings, argue, laugh, and look after each other. Marmee is the quiet center of it all: a woman of deep faith, practical wisdom, and extraordinary warmth. She teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness. That is the spirit this app tries to carry. Wellness is not an achievement. It is a practice.
                 </p>
               </div>
+
+              <div style={{marginTop:24,padding:"18px 20px",borderRadius:4,background:C.parchment,borderLeft:"3px solid "+C.inkLight}}>
+                <h3 style={{fontFamily:serif,fontSize:18,fontWeight:400,color:C.inkMid,margin:"0 0 10px"}}>Scandinavian cultures</h3>
+                <p style={{fontFamily:sans,fontSize:14,color:C.inkMid,lineHeight:1.8,margin:0}}>
+                  Denmark, Norway, Sweden, and Finland consistently rank among the happiest countries on earth. Their wellbeing is not accidental. It is cultural.                   Friluftsliv (free-loofts-leev), a Norwegian word meaning free air life, is the deep belief that time in nature is essential to human health regardless of weather. Hygge (hoo-gah), the Danish and Norwegian concept of coziness and presence, is the art of creating warmth in everyday moments: a candle lit, a slow meal, an unhurried conversation. Lagom (lah-gom), the Swedish idea of just the right amount, is a philosophy of balance that runs through everything. Scandinavian cultures do not pursue happiness as a destination. They build it into the texture of ordinary days. That is exactly what this app is trying to do.
+                </p>
+              </div>
             </div>
 
             <div style={{height:1,background:C.parchDark}}/>
@@ -751,7 +765,7 @@ export default function App() {
             <div>
               <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 12px"}}>The 80% principle</h2>
               <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:"0 0 12px"}}>
-                In Okinawa, people say a phrase before every meal: hara hachi bu. It means eat until you are eight parts full. Stop at 80%, and let the remaining 20% go. It is one of the most well-studied habits in longevity research, and it works not because of calorie restriction but because of the discipline of knowing when enough is enough.
+                In Okinawa, people say a phrase before every meal: hara hachi bu (hah-rah hah-chee boo). It means eat until you are eight parts full. Stop at 80%, and let the remaining 20% go. It is one of the most well-studied habits in longevity research, and it works not because of calorie restriction but because of the discipline of knowing when enough is enough.
               </p>
               <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>
                 Rhythm applies the same principle to your whole day. Hitting 7 out of 9 pillars, your 80%, is a genuinely good day. You do not need to do everything perfectly. You need to do most things consistently. Perfection is fragile. It breaks under pressure and creates guilt. Consistency is sturdy. It builds slowly and compounds over time. A day at 80% every day for a year is a transformed life. That is what this app is for.
@@ -761,16 +775,15 @@ export default function App() {
             <div style={{height:1,background:C.parchDark}}/>
 
             <div>
-              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 20px"}}>Your nine pillars</h2>
+              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 20px"}}>Your eight pillars</h2>
               {[
-                { label:"Movement", text:"In every Blue Zone, people do not go to the gym. They move naturally: walking to the market, tending gardens, climbing stairs, working with their hands. The Edwardians walked everywhere and spent their leisure time in active pursuits. The March girls were always outdoors. This pillar is not about exercise. It is about keeping your body in motion as a natural part of your day. The walk goal of 60 minutes reflects research showing that daily walking of that duration is one of the strongest single predictors of longevity." },
-                { label:"Nourishment", text:"Blue Zones diets are not identical, but they share a common shape: mostly plants, very little processed food, eaten slowly and with others. The Edwardians ate simply and seasonally. The March family cooked everything from scratch. This pillar asks not whether you hit a calorie target but whether your relationship with food is one of care and intention. The nourishment trackers reflect the habits that matter most: eating mostly plants, cooking at home, and stopping when satisfied." },
-                { label:"Water", text:"Hydration is quietly one of the most impactful daily habits, affecting energy, digestion, mood, and cognitive function. Blue Zones residents drink water, herbal teas, and in some regions moderate amounts of wine with meals. The Edwardians drank steadily throughout the day. The goal of eight glasses is not a magic number, but it is a reliable target for most adults." },
-                { label:"Fresh air", text:"Edwardian doctors prescribed fresh air before almost anything else. Blue Zones communities live largely outdoors. The March girls went out in all weathers. Time outdoors reduces cortisol, improves sleep, boosts mood, and supports immune function. Even five minutes outside counts. The goal is simply to step into the world every day, whatever the weather." },
-                { label:"Rest", text:"Blue Zones elders sleep when it is dark and rise when it is light. They also build downshift rituals into their days, quiet moments that reduce stress and allow the nervous system to recover. The Edwardians kept strict hours: work ended, rest began. Beth March always knew when to put the work down and be still. Rest is not laziness. It is the foundation on which every other habit stands." },
-                { label:"Connection", text:"Social connection is one of the strongest predictors of longevity in Blue Zones research. Sardinians gather in the village square every evening. Okinawans belong to moais, small social groups that meet for life. The Edwardians built visiting, correspondence, and gathering into every week. The March family made connection their whole practice. Loneliness is as harmful to health as smoking. Belonging is medicine." },
-                { label:"Creative work", text:"The Edwardians believed purposeful leisure was as important as productive work. Jo March wrote every day, even on hard days. Blue Zones residents work with their hands, tend gardens, and make things. Creative work engages the mind differently from passive consumption, builds a sense of agency and identity, and is consistently associated with wellbeing and life satisfaction. Even ten minutes of something made is worth logging." },
-                { label:"Small joy", text:"Amy March found beauty in the smallest corners of every day. In Okinawa, they speak of ikigai, a reason to get up in the morning, as central to their longevity. The Edwardians made an art of small pleasures: tea, flowers, a walk, a good book. This pillar asks you to notice one thing each day that delighted you. Over time, the practice of noticing joy creates more of it." },
+                { label:"Movement & Fresh Air", text:"In every Blue Zone, people do not go to the gym. They move naturally outdoors: walking to the market, tending gardens, working with their hands. The Edwardians walked everywhere and spent their leisure time outside in all weathers. The Scandinavians practice friluftsliv (free-loofts-leev), the belief that being in nature is essential to health regardless of temperature or rain. The March girls were always out of doors. This pillar combines movement and fresh air because they are not really separate things. The walk goal of 60 minutes reflects research showing that daily outdoor walking is one of the strongest single predictors of longevity." },
+                { label:"Nourishment", text:"Blue Zones diets are not identical, but they share a common shape: mostly plants, very little processed food, eaten slowly and with others. The Edwardians ate simply and seasonally. The March family cooked everything from scratch. Scandinavians eat close to the land and rarely in a hurry. This pillar asks not whether you hit a calorie target but whether your relationship with food is one of care and intention." },
+                { label:"Water", text:"Hydration is quietly one of the most impactful daily habits, affecting energy, digestion, mood, and cognitive function. Blue Zones residents drink water and herbal teas throughout the day. The Edwardians drank steadily all day. The goal of eight glasses is not a magic number, but it is a reliable target for most adults." },
+                { label:"Rest", text:"Blue Zones elders sleep when it is dark and rise when it is light. They build downshift rituals into their days, quiet moments that allow the nervous system to recover. The Edwardians kept strict hours: work ended, rest began. Beth March always knew when to put the work down and be still. Scandinavians take the evening seriously. Rest is not laziness. It is the foundation on which every other habit stands." },
+                { label:"Connection", text:"Social connection is one of the strongest predictors of longevity in Blue Zones research. Sardinians gather in the village square every evening. Okinawans belong to moais, small social groups that meet for life. Scandinavian cultures are built on trust, community, and showing up for each other. The Edwardians built visiting and gathering into every week. The March family made connection their whole practice. Loneliness is as harmful to health as smoking. Belonging is medicine." },
+                { label:"Creative work", text:"The Edwardians believed purposeful leisure was as important as productive work. Jo March wrote every day, even on hard days. Blue Zones residents work with their hands and make things. Scandinavians have a deep tradition of craft, making, and purposeful hobbies. Creative work engages the mind differently from passive consumption and is consistently associated with wellbeing and life satisfaction. Even ten minutes of something made is worth logging." },
+                { label:"Joy & Hygge", text:"This pillar brings together two of the most beautiful ideas in wellness. Ikigai (ee-kee-guy), the Okinawan concept of a reason to get up in the morning, is about noticing what brings you joy. Hygge (hoo-gah), the Scandinavian concept of coziness and presence, is about deliberately creating warmth in your environment and being fully in it. Amy March found beauty in the smallest corners of every day. The Edwardians made an art of small pleasures. This pillar asks whether you noticed or created at least one warm, delightful moment today." },
                 { label:"Faith", text:"Every Blue Zone has a strong culture of faith or spiritual practice. Loma Linda is a Seventh-day Adventist community. Sardinians are deeply Catholic. Ikarians are Greek Orthodox. The research is consistent: people with a regular spiritual practice live longer, report higher wellbeing, and handle stress more effectively. Marmee wove her faith through everything she did. This pillar simply asks whether you made space for God today." },
               ].map(item=>(
                 <div key={item.label} style={{marginBottom:20,paddingBottom:20,borderBottom:"1px solid "+C.parchDark}}>
