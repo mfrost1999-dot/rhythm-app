@@ -9,7 +9,7 @@ const DAYS_SHORT    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const NUTRITION_BOOLS = [
-  { id:"plants",    label:"Mostly plants",     hint:"Was your plate mostly plants today?" },
+  { id:"plants",    label:"Fruits & vegetables", hint:"Did you eat at least 3 servings today?" },
   { id:"homemade",  label:"Home-cooked meal",  hint:"Did you eat at least one home-cooked meal?" },
   { id:"satisfied", label:"Stopped when full", hint:"Did you stop eating when you felt satisfied?" },
 ];
