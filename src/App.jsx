@@ -768,7 +768,7 @@ export default function App() {
                 In Okinawa, people say a phrase before every meal: hara hachi bu (hah-rah hah-chee boo). It means eat until you are eight parts full. Stop at 80%, and let the remaining 20% go. It is one of the most well-studied habits in longevity research, and it works not because of calorie restriction but because of the discipline of knowing when enough is enough.
               </p>
               <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>
-                Rhythm applies the same principle to your whole day. Hitting 7 out of 9 pillars, your 80%, is a genuinely good day. You do not need to do everything perfectly. You need to do most things consistently. Perfection is fragile. It breaks under pressure and creates guilt. Consistency is sturdy. It builds slowly and compounds over time. A day at 80% every day for a year is a transformed life. That is what this app is for.
+                Rhythm applies the same principle to your whole day. Hitting 6 out of 8 pillars, your 80%, is a genuinely good day. You do not need to do everything perfectly. You need to do most things consistently. Perfection is fragile. It breaks under pressure and creates guilt. Consistency is sturdy. It builds slowly and compounds over time. A day at 80% every day for a year is a transformed life. That is what this app is for.
               </p>
             </div>
 
