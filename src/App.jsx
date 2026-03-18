@@ -14,14 +14,14 @@ const NUTRITION_BOOLS = [
 ];
 
 const PILLARS = [
-  { id:"faith",       label:"Faith",                prompt:"Did you connect with God today?" },
-  { id:"movement",    label:"Movement & Fresh Air", prompt:"Did you move your body outside today?", hasMinutes:true },
-  { id:"nourishment", label:"Nourishment",          prompt:"Did you eat something real and slow?",  hasNutrition:true },
+  { id:"faith",       label:"Faith",                prompt:"Did you connect with Heavenly Father and Jesus Christ?" },
+  { id:"movement",    label:"Movement & Fresh Air", prompt:"Did you move your body and spend time outside?", hasMinutes:true },
+  { id:"nourishment", label:"Nourishment",          prompt:"Did you nourish your body with intention?",  hasNutrition:true },
   { id:"water",       label:"Water",                isWater:true },
-  { id:"connection",  label:"Connection",           prompt:"Did you share time with someone?" },
-  { id:"stewardship", label:"Stewardship",          prompt:"Did you tend to something in your care today?" },
-  { id:"creative",    label:"Creative work",        prompt:"Did you give time to your creative self today?" },
-  { id:"joy",         label:"Joy & Hygge",          prompt:"Did you notice or create a moment of warmth and delight today?" },
+  { id:"connection",  label:"Connection",           prompt:"Did you connect with someone in a meaningful way?" },
+  { id:"stewardship", label:"Stewardship",          prompt:"Did you tend to something in your care?" },
+  { id:"creative",    label:"Creative Work",        prompt:"Did you engage in creativity that fuels you, not drains you?" },
+  { id:"joy",         label:"Joy & Hygge",          prompt:"Did you enjoy a moment of warmth and delight?" },
   { id:"rest",        label:"Rest",                 prompt:"Did you wind down intentionally?" },
 ];
 
@@ -135,7 +135,7 @@ const WHY_PILLARS = [
   {
     label:"Faith",
     tags:["bluezones","littlewomen","edwardian"],
-    text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. People with an active faith life show lower rates of depression and anxiety, stronger immune response, and measurably longer lifespans. The mechanism is not mysterious: faith provides community, purpose, a framework for suffering, and daily rituals that anchor the nervous system. Over a lifetime, those small acts of connection with God compound into something that touches every other area of health.",
+    text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. People with an active faith life show lower rates of depression and anxiety, stronger immune response, and measurably longer lifespans. The mechanism is not mysterious: faith provides community, purpose, a framework for suffering, and daily rituals that anchor the nervous system. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ. Over a lifetime, those small daily acts of connection compound into something that touches every other area of health.",
   },
   {
     label:"Movement & Fresh Air",
@@ -145,7 +145,7 @@ const WHY_PILLARS = [
   {
     label:"Nourishment",
     tags:["bluezones","edwardian","littlewomen","scandinavian"],
-    text:"The long-term effects of how you eat show up slowly and then all at once. A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Equally important is the relationship with food itself: eating slowly, stopping before fullness, and treating meals as something worth sitting down for all support better digestion, healthier weight regulation, and a more stable mood. What you eat every day for thirty years is your diet. What you eat today is a single choice.",
+    text:"The long-term effects of how you eat show up slowly and then all at once. A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Equally important is the relationship with food itself: eating with intention, stopping before fullness, and treating meals as something worth sitting down for all support better digestion, healthier weight regulation, and a more stable mood. What you eat every day for thirty years is your diet. What you eat today is a single choice.",
   },
   {
     label:"Water",
@@ -155,7 +155,7 @@ const WHY_PILLARS = [
   {
     label:"Connection",
     tags:["bluezones","edwardian","littlewomen","scandinavian"],
-    text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. That is not a metaphor: it is the finding from a meta-analysis of 148 studies covering three hundred thousand people. Strong social bonds reduce stress hormones, lower blood pressure, bolster immune function, and are the most consistent predictor of happiness across cultures and age groups. The quality of your relationships in midlife is a stronger predictor of how you age than cholesterol levels. Showing up for people is not separate from taking care of yourself. It is the same thing.",
+    text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. That is not a metaphor: it is the finding from a meta-analysis of 148 studies covering three hundred thousand people. Strong social bonds reduce stress hormones, lower blood pressure, bolster immune function, and are the most consistent predictor of happiness across cultures and age groups. The quality of your relationships in midlife is a stronger predictor of how you age than cholesterol levels. But not all interaction is equal. Meaningful connection, the kind that leaves you fuller than before, is what this pillar is really asking for.",
   },
   {
     label:"Stewardship",
@@ -163,14 +163,14 @@ const WHY_PILLARS = [
     text:"Having things in your care gives the day shape and meaning. Research on purpose and longevity consistently finds that people who feel responsible for something beyond themselves live longer, recover from illness faster, and report higher life satisfaction. Stewardship is not a burden. It is a gift that structures time, builds competence, and connects you to something larger than your own comfort. Tending faithfully to small things is one of the most underrated forms of self-care.",
   },
   {
-    label:"Creative work",
+    label:"Creative Work",
     tags:["edwardian","littlewomen","scandinavian"],
-    text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. It activates parts of the brain that passive consumption leaves dormant, and it produces a sense of agency that accumulates over time. Even ten minutes of something made is neurologically different from ten minutes of something consumed. The work does not have to be good. It has to be yours.",
+    text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. It activates parts of the brain that passive consumption leaves dormant, and it produces a sense of agency that accumulates over time. Even ten minutes of something made is neurologically different from ten minutes of something consumed. The work does not have to be good. It has to be yours, and it has to fill you, not deplete you.",
   },
   {
     label:"Joy & Hygge",
     tags:["bluezones","littlewomen","scandinavian"],
-    text:"The ability to notice and create small moments of warmth and pleasure is not a personality trait. It is a trainable skill with measurable effects. People who regularly experience positive emotions show greater cardiovascular resilience, stronger immune function, faster recovery from stress, and longer lives. The Okinawan concept of ikigai is linked to dramatically lower rates of dementia and heart disease. You do not need large, exceptional experiences. You need reliable small ones. A candle lit. A cup of tea taken slowly. A moment noticed.",
+    text:"The ability to notice and create small moments of warmth and pleasure is not a personality trait. It is a trainable skill with measurable effects. People who regularly experience positive emotions show greater cardiovascular resilience, stronger immune function, faster recovery from stress, and longer lives. The Okinawan concept of ikigai is linked to dramatically lower rates of dementia and heart disease. You do not need large, exceptional experiences. You need reliable small ones. A candle lit. A cup of tea taken slowly. A moment enjoyed.",
   },
   {
     label:"Rest",
@@ -486,7 +486,7 @@ function MovementPillar({ entry, onAddWalk, onRemoveWalk, onToggleCalisthenics, 
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
         <div style={{flex:1}}>
           <div style={{fontFamily:serif,fontSize:19,color:mDone?C.sageDark:C.ink,transition:"color .3s"}}>Movement & Fresh Air</div>
-          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>Did you move your body outside today?</div>
+          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>Did you move your body and spend time outside?</div>
         </div>
         <button onClick={onToggleOpen} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
       </div>
