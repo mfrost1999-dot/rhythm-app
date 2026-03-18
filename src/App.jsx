@@ -2,23 +2,31 @@ import { useState, useMemo, useEffect, useRef } from "react";
 
 const WATER_GOAL    = 64;
 const WALK_GOAL     = 60;
-const EIGHTY_PCT    = 6;
-const TOTAL_PILLARS = 9;
+const EIGHTY_PCT    = 8;
+const TOTAL_PILLARS = 10;
 const DAYS_SHORT    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
+const FAITH_BOOLS = [
+  { id:"morningPrayer", label:"Morning prayer",        hint:"Did you pray before starting your day?" },
+  { id:"scripture",     label:"Study the word of God", hint:"Did you study the scriptures?" },
+  { id:"ponder",        label:"Ponder and reflect",    hint:"Did you take time to ponder and reflect?" },
+  { id:"nightPrayer",   label:"Evening prayer",        hint:"Did you pray before going to bed?" },
+];
+
 const NUTRITION_BOOLS = [
-  { id:"plants",    label:"Fruits & vegetables", hint:"Did you eat at least 3 servings today?" },
-  { id:"homemade",  label:"Home-cooked meal",    hint:"Did you eat at least one home-cooked meal?" },
-  { id:"satisfied", label:"Stopped when full",   hint:"Did you stop eating when you felt satisfied?" },
+  { id:"plants",    label:"Fruits and vegetables", hint:"Did you eat at least 3 servings today?" },
+  { id:"homemade",  label:"Home-cooked meal",      hint:"Did you eat at least one home-cooked meal?" },
+  { id:"satisfied", label:"Stopped when full",     hint:"Did you stop eating when you felt satisfied?" },
 ];
 
 const PILLARS = [
-  { id:"faith",       label:"Faith",                prompt:"Did you connect with Heavenly Father and Jesus Christ?" },
-  { id:"movement",    label:"Movement & Fresh Air", prompt:"Did you move your body and spend time outside?", hasMinutes:true },
-  { id:"nourishment", label:"Nourishment",          prompt:"Did you nourish your body with intention?",  hasNutrition:true },
+  { id:"faith",       label:"Faith",                prompt:"Did you connect with Heavenly Father and Jesus Christ?", hasFaith:true },
+  { id:"movement",    label:"Movement & Fresh Air", prompt:"Did you move your body and spend time outside?",         hasMinutes:true },
+  { id:"nourishment", label:"Nourishment",          prompt:"Did you nourish your body with intention?",              hasNutrition:true },
   { id:"water",       label:"Water",                isWater:true },
   { id:"connection",  label:"Connection",           prompt:"Did you connect with someone in a meaningful way?" },
+  { id:"service",     label:"Service",              prompt:"Did you make someone's day better?" },
   { id:"stewardship", label:"Stewardship",          prompt:"Did you tend to something in your care?" },
   { id:"creative",    label:"Creative Work",        prompt:"Did you engage in creativity that fuels you, not drains you?" },
   { id:"joy",         label:"Joy & Hygge",          prompt:"Did you enjoy a moment of warmth and delight?" },
@@ -74,25 +82,27 @@ const QUOTES = [
 ];
 
 const NUDGES = {
-  faith:       ["It has been a few days since you took time for your faith. Even a short prayer is enough.", "The Edwardian day began and ended with stillness. Take a moment to be present with God today.", "Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly."],
+  faith:       ["It has been a few days since faith showed up fully. Even one quiet moment with God is enough.", "The Edwardian day began and ended with stillness. Take a moment to be present with Heavenly Father today.", "Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly."],
   movement:    ["Jo March would not have stayed inside on a day like this. The lane is waiting.", "The Norwegians say there is no bad weather, only bad clothing. Get outside today.", "In Okinawa, movement is simply life. Step outside and let your body do what it was made for."],
   nourishment: ["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.", "The Edwardians ate what was in season and avoided excess. More whole food, a little less packaged.", "In Blue Zones, the plate is mostly plants and the meal is unhurried. One small step today is enough."],
   water:       ["A glass of water first thing sets the tone for the whole day. Start there.", "The Edwardians drank water and weak tea steadily all day. Small sips, often.", "Scandinavians drink herbal teas and cold water all day. Your afternoon might feel quite different with a little more of it."],
-  connection:  ["It has been a little while since you reached out to someone. A short message is enough.", "The Scandinavians have a word for simply being together without agenda. Who could you do that with today?", "In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],
+  connection:  ["It has been a little while since a truly meaningful conversation. A short message to someone who matters is enough.", "The Scandinavians have a word for simply being together without agenda. Who could you do that with today?", "In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],
+  service:     ["It has been a few days since service showed up. Even one small act of kindness is enough.", "The March girls turned to service whenever life felt heavy. Who could use a little of your attention today?", "In Blue Zones, contributing to others is woven into daily life. One small thing today is all it takes."],
   stewardship: ["It has been a few days since stewardship showed up. Even one small act of tending is enough.", "The Edwardians understood duty as a form of love. What is waiting for your attention today?", "In Blue Zones, tending gardens and community roles is woven into daily life. What is in your care that needs you today?"],
-  creative:    ["Your creative self has been quiet lately. Even ten minutes of something made is enough.", "Scandinavians have a deep tradition of craft and making. Your hands want a little of their own work today.", "Jo wrote even on the hard days. Make something small, even if it feels unimportant."],
+  creative:    ["Your creative self has been quiet lately. Even ten minutes of something that fills you is enough.", "Scandinavians have a deep tradition of craft and making. Your hands want a little of their own work today.", "Jo wrote even on the hard days. Make something small, even if it feels unimportant."],
   joy:         ["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.", "The Danes call it hygge. The Okinawans call it ikigai. Both ask the same question: did you find warmth today?", "In Scandinavia, coziness is not an accident. It is something you build. What could you create today?"],
   rest:        ["A proper wind-down has been missing lately. The Danes call it hygge. Create a little of it tonight.", "The Edwardians kept strict hours. Work ended, and rest began. Give yourself that boundary tonight.", "Blue Zones elders sleep when it is dark. Your body is probably asking for the same."],
 };
 
 const ENCOURAGEMENT = {
-  faith:       ["Your faith has been a thread in your days. Marmee wove hers through everything she did.", "You have been showing up for your spiritual life. The Edwardians began and ended each day with that same intention.", "Connecting with God has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],
+  faith:       ["Your faith has been a thread in your days. Marmee wove hers through everything she did.", "You have been showing up for your spiritual life consistently. That daily faithfulness compounds.", "Connecting with Heavenly Father has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],
   movement:    ["Getting outside and moving has been part of your week. The Edwardians and the Scandinavians both knew this was non-negotiable.", "You have been keeping yourself in motion outdoors. Jo March never sat still for long either.", "Outdoor movement has become part of your rhythm. In Okinawa and Scandinavia alike, that is simply called living."],
   nourishment: ["You have been tending to your meals with care. Marmee would call that good housekeeping of the soul.", "Nourishment has been a priority lately. The Edwardians believed a well-fed body was a well-ordered life.", "Something is shifting in how you are feeding yourself. Blue Zones elders would recognize that shift."],
   water:       ["You have been drinking your water consistently. Simple, steady, good.", "Hydration has been a quiet win this week. The kind the Edwardians called good constitution.", "Water has been showing up in your days. In Okinawa, that is one of the first secrets they name."],
-  connection:  ["You have been showing up for the people in your life. The March family made that their whole practice.", "Connection has been a thread in your days. The Edwardians built entire lives around regular small gatherings.", "You have not been doing this alone. In Sardinia, that is considered the whole point."],
-  stewardship: ["Stewardship has been showing up in your days. Marmee always said faithful tending of small things is the foundation of a well-ordered life.", "You have been attending to what is in your care. The Edwardians called this duty. Blue Zones elders call it purpose.", "The things in your care have been getting your attention this week. That quiet faithfulness matters more than it looks."],
-  creative:    ["Your creative work has been showing up. Jo never let a week pass without writing something.", "You have been making things. The Edwardians believed purposeful making was essential to a full life.", "Something creative has found its place in your week. In Blue Zones, work and making are not so different."],
+  connection:  ["You have been showing up for the people in your life in meaningful ways. The March family made that their whole practice.", "Real connection has been a thread in your days. The Edwardians built entire lives around regular small gatherings.", "You have not been doing this alone. In Sardinia, that is considered the whole point."],
+  service:     ["Service has been showing up in your days. Marmee always said the surest way out of your own troubles is to tend to someone else.", "You have been making other people's days a little brighter. That quiet generosity compounds in ways you cannot see.", "Acts of service have been a thread in your week. In Blue Zones, contributing to the community is one of the longest threads of all."],
+  stewardship: ["Stewardship has been showing up in your days. Faithful tending of small things is the foundation of a well-ordered life.", "You have been attending to what is in your care. The Edwardians called this duty. Blue Zones elders call it purpose.", "The things in your care have been getting your attention this week. That quiet faithfulness matters more than it looks."],
+  creative:    ["Your creative work has been showing up. Jo never let a week pass without writing something.", "You have been making things that fill you. The Edwardians believed purposeful making was essential to a full life.", "Something creative has found its place in your week. In Blue Zones, work and making are not so different."],
   joy:         ["Warmth and delight have been finding their way into your days. That is hygge and ikigai working together.", "You have been creating and noticing small joys this week. Amy March and the Danes would both approve.", "Joy and coziness have shown up in your days. That is one of the oldest wellness secrets there is."],
   rest:        ["Rest has been part of your week. Beth always knew the value of a quiet evening.", "You have been winding down with intention. The Edwardians kept strict hours for exactly this reason.", "Rest is showing up in your rhythm. Blue Zones elders have always known it is not a luxury."],
 };
@@ -132,74 +142,23 @@ const INSPIRATIONS = [
 ];
 
 const WHY_PILLARS = [
-  {
-    label:"Faith",
-    tags:["bluezones","littlewomen","edwardian"],
-    text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. People with an active faith life show lower rates of depression and anxiety, stronger immune response, and measurably longer lifespans. The mechanism is not mysterious: faith provides community, purpose, a framework for suffering, and daily rituals that anchor the nervous system. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ. Over a lifetime, those small daily acts of connection compound into something that touches every other area of health.",
-  },
-  {
-    label:"Movement & Fresh Air",
-    tags:["bluezones","edwardian","scandinavian"],
-    text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression, often more effectively than medication. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity in ways indoor exercise cannot. The research consistently shows that moderate, sustained daily movement is what actually moves the needle over decades. Sixty minutes is not an arbitrary target. It is where the data points.",
-  },
-  {
-    label:"Nourishment",
-    tags:["bluezones","edwardian","littlewomen","scandinavian"],
-    text:"The long-term effects of how you eat show up slowly and then all at once. A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Equally important is the relationship with food itself: eating with intention, stopping before fullness, and treating meals as something worth sitting down for all support better digestion, healthier weight regulation, and a more stable mood. What you eat every day for thirty years is your diet. What you eat today is a single choice.",
-  },
-  {
-    label:"Water",
-    tags:["bluezones","edwardian","scandinavian"],
-    text:"Chronic mild dehydration is one of the most common and most overlooked contributors to fatigue, poor concentration, headaches, and low mood. Even a two percent drop in hydration measurably impairs cognitive performance. Over time, consistent hydration supports kidney function, cardiovascular health, skin integrity, and metabolic efficiency. Sixty-four ounces across the day is not a dramatic intervention. It is a quiet, compounding act of maintenance that most people simply do not do consistently.",
-  },
-  {
-    label:"Connection",
-    tags:["bluezones","edwardian","littlewomen","scandinavian"],
-    text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. That is not a metaphor: it is the finding from a meta-analysis of 148 studies covering three hundred thousand people. Strong social bonds reduce stress hormones, lower blood pressure, bolster immune function, and are the most consistent predictor of happiness across cultures and age groups. The quality of your relationships in midlife is a stronger predictor of how you age than cholesterol levels. But not all interaction is equal. Meaningful connection, the kind that leaves you fuller than before, is what this pillar is really asking for.",
-  },
-  {
-    label:"Stewardship",
-    tags:["bluezones","edwardian","littlewomen"],
-    text:"Having things in your care gives the day shape and meaning. Research on purpose and longevity consistently finds that people who feel responsible for something beyond themselves live longer, recover from illness faster, and report higher life satisfaction. Stewardship is not a burden. It is a gift that structures time, builds competence, and connects you to something larger than your own comfort. Tending faithfully to small things is one of the most underrated forms of self-care.",
-  },
-  {
-    label:"Creative Work",
-    tags:["edwardian","littlewomen","scandinavian"],
-    text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. It activates parts of the brain that passive consumption leaves dormant, and it produces a sense of agency that accumulates over time. Even ten minutes of something made is neurologically different from ten minutes of something consumed. The work does not have to be good. It has to be yours, and it has to fill you, not deplete you.",
-  },
-  {
-    label:"Joy & Hygge",
-    tags:["bluezones","littlewomen","scandinavian"],
-    text:"The ability to notice and create small moments of warmth and pleasure is not a personality trait. It is a trainable skill with measurable effects. People who regularly experience positive emotions show greater cardiovascular resilience, stronger immune function, faster recovery from stress, and longer lives. The Okinawan concept of ikigai is linked to dramatically lower rates of dementia and heart disease. You do not need large, exceptional experiences. You need reliable small ones. A candle lit. A cup of tea taken slowly. A moment enjoyed.",
-  },
-  {
-    label:"Rest",
-    tags:["bluezones","edwardian","littlewomen","scandinavian"],
-    text:"Sleep is not recovery from life. It is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, repairing tissue, and resetting the immune system. Chronic poor sleep is linked to nearly every major disease category. Beyond sleep, the practice of deliberately winding down reduces cortisol, improves sleep quality, and protects long-term mental health. The evening routine is not indulgence. It is infrastructure.",
-  },
+  { label:"Faith", tags:["bluezones","littlewomen","edwardian"], text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. People with an active faith life show lower rates of depression and anxiety, stronger immune response, and measurably longer lifespans. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ. Over a lifetime, those small daily acts of connection compound into something that touches every other area of health." },
+  { label:"Movement & Fresh Air", tags:["bluezones","edwardian","scandinavian"], text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression, often more effectively than medication. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity in ways indoor exercise cannot. Moderate, sustained daily movement is what actually moves the needle over decades. Sixty minutes is not an arbitrary target. It is where the data points." },
+  { label:"Nourishment", tags:["bluezones","edwardian","littlewomen","scandinavian"], text:"The long-term effects of how you eat show up slowly and then all at once. A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention, stopping before fullness, and treating meals as something worth sitting down for all support better digestion, healthier weight regulation, and a more stable mood. What you eat every day for thirty years is your diet. What you eat today is a single choice." },
+  { label:"Water", tags:["bluezones","edwardian","scandinavian"], text:"Chronic mild dehydration is one of the most common and most overlooked contributors to fatigue, poor concentration, headaches, and low mood. Even a two percent drop in hydration measurably impairs cognitive performance. Over time, consistent hydration supports kidney function, cardiovascular health, skin integrity, and metabolic efficiency. Sixty-four ounces across the day is not a dramatic intervention. It is a quiet, compounding act of maintenance that most people simply do not do consistently." },
+  { label:"Connection", tags:["bluezones","edwardian","littlewomen","scandinavian"], text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, bolster immune function, and are the most consistent predictor of happiness across cultures and age groups. The quality of your relationships in midlife is a stronger predictor of how you age than cholesterol levels. But not all interaction is equal. Meaningful connection, the kind that leaves you fuller than before, is what this pillar is really asking for." },
+  { label:"Service", tags:["bluezones","littlewomen","edwardian"], text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction, lower rates of depression, and stronger immune function. In Blue Zones, contributing to the community is considered a core life purpose. Marmee taught her daughters that the surest way out of their own struggles was to look outward. LDS theology frames service as a form of worship. Even one small act is enough to count. The question is simply: did someone's day get a little better because of you?" },
+  { label:"Stewardship", tags:["bluezones","edwardian","littlewomen"], text:"Having things in your care gives the day shape and meaning. Research on purpose and longevity consistently finds that people who feel responsible for something beyond themselves live longer, recover from illness faster, and report higher life satisfaction. Stewardship is not a burden. It is a gift that structures time, builds competence, and connects you to something larger than your own comfort. Tending faithfully to small things is one of the most underrated forms of self-care." },
+  { label:"Creative Work", tags:["edwardian","littlewomen","scandinavian"], text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. It activates parts of the brain that passive consumption leaves dormant, and it produces a sense of agency that accumulates over time. Even ten minutes of something made is neurologically different from ten minutes of something consumed. The work does not have to be good. It has to be yours, and it has to fill you, not deplete you." },
+  { label:"Joy & Hygge", tags:["bluezones","littlewomen","scandinavian"], text:"The ability to notice and create small moments of warmth and pleasure is not a personality trait. It is a trainable skill with measurable effects. People who regularly experience positive emotions show greater cardiovascular resilience, stronger immune function, faster recovery from stress, and longer lives. The Okinawan concept of ikigai is linked to dramatically lower rates of dementia and heart disease. You do not need large, exceptional experiences. You need reliable small ones. A candle lit. A cup of tea taken slowly. A moment enjoyed." },
+  { label:"Rest", tags:["bluezones","edwardian","littlewomen","scandinavian"], text:"Sleep is not recovery from life. It is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, repairing tissue, and resetting the immune system. Chronic poor sleep is linked to nearly every major disease category. Beyond sleep, deliberately winding down reduces cortisol, improves sleep quality, and protects long-term mental health. The evening routine is not indulgence. It is infrastructure." },
 ];
 
 const WHY_INSPIRATIONS = [
-  {
-    label:"Blue Zones",
-    color:"#5C8A58", fg:"#2E5C2A",
-    text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day without structured exercise. They eat mostly plants, stop before they are full, and share meals with others. They have a strong sense of purpose. They belong to faith communities and tight social circles. They manage stress through daily ritual rather than willpower. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome.",
-  },
-  {
-    label:"Edwardian England",
-    color:"#A87C1E", fg:"#7A4E08",
-    text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine and was prescribed by doctors. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. The culture placed high value on making things, reading, visiting friends, playing sport, and spending time outdoors regardless of weather. Meals were simple and seasonal. Rest was structured and protected. Duty, the faithful tending of one's responsibilities, was understood as a form of love, not burden.",
-  },
-  {
-    label:"Little Women",
-    color:"#5A7E90", fg:"#2A5060",
-    text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. It is included here not as a wellness manual but as one of literature's clearest portraits of a life well-lived on very little. The March family is poor, but their days are full. They read, write, play music, sew, cook, go outdoors, argue, laugh, and look after one another. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness. The novel's quiet argument is that wellbeing is not a condition you arrive at. It is a practice you return to every day.",
-  },
-  {
-    label:"Scandinavian cultures",
-    color:"#8A7A9E", fg:"#4A3A6A",
-    text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Their wellbeing is not accidental. Friluftsliv (free-loofts-leev), the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge (hoo-gah), the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments. Lagom (lah-gom), the Swedish principle of just the right amount, runs through everything from work schedules to portion sizes. These cultures share one philosophy: do not pursue happiness as a destination. Build it into the texture of every ordinary day.",
-  },
+  { label:"Blue Zones", color:"#5C8A58", fg:"#2E5C2A", text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day without structured exercise. They eat mostly plants, stop before they are full, and share meals with others. They have a strong sense of purpose. They belong to faith communities and tight social circles. They manage stress through daily ritual rather than willpower. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome." },
+  { label:"Edwardian England", color:"#A87C1E", fg:"#7A4E08", text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. The culture placed high value on making things, reading, visiting friends, playing sport, and spending time outdoors regardless of weather. Meals were simple and seasonal. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden." },
+  { label:"Little Women", color:"#5A7E90", fg:"#2A5060", text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. It is included here as one of literatures clearest portraits of a life well-lived on very little. The March family is poor, but their days are full. They read, write, play music, sew, cook, go outdoors, argue, laugh, and look after one another. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness. Wellbeing is not a condition you arrive at. It is a practice you return to every day." },
+  { label:"Scandinavian cultures", color:"#8A7A9E", fg:"#4A3A6A", text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv (free-loofts-leev), the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge (hoo-gah), the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments. Lagom (lah-gom), the Swedish principle of just the right amount, runs through everything from work schedules to portion sizes. Do not pursue happiness as a destination. Build it into the texture of every ordinary day." },
 ];
 
 function getDateKey(d) { return d.toISOString().slice(0,10); }
@@ -224,6 +183,7 @@ function pillarDone(p, entry) {
   if (!entry) return false;
   if (p.isWater)      return (entry.totalOz||0)>=WATER_GOAL;
   if (p.hasMinutes)   return movementDone(entry);
+  if (p.hasFaith)     return FAITH_BOOLS.every(b=>!!entry.faith?.[b.id]);
   if (p.hasNutrition) {
     const n=entry.nutrition||{};
     const pos=(n.plants?1:0)+(n.homemade?1:0)+(n.satisfied?1:0)+(n.slow?1:0);
@@ -271,25 +231,16 @@ function buildNourishmentInsight(data) {
   const entries=past7.map(k=>data[k]?.nourishment?.nutrition).filter(Boolean);
   if (entries.length<2) return null;
   const count=entries.length, threshold=Math.ceil(count*0.6);
-  const plantsCount=entries.filter(n=>n.plants).length;
-  const homemadeCount=entries.filter(n=>n.homemade).length;
-  const satisfiedCount=entries.filter(n=>n.satisfied).length;
-  const slowCount=entries.filter(n=>n.slow).length;
-  const sugarHigh=entries.filter(n=>n.sugar==="quite a bit").length;
-  const sugarSome=entries.filter(n=>n.sugar==="a little").length;
-  const processedHigh=entries.filter(n=>n.processed==="a lot").length;
-  const processedSome=entries.filter(n=>n.processed==="some").length;
-  const caffeineHigh=entries.filter(n=>n.caffeine==="several").length;
   const wins=[], concerns=[];
-  if (plantsCount>=threshold)    wins.push("getting your fruits and vegetables");
-  if (homemadeCount>=threshold)  wins.push("cooking at home");
-  if (satisfiedCount>=threshold) wins.push("stopping when satisfied");
-  if (slowCount>=threshold)      wins.push("eating slowly");
-  if (sugarHigh>=2)              concerns.push("quite a bit of added sugar");
-  else if (sugarSome>=3)         concerns.push("a little added sugar most days");
-  if (processedHigh>=2)          concerns.push("quite a bit of processed food");
-  else if (processedSome>=3)     concerns.push("some processed food most days");
-  if (caffeineHigh>=2)           concerns.push("several caffeinated drinks a day");
+  if (entries.filter(n=>n.plants).length>=threshold)    wins.push("getting your fruits and vegetables");
+  if (entries.filter(n=>n.homemade).length>=threshold)  wins.push("cooking at home");
+  if (entries.filter(n=>n.satisfied).length>=threshold) wins.push("stopping when satisfied");
+  if (entries.filter(n=>n.slow).length>=threshold)      wins.push("eating slowly");
+  if (entries.filter(n=>n.sugar==="quite a bit").length>=2)   concerns.push("quite a bit of added sugar");
+  else if (entries.filter(n=>n.sugar==="a little").length>=3) concerns.push("a little added sugar most days");
+  if (entries.filter(n=>n.processed==="a lot").length>=2)     concerns.push("quite a bit of processed food");
+  else if (entries.filter(n=>n.processed==="some").length>=3) concerns.push("some processed food most days");
+  if (entries.filter(n=>n.caffeine==="several").length>=2)    concerns.push("several caffeinated drinks a day");
   if (!wins.length&&!concerns.length) return null;
   if (wins.length&&concerns.length) return "You have been doing well with "+wins.join(" and ")+" this week. One thing worth noticing: "+concerns[0]+" has been showing up regularly.";
   if (wins.length) return "Your nourishment has been on a good track this week, especially "+wins.join(" and ")+". Keep it going.";
@@ -420,6 +371,36 @@ function ConfirmModal({ target, onConfirm, onCancel }) {
   );
 }
 
+function FaithPillar({ entry, onSetFaith, onSetNote, onClear, open, onToggleOpen }) {
+  const faithData=entry?.faith||{};
+  const checkedCount=FAITH_BOOLS.filter(b=>!!faithData[b.id]).length;
+  const done=checkedCount===FAITH_BOOLS.length;
+  const pop=usePopOnTrue(done);
+  const summary=checkedCount===0?"Did you connect with Heavenly Father and Jesus Christ?":done?"All four practices complete":checkedCount+" of 4 complete";
+  return (
+    <div style={{borderRadius:4,border:"1px solid "+(done?C.sagePale:C.parchDark),background:done?"#EDF4EC":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
+        <div style={{flex:1}}>
+          <div style={{fontFamily:serif,fontSize:19,color:done?C.sageDark:C.ink,transition:"color .3s",transform:pop?"scale(1.02)":"scale(1)"}}>Faith</div>
+          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{summary}</div>
+        </div>
+        <button onClick={onToggleOpen} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
+      </div>
+      {open&&(
+        <div style={{padding:"12px 16px 14px",borderTop:"1px dashed "+C.parchDark}}>
+          {FAITH_BOOLS.map(b=>(
+            <BoolRow key={b.id} label={b.label} hint={b.hint} value={!!faithData[b.id]} onChange={v=>onSetFaith(b.id,v)}/>
+          ))}
+          <div style={{marginTop:10}}>
+            <NoteField value={entry?.note} onChange={e=>onSetNote(e.target.value)} onClick={e=>e.stopPropagation()}/>
+          </div>
+          <ClearBtn onClear={onClear}/>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WaterPillar({ waterEntry, onAddDrink, onRemoveDrink, onClear }) {
   const [inputVal,setInputVal]=useState("");
   const inputRef=useRef(null);
@@ -474,13 +455,7 @@ function MovementPillar({ entry, onAddWalk, onRemoveWalk, onToggleCalisthenics, 
   const pop=usePopOnTrue(mDone);
   const remaining=Math.max(0,target-walkMins);
   const status=mDone?"goal met":walkMins>0?remaining+" min to go":"";
-
-  function handleAdd() {
-    const n=parseInt(inputVal);
-    if (!n||n<=0) return;
-    onAddWalk(n); setInputVal(""); inputRef.current?.focus();
-  }
-
+  function handleAdd() { const n=parseInt(inputVal); if (!n||n<=0) return; onAddWalk(n); setInputVal(""); inputRef.current?.focus(); }
   return (
     <div style={{borderRadius:4,border:"1px solid "+(mDone?C.sagePale:C.parchDark),background:mDone?"#EDF4EC":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
@@ -491,16 +466,13 @@ function MovementPillar({ entry, onAddWalk, onRemoveWalk, onToggleCalisthenics, 
         <button onClick={onToggleOpen} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
       </div>
       <div style={{padding:"0 16px 14px"}}>
-        {/* calisthenics toggle */}
         <div onClick={onToggleCalisthenics} style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,cursor:"pointer"}}>
           <span style={{fontFamily:sans,fontSize:14,color:C.ink}}>Daily calisthenics</span>
           <div style={{width:42,height:26,borderRadius:13,background:cals?C.sage:C.parchDark,position:"relative",transition:"background .2s",flexShrink:0}}>
             <div style={{position:"absolute",top:4,left:cals?20:4,width:18,height:18,borderRadius:9,background:C.cream,transition:"left .2s"}}/>
           </div>
         </div>
-        {/* walk goal label */}
         <div style={{fontFamily:sans,fontSize:14,color:C.ink,marginBottom:8}}>Walk goal: {target} min</div>
-        {/* progress bar */}
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
           <div style={{flex:1,height:6,borderRadius:3,background:C.parchDark,overflow:"hidden"}}>
             <div style={{height:"100%",borderRadius:3,width:Math.min(100,(walkMins/90)*100)+"%",background:mDone?C.sage:walkMins>0?C.gold:"transparent",transition:"width .4s ease, background .3s"}}/>
@@ -508,7 +480,6 @@ function MovementPillar({ entry, onAddWalk, onRemoveWalk, onToggleCalisthenics, 
           <span style={{fontFamily:serif,fontSize:16,color:mDone?C.sageDark:C.ink,minWidth:36,textAlign:"right",transform:pop?"scale(1.2)":"scale(1)",transition:"color .3s, transform .2s"}}>{walkMins}<span style={{fontFamily:sans,fontSize:12,color:C.inkLight}}> min</span></span>
           {status&&<span style={{fontFamily:sans,fontSize:12,color:mDone?C.sageDark:C.inkLight,minWidth:60}}>{status}</span>}
         </div>
-        {/* walk pills */}
         {walks.length>0&&(
           <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
             {walks.map((mins,i)=>(
@@ -519,7 +490,6 @@ function MovementPillar({ entry, onAddWalk, onRemoveWalk, onToggleCalisthenics, 
             ))}
           </div>
         )}
-        {/* input row */}
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           <input ref={inputRef} type="number" min="1" max="300" placeholder="min" value={inputVal}
             onChange={e=>setInputVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdd()}
@@ -627,6 +597,9 @@ export default function App() {
 
   function showToast(message, onUndo) { setToast({ message, onUndo }); }
 
+  function setFaith(field, val) {
+    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],faith:{...prev[viewKey]?.faith,faith:{...prev[viewKey]?.faith?.faith,[field]:val}}}}));
+  }
   function toggle(pid) {
     setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:{...prev[viewKey]?.[pid],checked:!prev[viewKey]?.[pid]?.checked}}}));
   }
@@ -640,7 +613,7 @@ export default function App() {
       return {...prev,[viewKey]:{...prev[viewKey],movement:{...cur,walks,minutes:walks.reduce((a,b)=>a+b,0)}}};
     });
   }
-  function removeWalk(idx2,mins) {
+  function removeWalk(idx2, mins) {
     const snap=viewData.movement;
     setData(prev=>{
       const cur=prev[viewKey]?.movement||{walks:[],minutes:0};
@@ -665,8 +638,9 @@ export default function App() {
   }
   function clearPillar(pid) {
     let blank;
-    if (pid==="water") blank={drinks:[],totalOz:0};
-    else { const p=PILLARS.find(p=>p.id===pid); if(p.hasMinutes) blank={minutes:0,note:""}; else if(p.hasNutrition) blank={checked:false,note:"",nutrition:{plants:false,homemade:false,satisfied:false,sugar:"none",processed:"none",caffeine:"none",slow:false}}; else blank={checked:false,note:""}; }
+    if (pid==="water")  blank={drinks:[],totalOz:0};
+    else if (pid==="faith") blank={faith:{},note:""};
+    else { const p=PILLARS.find(p=>p.id===pid); if(p.hasMinutes) blank={walks:[],minutes:0,note:""}; else if(p.hasNutrition) blank={checked:false,note:"",nutrition:{plants:false,homemade:false,satisfied:false,sugar:"none",processed:"none",caffeine:"none",slow:false}}; else blank={checked:false,note:""}; }
     setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:blank}}));
     setConfirmClear(null);
   }
@@ -755,8 +729,9 @@ export default function App() {
               {PILLARS.map(p=>{
                 const st=viewData[p.id], open=expanded===p.id;
                 const toggleOpen=()=>setExpanded(open?null:p.id);
-                if (p.isWater) return <WaterPillar key={p.id} waterEntry={st} onAddDrink={addDrink} onRemoveDrink={removeDrink} onClear={()=>setConfirmClear("water")}/>;
-                if (p.hasMinutes) return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
+                if (p.hasFaith)     return <FaithPillar key={p.id} entry={st} onSetFaith={setFaith} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
+                if (p.isWater)      return <WaterPillar key={p.id} waterEntry={st} onAddDrink={addDrink} onRemoveDrink={removeDrink} onClear={()=>setConfirmClear("water")}/>;
+                if (p.hasMinutes)   return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
                 if (p.hasNutrition) {
                   const nDone=pillarDone(p,st);
                   const parts=[nutrition.plants&&"3+ fruit & veg",nutrition.homemade&&"home-cooked",nutrition.satisfied&&"stopped when full",nutrition.slow&&"ate slowly",nutrition.caffeine!=="none"&&("caffeine: "+nutrition.caffeine),nutrition.sugar!=="none"&&("sugar: "+nutrition.sugar)].filter(Boolean);
@@ -873,9 +848,7 @@ export default function App() {
               <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 12px"}}>The idea behind Rhythm</h2>
               <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>Rhythm is not a diet app. It does not count calories, track macros, or reward streaks. It is a daily practice, a quiet check-in with the parts of life that matter most for long-term health and happiness. The goal is not perfection. It is rhythm.</p>
             </div>
-
             <div style={{height:1,background:C.parchDark,marginBottom:28}}/>
-
             <div style={{marginBottom:28}}>
               <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 20px"}}>Four inspirations</h2>
               {WHY_INSPIRATIONS.map(item=>(
@@ -885,18 +858,14 @@ export default function App() {
                 </div>
               ))}
             </div>
-
             <div style={{height:1,background:C.parchDark,marginBottom:28}}/>
-
             <div style={{marginBottom:28}}>
               <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 12px"}}>The 80% principle</h2>
-              <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>In Okinawa, people say a phrase before every meal: hara hachi bu. It means eat until you are eight parts full. Rhythm applies the same principle to your whole day. Hitting 6 out of 9 pillars is a genuinely good day. Perfection is fragile. Consistency is sturdy. A day at 80% every day for a year is a transformed life.</p>
+              <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>In Okinawa, people say a phrase before every meal: hara hachi bu. It means eat until you are eight parts full. Rhythm applies the same principle to your whole day. Hitting 8 out of 10 pillars is a genuinely good day. Perfection is fragile. Consistency is sturdy. A day at 80% every day for a year is a transformed life.</p>
             </div>
-
             <div style={{height:1,background:C.parchDark,marginBottom:28}}/>
-
             <div>
-              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 4px"}}>Nine pillars</h2>
+              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 4px"}}>Ten pillars</h2>
               <p style={{fontFamily:sans,fontSize:14,color:C.inkLight,fontStyle:"italic",margin:"0 0 16px"}}>Tap any pillar to read about it.</p>
               {WHY_PILLARS.map(item=><WhyPillarItem key={item.label} label={item.label} text={item.text} tags={item.tags}/>)}
             </div>
