@@ -4,7 +4,7 @@ const WATER_GOAL    = 64;
 const WALK_GOAL     = 60;
 const EIGHTY_PCT    = 8;
 const TOTAL_PILLARS = 10;
-const DAYS_SHORT    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const DAYS_SHORT    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const FAITH_BOOLS = [
@@ -164,12 +164,14 @@ const WHY_INSPIRATIONS = [
 function getDateKey(d) { return d.toISOString().slice(0,10); }
 function offsetDate(base, days) { const d=new Date(base); d.setDate(d.getDate()+days); return d; }
 function getWeekDates(anchor) {
-  const dow=anchor.getDay(), mon=new Date(anchor);
-  mon.setDate(anchor.getDate()-((dow+6)%7));
-  return Array.from({length:7},(_,i)=>{ const d=new Date(mon); d.setDate(mon.getDate()+i); return d; });
+  const dow=anchor.getDay();
+  const sun=new Date(anchor);
+  sun.setDate(anchor.getDate()-dow);
+  return Array.from({length:7},(_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); return d; });
 }
 function fmtDate(d) { return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}); }
 function fmtShort(d) { return d.toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+function isSundayDate(d) { return d.getDay()===0; }
 
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 
@@ -195,7 +197,10 @@ function pillarDone(p, entry) {
 
 function dayScore(data, key) {
   if (!data[key]) return null;
-  return PILLARS.map(p=>pillarDone(p,data[key][p.id])?1:0).reduce((a,b)=>a+b,0)/TOTAL_PILLARS;
+  const date=new Date(key+"T12:00:00");
+  const isSun=isSundayDate(date);
+  const active=PILLARS.filter(p=>!(isSun&&p.hasMinutes));
+  return active.map(p=>pillarDone(p,data[key][p.id])?1:0).reduce((a,b)=>a+b,0)/active.length;
 }
 
 function localDayIndex() {
@@ -564,24 +569,14 @@ export default function App() {
   const [confirmClear, setConfirmClear] = useState(null);
   const [toast,        setToast]        = useState(null);
 
-  const viewDate  = useMemo(()=>offsetDate(TODAY,dayOffset),[dayOffset]);
-  const viewKey   = getDateKey(viewDate);
-  const isToday   = dayOffset===0;
-  const yKey      = getDateKey(offsetDate(viewDate,-1));
-  const viewData  = data[viewKey]||{};
-  const weekAnchor= useMemo(()=>offsetDate(TODAY,weekOffset*7),[weekOffset]);
-  const weekDates = useMemo(()=>getWeekDates(weekAnchor),[weekAnchor]);
-  const monthRef  = useMemo(()=>new Date(TODAY.getFullYear(),TODAY.getMonth()+monthOffset,1),[monthOffset]);
-  const monthDays = useMemo(()=>{
-    const y=monthRef.getFullYear(),m=monthRef.getMonth();
-    const first=new Date(y,m,1),last=new Date(y,m+1,0);
-    const dow=(first.getDay()+6)%7,days=[];
-    for(let i=0;i<dow;i++) days.push(null);
-    for(let d=1;d<=last.getDate();d++) days.push(new Date(y,m,d));
-    return days;
-  },[monthRef]);
-
-  const checkedCount       = PILLARS.filter(p=>pillarDone(p,viewData[p.id])).length;
+  const viewDate           = useMemo(()=>offsetDate(TODAY,dayOffset),[dayOffset]);
+  const viewKey            = getDateKey(viewDate);
+  const isToday            = dayOffset===0;
+  const isSunday           = viewDate.getDay()===0;
+  const yKey               = getDateKey(offsetDate(viewDate,-1));
+  const viewData           = data[viewKey]||{};
+  const activePillars      = PILLARS.filter(p=>!(isSunday&&p.hasMinutes));
+  const checkedCount       = activePillars.filter(p=>pillarDone(p,viewData[p.id])).length;
   const nudge              = isToday?buildNudge(data,viewKey,yKey):null;
   const encourage          = isToday?buildEncouragement(data):null;
   const nourishmentInsight = isToday?buildNourishmentInsight(data):null;
@@ -592,6 +587,19 @@ export default function App() {
   const nutrition          = { plants:!!rawN.plants, homemade:!!rawN.homemade, satisfied:!!rawN.satisfied, sugar:rawN.sugar||"none", processed:rawN.processed||"none", caffeine:rawN.caffeine||"none", slow:!!rawN.slow };
   const hasDayData         = data[viewKey]&&Object.keys(data[viewKey]).length>0;
   const pastScore          = !isToday?dayScore(data,viewKey):null;
+  const activeTotal        = activePillars.length;
+
+  const weekAnchor= useMemo(()=>offsetDate(TODAY,weekOffset*7),[weekOffset]);
+  const weekDates = useMemo(()=>getWeekDates(weekAnchor),[weekAnchor]);
+  const monthRef  = useMemo(()=>new Date(TODAY.getFullYear(),TODAY.getMonth()+monthOffset,1),[monthOffset]);
+  const monthDays = useMemo(()=>{
+    const y=monthRef.getFullYear(),m=monthRef.getMonth();
+    const first=new Date(y,m,1),last=new Date(y,m+1,0);
+    const dow=first.getDay(), days=[];
+    for(let i=0;i<dow;i++) days.push(null);
+    for(let d=1;d<=last.getDate();d++) days.push(new Date(y,m,d));
+    return days;
+  },[monthRef]);
 
   useEffect(()=>{ try { localStorage.setItem("rhythm-data",JSON.stringify(data)); } catch {} },[data]);
 
@@ -638,7 +646,7 @@ export default function App() {
   }
   function clearPillar(pid) {
     let blank;
-    if (pid==="water")  blank={drinks:[],totalOz:0};
+    if (pid==="water")      blank={drinks:[],totalOz:0};
     else if (pid==="faith") blank={faith:{},note:""};
     else { const p=PILLARS.find(p=>p.id===pid); if(p.hasMinutes) blank={walks:[],minutes:0,note:""}; else if(p.hasNutrition) blank={checked:false,note:"",nutrition:{plants:false,homemade:false,satisfied:false,sugar:"none",processed:"none",caffeine:"none",slow:false}}; else blank={checked:false,note:""}; }
     setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:blank}}));
@@ -646,7 +654,7 @@ export default function App() {
   }
   function clearDay() { setData(prev=>({...prev,[viewKey]:{}})); setConfirmClear(null); }
 
-  const greet=!isToday?null:checkedCount===0?"How is today unfolding?":checkedCount<4?"Every habit counts. Keep going.":checkedCount<EIGHTY_PCT?"More than halfway there. You are doing well.":checkedCount===TOTAL_PILLARS?"A perfect day. Soak it in.":"You reached your 80 today. That is enough.";
+  const greet=!isToday?null:checkedCount===0?"How is today unfolding?":checkedCount<4?"Every habit counts. Keep going.":checkedCount<EIGHTY_PCT?"More than halfway there. You are doing well.":checkedCount===activeTotal?"A perfect day. Soak it in.":"You reached your 80 today. That is enough.";
   const isCurrentMonth=monthOffset===0, monthLabel=MONTHS_LONG[monthRef.getMonth()]+" "+monthRef.getFullYear();
   function jumpToDay(dt) { setView("today"); setDayOffset(Math.round((dt-TODAY)/86400000)); }
 
@@ -720,7 +728,7 @@ export default function App() {
             )}
             {isToday&&checkedCount>=EIGHTY_PCT&&(
               <div style={{marginBottom:18,padding:"12px 16px",borderRadius:4,background:"#EDF4EC",borderLeft:"3px solid "+C.sageDark}}>
-                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.sageDark,lineHeight:1.7,margin:0}}>{checkedCount===TOTAL_PILLARS?"A truly full day. Every pillar tended to.":"You reached your 80 today. That is enough."}</p>
+                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.sageDark,lineHeight:1.7,margin:0}}>{checkedCount===activeTotal?"A truly full day. Every pillar tended to.":"You reached your 80 today. That is enough."}</p>
               </div>
             )}
             {isToday&&checkedCount<EIGHTY_PCT&&<p style={{fontFamily:serif,fontSize:19,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
@@ -731,7 +739,15 @@ export default function App() {
                 const toggleOpen=()=>setExpanded(open?null:p.id);
                 if (p.hasFaith)     return <FaithPillar key={p.id} entry={st} onSetFaith={setFaith} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
                 if (p.isWater)      return <WaterPillar key={p.id} waterEntry={st} onAddDrink={addDrink} onRemoveDrink={removeDrink} onClear={()=>setConfirmClear("water")}/>;
-                if (p.hasMinutes)   return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
+                if (p.hasMinutes) {
+                  if (isSunday) return (
+                    <div key={p.id} style={{borderRadius:4,border:"1px solid "+C.parchDark,background:C.parchment,overflow:"hidden",opacity:0.4,padding:"14px 16px"}}>
+                      <div style={{fontFamily:serif,fontSize:19,color:C.inkLight}}>Movement & Fresh Air</div>
+                      <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,marginTop:3}}>Rest day - no movement goal on Sundays.</div>
+                    </div>
+                  );
+                  return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
+                }
                 if (p.hasNutrition) {
                   const nDone=pillarDone(p,st);
                   const parts=[nutrition.plants&&"3+ fruit & veg",nutrition.homemade&&"home-cooked",nutrition.satisfied&&"stopped when full",nutrition.slow&&"ate slowly",nutrition.caffeine!=="none"&&("caffeine: "+nutrition.caffeine),nutrition.sugar!=="none"&&("sugar: "+nutrition.sugar)].filter(Boolean);
@@ -800,12 +816,12 @@ export default function App() {
             <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,fontStyle:"italic",margin:"0 0 16px"}}>By pillar</p>
             <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:32}}>
               {PILLARS.map(p=>{
-                const dots=weekDates.map(dt=>{ const k=getDateKey(dt); if(!data[k]) return "empty"; return pillarDone(p,data[k][p.id])?"yes":"no"; });
+                const dots=weekDates.map(dt=>{ const k=getDateKey(dt); if(!data[k]) return "empty"; if(isSundayDate(dt)&&p.hasMinutes) return "skip"; return pillarDone(p,data[k][p.id])?"yes":"no"; });
                 const cnt=dots.filter(d=>d==="yes").length;
                 return (
                   <div key={p.id} style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{width:140,fontFamily:serif,fontSize:13,color:C.ink,flexShrink:0}}>{p.label}</div>
-                    <div style={{display:"flex",gap:5,flex:1}}>{dots.map((d,i)=><div key={i} style={{width:24,height:24,borderRadius:3,background:d==="yes"?(p.isWater?C.dustBluePale:C.sage):d==="no"?C.parchment:"transparent",border:d==="empty"?"none":"1px solid "+(d==="yes"?(p.isWater?C.dustBlue:C.sageDark):C.parchDark)}}/>)}</div>
+                    <div style={{display:"flex",gap:5,flex:1}}>{dots.map((d,i)=><div key={i} style={{width:24,height:24,borderRadius:3,background:d==="yes"?(p.isWater?C.dustBluePale:C.sage):d==="skip"?C.parchment:d==="no"?C.parchment:"transparent",border:d==="empty"||d==="skip"?"none":"1px solid "+(d==="yes"?(p.isWater?C.dustBlue:C.sageDark):C.parchDark),opacity:d==="skip"?0.3:1}}/>)}</div>
                     <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,width:28,textAlign:"right"}}>{cnt}/7</div>
                   </div>
                 );
