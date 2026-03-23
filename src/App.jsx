@@ -733,21 +733,19 @@ export default function App() {
             )}
             {isToday&&checkedCount<EIGHTY_PCT&&<p style={{fontFamily:serif,fontSize:19,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
 
-            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+            {isSunday&&(
+              <div style={{padding:"20px 18px",borderRadius:4,background:C.parchment,border:"1px solid "+C.parchDark,marginBottom:8,textAlign:"center"}}>
+                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:17,color:C.inkLight,margin:0}}>Sunday is a rest day.</p>
+                <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:"6px 0 0"}}>No tracking today. Come back tomorrow.</p>
+              </div>
+            )}
+            <div style={{display:"flex",flexDirection:"column",gap:5,opacity:isSunday?0.3:1,pointerEvents:isSunday?"none":"auto"}}>
               {PILLARS.map(p=>{
                 const st=viewData[p.id], open=expanded===p.id;
                 const toggleOpen=()=>setExpanded(open?null:p.id);
                 if (p.hasFaith)     return <FaithPillar key={p.id} entry={st} onSetFaith={setFaith} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
                 if (p.isWater)      return <WaterPillar key={p.id} waterEntry={st} onAddDrink={addDrink} onRemoveDrink={removeDrink} onClear={()=>setConfirmClear("water")}/>;
-                if (p.hasMinutes) {
-                  if (isSunday) return (
-                    <div key={p.id} style={{borderRadius:4,border:"1px solid "+C.parchDark,background:C.parchment,overflow:"hidden",opacity:0.4,padding:"14px 16px"}}>
-                      <div style={{fontFamily:serif,fontSize:19,color:C.inkLight}}>Movement & Fresh Air</div>
-                      <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,marginTop:3}}>Rest day - no movement goal on Sundays.</div>
-                    </div>
-                  );
-                  return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
-                }
+                if (p.hasMinutes)   return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
                 if (p.hasNutrition) {
                   const nDone=pillarDone(p,st);
                   const parts=[nutrition.plants&&"3+ fruit & veg",nutrition.homemade&&"home-cooked",nutrition.satisfied&&"stopped when full",nutrition.slow&&"ate slowly",nutrition.caffeine!=="none"&&("caffeine: "+nutrition.caffeine),nutrition.sugar!=="none"&&("sugar: "+nutrition.sugar)].filter(Boolean);
