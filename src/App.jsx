@@ -817,10 +817,10 @@ export default function App() {
                 const dots=weekDates.map(dt=>{ const k=getDateKey(dt); if(!data[k]) return "empty"; if(isSundayDate(dt)&&p.hasMinutes) return "skip"; return pillarDone(p,data[k][p.id])?"yes":"no"; });
                 const cnt=dots.filter(d=>d==="yes").length;
                 return (
-                  <div key={p.id} style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:140,fontFamily:serif,fontSize:13,color:C.ink,flexShrink:0}}>{p.label}</div>
-                    <div style={{display:"flex",gap:5,flex:1}}>{dots.map((d,i)=><div key={i} style={{width:24,height:24,borderRadius:3,background:d==="yes"?(p.isWater?C.dustBluePale:C.sage):d==="skip"?C.parchment:d==="no"?C.parchment:"transparent",border:d==="empty"||d==="skip"?"none":"1px solid "+(d==="yes"?(p.isWater?C.dustBlue:C.sageDark):C.parchDark),opacity:d==="skip"?0.3:1}}/>)}</div>
-                    <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,width:36,textAlign:"right",flexShrink:0}}>{cnt}/7</div>
+                  <div key={p.id} style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{width:120,fontFamily:serif,fontSize:13,color:C.ink,flexShrink:0}}>{p.label}</div>
+                    <div style={{display:"flex",gap:3,flex:1}}>{dots.map((d,i)=><div key={i} style={{width:20,height:20,borderRadius:3,background:d==="yes"?(p.isWater?C.dustBluePale:C.sage):d==="skip"?C.parchment:d==="no"?C.parchment:"transparent",border:d==="empty"||d==="skip"?"none":"1px solid "+(d==="yes"?(p.isWater?C.dustBlue:C.sageDark):C.parchDark),opacity:d==="skip"?0.3:1,flexShrink:0}}/>)}</div>
+                    <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,width:30,textAlign:"right",flexShrink:0}}>{cnt}/7</div>
                   </div>
                 );
               })}
