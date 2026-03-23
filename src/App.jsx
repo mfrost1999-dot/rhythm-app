@@ -696,7 +696,7 @@ export default function App() {
                 <button onClick={()=>setConfirmClear("day")} style={{background:"none",border:"none",cursor:"pointer",fontFamily:sans,fontSize:12,color:C.inkLight,textDecoration:"underline",padding:0}}>Clear this day</button>
               </div>
             )}
-            {!isToday&&(
+            {!isToday&&!isSunday&&(
               <div style={{marginBottom:16,padding:"12px 16px",borderRadius:4,background:pastScore!==null?warmthBg(pastScore):C.parchment,border:"1px solid "+C.parchDark}}>
                 {pastScore!==null?(
                   <>
