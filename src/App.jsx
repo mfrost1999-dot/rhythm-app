@@ -765,7 +765,7 @@ export default function App() {
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <FlagRow label="Added sugar" hint="sweets, syrups, sweet drinks" options={["little or none","some","a lot"]} value={nutrition.sugar} onChange={v=>setNutrition("sugar",v)}/>
                           <FlagRow label="Processed food" hint="packaged, fast food" options={["none","some","a lot"]} value={nutrition.processed} onChange={v=>setNutrition("processed",v)}/>
-                          <FlagRow label="Caffeine" hint="12 oz increments" options={["none","one","two or more"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)}/>
+                          <FlagRow label="Caffeine" hint="one = 12oz or less" options={["none","one","two or more"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)}/>
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <BoolRow label="Ate slowly" hint="sat down, present, no rush" value={nutrition.slow} onChange={v=>setNutrition("slow",v)}/>
                           <div style={{marginTop:10}}><NoteField value={st?.note} onChange={e=>setNote(p.id,e.target.value)} onClick={e=>e.stopPropagation()}/></div>
