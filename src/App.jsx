@@ -189,7 +189,7 @@ function pillarDone(p, entry) {
   if (p.hasNutrition) {
     const n=entry.nutrition||{};
     const pos=(n.plants?1:0)+(n.homemade?1:0)+(n.satisfied?1:0)+(n.slow?1:0);
-    const neg=(n.sugar==="a little"?1:n.sugar==="quite a bit"?3:0)+(n.processed==="some"?1:n.processed==="a lot"?3:0)+(n.caffeine==="several"?1:0);
+    const neg=(n.sugar==="some"?1:n.sugar==="a lot"?3:0)+(n.processed==="some"?1:n.processed==="a lot"?3:0)+(n.caffeine==="two or more"?1:0);
     return pos-neg>=2;
   }
   return !!entry.checked;
@@ -241,11 +241,11 @@ function buildNourishmentInsight(data) {
   if (entries.filter(n=>n.homemade).length>=threshold)  wins.push("cooking at home");
   if (entries.filter(n=>n.satisfied).length>=threshold) wins.push("stopping when satisfied");
   if (entries.filter(n=>n.slow).length>=threshold)      wins.push("eating slowly");
-  if (entries.filter(n=>n.sugar==="quite a bit").length>=2)   concerns.push("quite a bit of added sugar");
-  else if (entries.filter(n=>n.sugar==="a little").length>=3) concerns.push("a little added sugar most days");
-  if (entries.filter(n=>n.processed==="a lot").length>=2)     concerns.push("quite a bit of processed food");
+  if (entries.filter(n=>n.sugar==="a lot").length>=2)        concerns.push("quite a bit of added sugar");
+  else if (entries.filter(n=>n.sugar==="some").length>=3)    concerns.push("some added sugar most days");
+  if (entries.filter(n=>n.processed==="a lot").length>=2)    concerns.push("quite a bit of processed food");
   else if (entries.filter(n=>n.processed==="some").length>=3) concerns.push("some processed food most days");
-  if (entries.filter(n=>n.caffeine==="several").length>=2)    concerns.push("several caffeinated drinks a day");
+  if (entries.filter(n=>n.caffeine==="two or more").length>=2) concerns.push("two or more caffeinated drinks a day");
   if (!wins.length&&!concerns.length) return null;
   if (wins.length&&concerns.length) return "You have been doing well with "+wins.join(" and ")+" this week. One thing worth noticing: "+concerns[0]+" has been showing up regularly.";
   if (wins.length) return "Your nourishment has been on a good track this week, especially "+wins.join(" and ")+". Keep it going.";
@@ -763,9 +763,9 @@ export default function App() {
                         <div style={{padding:"12px 16px 14px",borderTop:"1px dashed "+C.parchDark}}>
                           {NUTRITION_BOOLS.map(nb=><BoolRow key={nb.id} label={nb.label} hint={nb.hint} value={!!nutrition[nb.id]} onChange={v=>setNutrition(nb.id,v)}/>)}
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
-                          <FlagRow label="Added sugar" hint="sweets, syrups, sweet drinks" options={["none","a little","quite a bit"]} value={nutrition.sugar} onChange={v=>setNutrition("sugar",v)}/>
+                          <FlagRow label="Added sugar" hint="sweets, syrups, sweet drinks" options={["little or none","some","a lot"]} value={nutrition.sugar} onChange={v=>setNutrition("sugar",v)}/>
                           <FlagRow label="Processed food" hint="packaged, fast food" options={["none","some","a lot"]} value={nutrition.processed} onChange={v=>setNutrition("processed",v)}/>
-                          <FlagRow label="Caffeine" hint="soda, energy drinks, tea" options={["none","one or two","several"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)}/>
+                          <FlagRow label="Caffeine" hint="12 oz increments" options={["none","one","two or more"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)}/>
                           <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
                           <BoolRow label="Ate slowly" hint="sat down, present, no rush" value={nutrition.slow} onChange={v=>setNutrition("slow",v)}/>
                           <div style={{marginTop:10}}><NoteField value={st?.note} onChange={e=>setNote(p.id,e.target.value)} onClick={e=>e.stopPropagation()}/></div>
