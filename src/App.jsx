@@ -1,892 +1,794 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-
-const WATER_GOAL    = 64;
-const WALK_GOAL     = 60;
-const EIGHTY_PCT    = 8;
-const TOTAL_PILLARS = 10;
-const DAYS_SHORT    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const MONTHS_LONG   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-
-const FAITH_BOOLS = [
-  { id:"morningPrayer", label:"Morning prayer",        hint:"Did you pray before starting your day?" },
-  { id:"scripture",     label:"Study the word of God", hint:"Did you study the scriptures?" },
-  { id:"ponder",        label:"Ponder and reflect",    hint:"Did you take time to ponder and reflect?" },
-  { id:"nightPrayer",   label:"Evening prayer",        hint:"Did you pray before going to bed?" },
-];
-
-const NUTRITION_BOOLS = [
-  { id:"plants",    label:"Fruits and vegetables", hint:"Did you eat at least 3 servings today?" },
-  { id:"homemade",  label:"Home-cooked meal",      hint:"Did you eat at least one home-cooked meal?" },
-  { id:"satisfied", label:"Stopped when full",     hint:"Did you stop eating when you felt satisfied?" },
-];
-
-const PILLARS = [
-  { id:"faith",       label:"Faith",                prompt:"Did you connect with Heavenly Father and Jesus Christ?", hasFaith:true },
-  { id:"movement",    label:"Movement & Fresh Air", prompt:"Did you move your body and spend time outside?",         hasMinutes:true },
-  { id:"nourishment", label:"Nourishment",          prompt:"Did you nourish your body with intention?",              hasNutrition:true },
-  { id:"water",       label:"Water",                isWater:true },
-  { id:"connection",  label:"Connection",           prompt:"Did you connect with someone in a meaningful way?" },
-  { id:"service",     label:"Service",              prompt:"Did you make someone's day better?" },
-  { id:"stewardship", label:"Stewardship",          prompt:"Did you tend to something in your care?" },
-  { id:"creative",    label:"Creative Work",        prompt:"Did you engage in creativity that fuels you, not drains you?" },
-  { id:"joy",         label:"Joy & Hygge",          prompt:"Did you enjoy a moment of warmth and delight?" },
-  { id:"rest",        label:"Rest",                 prompt:"Did you wind down intentionally?" },
-];
-
-const QUOTES = [
-  { text:"The secret of health for both mind and body is not to mourn for the past, nor to worry about the future, but to live the present moment wisely.", source:"Buddhist proverb, Okinawa" },
-  { text:"I am not afraid of storms, for I am learning how to sail my ship.", source:"Louisa May Alcott, Little Women" },
-  { text:"Take long walks in stormy weather or through deep snow in the fields and woods, if you would keep your spirits up.", source:"Edwardian walking guide, c. 1905" },
-  { text:"It is not how much we have, but how much we enjoy, that makes happiness.", source:"Blue Zones wisdom" },
-  { text:"She had a gift for making the most of small pleasures.", source:"Louisa May Alcott, Little Women" },
-  { text:"Eat until you are eight parts full, and let the other two parts nourish your soul.", source:"Hara hachi bu, Okinawa" },
-  { text:"There is no bad weather, only bad clothing.", source:"Norwegian proverb" },
-  { text:"Belonging to a community is one of the most powerful medicines we have.", source:"Blue Zones research" },
-  { text:"The best rooms are those in which one has laughed, cried, and lingered over tea.", source:"Edwardian domestic writing, c. 1908" },
-  { text:"Family is the cornerstone of a long life well-lived.", source:"Blue Zones, Sardinia" },
-  { text:"I want to do something splendid before I go into my castle, something heroic or wonderful.", source:"Louisa May Alcott, Little Women" },
-  { text:"Move, eat, sleep, repeat. But do each one as if it were the only thing.", source:"Sardinian proverb" },
-  { text:"She is too fond of books, and it has turned her brain.", source:"Louisa May Alcott, worn as a badge of honor" },
-  { text:"To keep the body in good health is a duty, otherwise we shall not be able to keep our mind strong and clear.", source:"Buddhist proverb" },
-  { text:"Hygge is not about things. It is about togetherness, presence, and the pleasure of simple moments.", source:"Danish proverb" },
-  { text:"Walking is a man's best medicine.", source:"Hippocrates" },
-  { text:"The people who live the longest do not try to live longer. They live fully.", source:"Blue Zones research" },
-  { text:"Friluftsliv is not a hobby. It is a way of being in the world.", source:"Norwegian tradition" },
-  { text:"An early morning walk is a blessing for the whole day.", source:"Henry David Thoreau, c. 1850" },
-  { text:"In seed time learn, in harvest teach, in winter enjoy.", source:"William Blake, c. 1790" },
-  { text:"The cure for anything is salt water: sweat, tears, or the sea.", source:"Isak Dinesen, c. 1934" },
-  { text:"Let food be thy medicine and medicine be thy food.", source:"Hippocrates" },
-  { text:"She resolved to be the maker of her own happiness.", source:"Louisa May Alcott, Little Women" },
-  { text:"Drink your tea slowly and reverently, as if it is the axis on which the whole earth revolves.", source:"Thich Nhat Hanh" },
-  { text:"A gentle walk among old trees is worth more than an hour in any doctor's office.", source:"Edwardian naturalist, c. 1907" },
-  { text:"The greatest wealth is health.", source:"Virgil" },
-  { text:"She was not made for sitting still.", source:"Louisa May Alcott, Little Women" },
-  { text:"Good friends, good books, and a sleepy conscience. That is the ideal life.", source:"Mark Twain, c. 1898" },
-  { text:"Sleep is the golden chain that ties health and our bodies together.", source:"Thomas Dekker, c. 1609" },
-  { text:"In Okinawa, they say the reason they live so long is that they never retire from life.", source:"Blue Zones research" },
-  { text:"I took a walk in the woods and came out taller than the trees.", source:"Henry David Thoreau" },
-  { text:"One cannot think well, love well, sleep well, if one has not dined well.", source:"Virginia Woolf, c. 1929" },
-  { text:"Marmee always said that a good laugh and a long sleep are the two best cures.", source:"Louisa May Alcott, Little Women" },
-  { text:"She did not know yet what she was capable of. That was the most exciting part.", source:"Louisa May Alcott, Little Women" },
-  { text:"Real kindness is doing a little thing well, and doing it every day.", source:"Marmee, Little Women" },
-  { text:"Have regular hours for work and play. Make each day both useful and pleasant.", source:"Marmee, Little Women" },
-  { text:"A garden, a walk, a book, a friend. That is a very good life.", source:"Edwardian domestic writing, c. 1906" },
-  { text:"There is always light, if only we are brave enough to see it.", source:"Louisa May Alcott" },
-  { text:"Lagom is not settling for less. It is knowing that enough is exactly right.", source:"Swedish proverb" },
-  { text:"The Nordic secret is simple: go outside, come back in, light something warm, and be with someone you love.", source:"Scandinavian folk wisdom" },
-  { text:"Nature is not a place to visit. It is home.", source:"Gary Snyder, reflecting friluftsliv" },
-  { text:"A cup of tea shared is worth more than a feast eaten alone.", source:"Danish saying" },
-  { text:"Sunshine is delicious, rain is refreshing, wind braces us up. There is really no such thing as bad weather.", source:"John Ruskin, c. 1870" },
-  { text:"The body needs movement the way the mind needs stillness.", source:"Scandinavian folk wisdom" },
-  { text:"To find joy in work is to discover the fountain of youth.", source:"Pearl S. Buck" },
-];
-
-const NUDGES = {
-  faith:       ["It has been a few days since faith showed up fully. Even one quiet moment with God is enough.", "The Edwardian day began and ended with stillness. Take a moment to be present with Heavenly Father today.", "Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly."],
-  movement:    ["Jo March would not have stayed inside on a day like this. The lane is waiting.", "The Norwegians say there is no bad weather, only bad clothing. Get outside today.", "In Okinawa, movement is simply life. Step outside and let your body do what it was made for."],
-  nourishment: ["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.", "The Edwardians ate what was in season and avoided excess. More whole food, a little less packaged.", "In Blue Zones, the plate is mostly plants and the meal is unhurried. One small step today is enough."],
-  water:       ["A glass of water first thing sets the tone for the whole day. Start there.", "The Edwardians drank water and weak tea steadily all day. Small sips, often.", "Scandinavians drink herbal teas and cold water all day. Your afternoon might feel quite different with a little more of it."],
-  connection:  ["It has been a little while since a truly meaningful conversation. A short message to someone who matters is enough.", "The Scandinavians have a word for simply being together without agenda. Who could you do that with today?", "In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],
-  service:     ["It has been a few days since service showed up. Even one small act of kindness is enough.", "The March girls turned to service whenever life felt heavy. Who could use a little of your attention today?", "In Blue Zones, contributing to others is woven into daily life. One small thing today is all it takes."],
-  stewardship: ["It has been a few days since stewardship showed up. Even one small act of tending is enough.", "The Edwardians understood duty as a form of love. What is waiting for your attention today?", "In Blue Zones, tending gardens and community roles is woven into daily life. What is in your care that needs you today?"],
-  creative:    ["Your creative self has been quiet lately. Even ten minutes of something that fills you is enough.", "Scandinavians have a deep tradition of craft and making. Your hands want a little of their own work today.", "Jo wrote even on the hard days. Make something small, even if it feels unimportant."],
-  joy:         ["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.", "The Danes call it hygge. The Okinawans call it ikigai. Both ask the same question: did you find warmth today?", "In Scandinavia, coziness is not an accident. It is something you build. What could you create today?"],
-  rest:        ["A proper wind-down has been missing lately. The Danes call it hygge. Create a little of it tonight.", "The Edwardians kept strict hours. Work ended, and rest began. Give yourself that boundary tonight.", "Blue Zones elders sleep when it is dark. Your body is probably asking for the same."],
-};
-
-const ENCOURAGEMENT = {
-  faith:       ["Your faith has been a thread in your days. Marmee wove hers through everything she did.", "You have been showing up for your spiritual life consistently. That daily faithfulness compounds.", "Connecting with Heavenly Father has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],
-  movement:    ["Getting outside and moving has been part of your week. The Edwardians and the Scandinavians both knew this was non-negotiable.", "You have been keeping yourself in motion outdoors. Jo March never sat still for long either.", "Outdoor movement has become part of your rhythm. In Okinawa and Scandinavia alike, that is simply called living."],
-  nourishment: ["You have been tending to your meals with care. Marmee would call that good housekeeping of the soul.", "Nourishment has been a priority lately. The Edwardians believed a well-fed body was a well-ordered life.", "Something is shifting in how you are feeding yourself. Blue Zones elders would recognize that shift."],
-  water:       ["You have been drinking your water consistently. Simple, steady, good.", "Hydration has been a quiet win this week. The kind the Edwardians called good constitution.", "Water has been showing up in your days. In Okinawa, that is one of the first secrets they name."],
-  connection:  ["You have been showing up for the people in your life in meaningful ways. The March family made that their whole practice.", "Real connection has been a thread in your days. The Edwardians built entire lives around regular small gatherings.", "You have not been doing this alone. In Sardinia, that is considered the whole point."],
-  service:     ["Service has been showing up in your days. Marmee always said the surest way out of your own troubles is to tend to someone else.", "You have been making other people's days a little brighter. That quiet generosity compounds in ways you cannot see.", "Acts of service have been a thread in your week. In Blue Zones, contributing to the community is one of the longest threads of all."],
-  stewardship: ["Stewardship has been showing up in your days. Faithful tending of small things is the foundation of a well-ordered life.", "You have been attending to what is in your care. The Edwardians called this duty. Blue Zones elders call it purpose.", "The things in your care have been getting your attention this week. That quiet faithfulness matters more than it looks."],
-  creative:    ["Your creative work has been showing up. Jo never let a week pass without writing something.", "You have been making things that fill you. The Edwardians believed purposeful making was essential to a full life.", "Something creative has found its place in your week. In Blue Zones, work and making are not so different."],
-  joy:         ["Warmth and delight have been finding their way into your days. That is hygge and ikigai working together.", "You have been creating and noticing small joys this week. Amy March and the Danes would both approve.", "Joy and coziness have shown up in your days. That is one of the oldest wellness secrets there is."],
-  rest:        ["Rest has been part of your week. Beth always knew the value of a quiet evening.", "You have been winding down with intention. The Edwardians kept strict hours for exactly this reason.", "Rest is showing up in your rhythm. Blue Zones elders have always known it is not a luxury."],
-};
-
-const SEASONAL = [
-  { season:"Winter", text:"January is for hygge. The Danes and Norwegians do not hibernate in winter. They light candles, gather close, and make the indoors feel like a gift. Tend your faith and your warmth this month." },
-  { season:"Winter", text:"February is for connection. The March girls wrote letters and paid visits. The Scandinavians call it showing up. The Edwardians called it the social season. Who have you been meaning to reach out to?" },
-  { season:"Spring", text:"March is for opening windows and going outside. Jo March flung hers open every spring morning. In Norway, the first warm day is practically a national holiday. Step out and feel the season turning." },
-  { season:"Spring", text:"April is for movement. The Edwardians cycled and walked the moment the weather turned. Scandinavians head into the forest. Find your version and get outside." },
-  { season:"Spring", text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew, picked, or bought from someone who did." },
-  { season:"Summer", text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. In Scandinavia, June means long light and meals that go on for hours. Eat the season fully." },
-  { season:"Summer", text:"July is for water and friluftsliv. Scandinavians swim in cold lakes, walk barefoot, and sleep with the windows open. Find your version of being fully outside this month." },
-  { season:"Summer", text:"August is for creative work. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. The Scandinavians call this the season of making. Use it." },
-  { season:"Autumn", text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. In Scandinavia, September is for foraging. In Blue Zones, it is for gathering. Both are right." },
-  { season:"Autumn", text:"October is for connection. In Sardinia, October means communal feasts. In Scandinavia, it means pulling the people you love inside before the dark comes. Gather your people." },
-  { season:"Autumn", text:"November is for faith and hygge. The days are short. Marmee counted her blessings out loud in November. The Scandinavians light every candle they own. What are yours?" },
-  { season:"Winter", text:"December is the heart of hygge season. The March Christmas had very little and it was everything. Blue Zones elders know what enough looks like. Scandinavians know what warmth feels like. Build both this month." },
-];
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fill the Cup</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F8F6F1; color: #1C1C18; font-family: 'Georgia','Times New Roman',serif; min-height: 100vh; }
+  button { cursor: pointer; font-family: inherit; }
+  input { font-family: 'Inter','Helvetica Neue',sans-serif; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #CEC8BC; border-radius: 2px; }
+  .sheet-overlay { position:fixed;inset:0;background:rgba(28,28,24,0.45);display:flex;align-items:flex-end;justify-content:center;z-index:100; }
+  .sheet { background:#F8F6F1;border-radius:16px 16px 0 0;width:100%;max-width:460px;max-height:86vh;overflow-y:auto;padding:24px 20px 44px; }
+  .modal-overlay { position:fixed;inset:0;background:rgba(44,36,22,0.4);display:flex;align-items:center;justify-content:center;z-index:200;padding:0 24px; }
+  .modal { background:#F8F6F1;border-radius:12px;padding:28px 24px;max-width:320px;width:100%; }
+  .toast { position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#3D3D30;color:#F8F6F1;border-radius:8px;padding:10px 18px;display:flex;align-items:center;gap:14px;font-family:'Inter',sans-serif;font-size:14px;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2);white-space:nowrap; }
+  .fab { position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:50; }
+  .nav-btn { background:none;border:1px solid #CEC8BC;border-radius:4px;padding:6px 14px;font-family:'Inter',sans-serif;font-size:14px;color:#3D3D30; }
+  .nav-btn:disabled { color:#CEC8BC;opacity:0.4;cursor:default; }
+  .tab-btn { background:none;border:none;border-bottom:2px solid transparent;padding:0 0 3px;font-family:'Georgia',serif;font-size:18px;color:#747060;transition:color .15s,border-color .15s; }
+  .tab-btn.active { color:#5C4020;border-bottom-color:#A0784A; }
+  .activity-row { display:block;width:100%;text-align:left;padding:11px 8px;border:none;border-bottom:1px solid #EEEAE2;background:none;font-family:'Inter',sans-serif;font-size:14px;color:#3D3D30; }
+  .activity-row:hover { background:#F4F0E8; }
+  .pillar-btn { display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:6px;border:1.5px solid transparent;background:none;text-align:left; }
+  .pillar-btn:hover { opacity:0.82; }
+  .splash-item { display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;margin-bottom:4px; }
+  .remove-btn { background:none;border:none;color:#747060;font-size:18px;line-height:1;padding:0 0 0 6px;flex-shrink:0; }
+  .divider { height:1px;background:#CEC8BC;margin:28px 0; }
+  .why-pillar-btn { width:100%;background:none;border:none;border-bottom:1px solid #CEC8BC;display:flex;align-items:center;justify-content:space-between;padding:16px 0;text-align:left;gap:12px; }
+  .why-pillar-content { padding-bottom:16px;padding-right:8px; }
+  .tag { display:inline-block;padding:2px 10px;border-radius:12px;font-family:'Inter',sans-serif;font-size:11px;margin-right:5px;margin-bottom:4px; }
+  .custom-input { flex:1;padding:9px 12px;border:1px solid #CEC8BC;border-radius:4px;font-family:'Inter',sans-serif;font-size:14px;color:#1C1C18;background:#EEEAE2;outline:none; }
+  .water-stepper { display:flex;align-items:center;justify-content:center;border:1.5px solid #CEC8BC;border-radius:8px;overflow:hidden;margin:16px 0 8px; }
+  .w-btn { background:none;border:none;font-size:24px;line-height:1;width:56px;height:56px;color:#3D3D30;font-family:'Inter',sans-serif; }
+  .w-btn:hover { background:#EEEAE2; }
+  .w-btn:disabled { opacity:0.3; }
+  .w-count { font-family:'Georgia',serif;font-size:26px;color:#1C1C18;width:64px;text-align:center;border-left:1px solid #CEC8BC;border-right:1px solid #CEC8BC;height:56px;display:flex;align-items:center;justify-content:center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ────────────────────────────────────────────────────────────────────────────────
+// CONSTANTS & DATA
+// ────────────────────────────────────────────────────────────────────────────────
 const C = {
   cream:"#F8F6F1", parchment:"#EEEAE2", parchDark:"#CEC8BC",
-  sage:"#5C8A58", sagePale:"#B0CCAD", sageDark:"#2E5C2A",
+  sage:"#7A8C5A", sageDark:"#4A5C2A",
   ink:"#1C1C18", inkMid:"#3D3D30", inkLight:"#747060",
-  clay:"#9E5A2E", clayPale:"#EDD9C0",
-  dustBlue:"#5A7E90", dustBluePale:"#B0CCD8", dustBlueDark:"#2A5060",
-  gold:"#A87C1E", goldPale:"#F0E4A8",
+  clay:"#9E5A2E", gold:"#A87C1E", goldPale:"#F0E4A8",
 };
 
-const serif = "'Georgia','Times New Roman',serif";
-const sans  = "'Inter','Helvetica Neue',sans-serif";
-
-const INSPIRATIONS = [
-  { key:"bluezones",    label:"Blue Zones",   color:"#5C8A58", fg:"#2E5C2A", bg:"#EDF4EC" },
-  { key:"edwardian",    label:"Edwardian",    color:"#A87C1E", fg:"#7A4E08", bg:"#F0E4A8" },
-  { key:"littlewomen",  label:"Little Women", color:"#5A7E90", fg:"#2A5060", bg:"#E4EFF4" },
-  { key:"scandinavian", label:"Scandinavian", color:"#8A7A9E", fg:"#4A3A6A", bg:"#EDE8F4" },
+// Earthy Vintage palette drawn from the uploaded swatch sheet
+const PILLARS = [
+  { id:"faith",       label:"Faith",         color:"#8B6878", pale:"#F2EAED", dark:"#5A3048" },
+  { id:"movement",    label:"Movement",       color:"#6B8C5A", pale:"#E6F0DE", dark:"#384E28" },
+  { id:"nourishment", label:"Nourishment",    color:"#A07848", pale:"#F4EAD8", dark:"#6A4820" },
+  { id:"water",       label:"Water",          color:"#567E90", pale:"#DFF0F4", dark:"#2A5060" },
+  { id:"connection",  label:"Connection",     color:"#B86858", pale:"#F8E8E4", dark:"#7A3028" },
+  { id:"service",     label:"Service",        color:"#C4A040", pale:"#FAF2D0", dark:"#7A6010" },
+  { id:"stewardship", label:"Stewardship",    color:"#788C68", pale:"#E6EEE0", dark:"#384830" },
+  { id:"creative",    label:"Creative Work",  color:"#C07858", pale:"#F8EAE0", dark:"#7A4028" },
+  { id:"joy",         label:"Joy & Hygge",    color:"#D4907A", pale:"#FAEAE4", dark:"#8A4830" },
+  { id:"rest",        label:"Rest",           color:"#7888A8", pale:"#E6EAF4", dark:"#384870" },
 ];
 
-const WHY_PILLARS = [
-  { label:"Faith", tags:["bluezones","littlewomen","edwardian"], text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. People with an active faith life show lower rates of depression and anxiety, stronger immune response, and measurably longer lifespans. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ. Over a lifetime, those small daily acts of connection compound into something that touches every other area of health." },
-  { label:"Movement & Fresh Air", tags:["bluezones","edwardian","scandinavian"], text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression, often more effectively than medication. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity in ways indoor exercise cannot. Moderate, sustained daily movement is what actually moves the needle over decades. Sixty minutes is not an arbitrary target. It is where the data points." },
-  { label:"Nourishment", tags:["bluezones","edwardian","littlewomen","scandinavian"], text:"The long-term effects of how you eat show up slowly and then all at once. A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention, stopping before fullness, and treating meals as something worth sitting down for all support better digestion, healthier weight regulation, and a more stable mood. What you eat every day for thirty years is your diet. What you eat today is a single choice." },
-  { label:"Water", tags:["bluezones","edwardian","scandinavian"], text:"Chronic mild dehydration is one of the most common and most overlooked contributors to fatigue, poor concentration, headaches, and low mood. Even a two percent drop in hydration measurably impairs cognitive performance. Over time, consistent hydration supports kidney function, cardiovascular health, skin integrity, and metabolic efficiency. Sixty-four ounces across the day is not a dramatic intervention. It is a quiet, compounding act of maintenance that most people simply do not do consistently." },
-  { label:"Connection", tags:["bluezones","edwardian","littlewomen","scandinavian"], text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, bolster immune function, and are the most consistent predictor of happiness across cultures and age groups. The quality of your relationships in midlife is a stronger predictor of how you age than cholesterol levels. But not all interaction is equal. Meaningful connection, the kind that leaves you fuller than before, is what this pillar is really asking for." },
-  { label:"Service", tags:["bluezones","littlewomen","edwardian"], text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction, lower rates of depression, and stronger immune function. In Blue Zones, contributing to the community is considered a core life purpose. Marmee taught her daughters that the surest way out of their own struggles was to look outward. LDS theology frames service as a form of worship. Even one small act is enough to count. The question is simply: did someone's day get a little better because of you?" },
-  { label:"Stewardship", tags:["bluezones","edwardian","littlewomen"], text:"Having things in your care gives the day shape and meaning. Research on purpose and longevity consistently finds that people who feel responsible for something beyond themselves live longer, recover from illness faster, and report higher life satisfaction. Stewardship is not a burden. It is a gift that structures time, builds competence, and connects you to something larger than your own comfort. Tending faithfully to small things is one of the most underrated forms of self-care." },
-  { label:"Creative Work", tags:["edwardian","littlewomen","scandinavian"], text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. It activates parts of the brain that passive consumption leaves dormant, and it produces a sense of agency that accumulates over time. Even ten minutes of something made is neurologically different from ten minutes of something consumed. The work does not have to be good. It has to be yours, and it has to fill you, not deplete you." },
-  { label:"Joy & Hygge", tags:["bluezones","littlewomen","scandinavian"], text:"The ability to notice and create small moments of warmth and pleasure is not a personality trait. It is a trainable skill with measurable effects. People who regularly experience positive emotions show greater cardiovascular resilience, stronger immune function, faster recovery from stress, and longer lives. The Okinawan concept of ikigai is linked to dramatically lower rates of dementia and heart disease. You do not need large, exceptional experiences. You need reliable small ones. A candle lit. A cup of tea taken slowly. A moment enjoyed." },
-  { label:"Rest", tags:["bluezones","edwardian","littlewomen","scandinavian"], text:"Sleep is not recovery from life. It is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, repairing tissue, and resetting the immune system. Chronic poor sleep is linked to nearly every major disease category. Beyond sleep, deliberately winding down reduces cortisol, improves sleep quality, and protects long-term mental health. The evening routine is not indulgence. It is infrastructure." },
+const ACTIVITIES = {
+  faith:       ["Morning prayer","Evening prayer","Scripture study","Pondered and reflected","Went to church","Served in my calling","Attended the temple","Studied Conference talks/other messages","Wrote down a prompting"],
+  movement:    ["Walked outside for at least 30 minutes","Calisthenics","Went on a hike","Yoga"],
+  nourishment: ["3+ servings of fruit or veg","Home-cooked meal","Stopped when satisfied","Avoided caffeine","Had little to no added sugar"],
+  water:       [],
+  connection:  ["Had a meaningful conversation (in person, text, or phone call)","Wrote a letter or note","Shared a meal with someone","Had a fun hang-out","Family time","Made a new friend"],
+  service:     ["Helped a stranger","Did something kind without being asked","Volunteered","Supported someone through difficulty","Made someone laugh","Gave a gift","Donated"],
+  stewardship: ["Tidied a space","Tended a plant or garden","Managed finances","Fixed or maintained something","Deep-cleaned an area","Ran an errand","Did laundry","Checked off a to-do list item"],
+  creative:    ["Wrote something","Drew or painted","Crafted or built","Took photographs","Journaled","Practiced guitar and/or piano","Cooked a fun meal"],
+  joy:         ["Lit a candle and slowed down","Read a book","Enjoyed a warm drink","Watched something delightful","Took a bath or shower slowly","Noticed something beautiful","Played a game","Relaxed outside"],
+  rest:        ["Went to bed on time","Napped intentionally","Turned screens off early","Had a gentle evening","Practiced breathing or meditation","Took a true rest from work"],
+};
+
+const NUDGES = {
+  faith:["It has been a few days since faith showed up. Even one quiet moment with Heavenly Father is enough.","Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly.","The Edwardian day began and ended with stillness. A moment of prayer can anchor the whole day."],
+  movement:["Jo March would not have stayed inside on a day like this. The lane is waiting.","The Norwegians say there is no bad weather, only bad clothing. Get outside today.","In Okinawa, movement is simply life. Step outside and let your body do what it was made for."],
+  nourishment:["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.","The Edwardians ate what was in season and avoided excess. One small step toward whole food is enough.","In Blue Zones, the plate is mostly plants and the meal is unhurried. Even one good choice counts."],
+  water:["A glass of water first thing sets the tone for the whole day. Start there.","The Edwardians drank water and weak tea steadily all day. Small sips, often.","Scandinavians drink herbal teas and cold water all day. Your afternoon might feel different with a little more of it."],
+  connection:["It has been a little while since a truly meaningful conversation. A short message to someone who matters is enough.","The Scandinavians have a word for simply being together without agenda. Who could you do that with today?","In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],
+  service:["It has been a few days since service showed up. Even one small act of kindness is enough.","The March girls turned to service whenever life felt heavy. Who could use a little of your attention today?","In Blue Zones, contributing to others is woven into daily life. One small thing today is all it takes."],
+  stewardship:["It has been a few days since stewardship showed up. Even one small act of tending is enough.","The Edwardians understood duty as a form of love. What is waiting for your attention today?","What is in your care that needs you today? Even one errand crossed off is a form of faithfulness."],
+  creative:["Your creative self has been quiet lately. Even ten minutes of something that fills you is enough.","Scandinavians have a deep tradition of craft and making. Your hands want a little of their own work today.","Jo wrote even on the hard days. Make something small, even if it feels unimportant."],
+  joy:["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.","The Danes call it hygge. The Okinawans call it ikigai. Both ask the same question: did you find warmth today?","Coziness is not an accident. It is something you build. What could you create today?"],
+  rest:["A proper wind-down has been missing lately. Give your evening a little more gentleness tonight.","The Edwardians kept strict hours. Work ended, and rest began. Give yourself that boundary tonight.","Blue Zones elders sleep when it is dark. Your body is probably asking for the same."],
+};
+const ENCOURAGEMENT = {
+  faith:["Your faith has been a thread in your days lately. Marmee wove hers through everything she did.","You have been showing up for your spiritual life consistently. That daily faithfulness compounds.","Connecting with Heavenly Father has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],
+  movement:["Getting outside and moving has been part of your week. The Edwardians and Scandinavians both knew this was non-negotiable.","You have been keeping yourself in motion. Jo March never sat still for long either.","Outdoor movement has become part of your rhythm. In Okinawa and Scandinavia alike, that is simply called living."],
+  nourishment:["You have been tending to your meals with care. Marmee would call that good housekeeping of the soul.","Nourishment has been a priority lately. The Edwardians believed a well-fed body was a well-ordered life.","Something is shifting in how you are feeding yourself. Blue Zones elders would recognize that shift."],
+  water:["You have been drinking your water consistently. Simple, steady, good.","Hydration has been a quiet win this week. The kind the Edwardians called good constitution.","Water has been showing up in your days. In Okinawa, that is one of the first secrets they name."],
+  connection:["You have been showing up for the people in your life in meaningful ways. The March family made that their whole practice.","Real connection has been a thread in your days. The Edwardians built entire lives around regular small gatherings.","You have not been doing this alone. In Sardinia, that is considered the whole point."],
+  service:["Service has been showing up in your days. Marmee always said the surest way out of your own troubles is to tend to someone else.","You have been making other people's days a little brighter. That quiet generosity compounds in ways you cannot see.","Acts of service have been a thread in your week. In Blue Zones, contributing to the community is one of the longest threads of all."],
+  stewardship:["Stewardship has been showing up in your days. Faithful tending of small things is the foundation of a well-ordered life.","You have been attending to what is in your care. The Edwardians called this duty. Blue Zones elders call it purpose.","The things in your care have been getting your attention this week. That quiet faithfulness matters more than it looks."],
+  creative:["Your creative work has been showing up. Jo never let a week pass without writing something.","You have been making things that fill you. The Edwardians believed purposeful making was essential to a full life.","Something creative has found its place in your week. In Blue Zones, work and making are not so different."],
+  joy:["Warmth and delight have been finding their way into your days. That is hygge and ikigai working together.","You have been creating and noticing small joys this week. Amy March and the Danes would both approve.","Joy and coziness have shown up in your days. That is one of the oldest wellness secrets there is."],
+  rest:["Rest has been part of your week. Beth always knew the value of a quiet evening.","You have been winding down with intention. The Edwardians kept strict hours for exactly this reason.","Rest is showing up in your rhythm. Blue Zones elders have always known it is not a luxury."],
+};
+
+const QUOTES=[
+  {text:"The secret of health for both mind and body is not to mourn for the past, nor to worry about the future, but to live the present moment wisely.",source:"Buddhist proverb, Okinawa"},
+  {text:"I am not afraid of storms, for I am learning how to sail my ship.",source:"Louisa May Alcott, Little Women"},
+  {text:"Take long walks in stormy weather or through deep snow in the fields and woods, if you would keep your spirits up.",source:"Edwardian walking guide, c. 1905"},
+  {text:"It is not how much we have, but how much we enjoy, that makes happiness.",source:"Blue Zones wisdom"},
+  {text:"She had a gift for making the most of small pleasures.",source:"Louisa May Alcott, Little Women"},
+  {text:"Eat until you are eight parts full, and let the other two parts nourish your soul.",source:"Hara hachi bu, Okinawa"},
+  {text:"There is no bad weather, only bad clothing.",source:"Norwegian proverb"},
+  {text:"Belonging to a community is one of the most powerful medicines we have.",source:"Blue Zones research"},
+  {text:"Family is the cornerstone of a long life well-lived.",source:"Blue Zones, Sardinia"},
+  {text:"Move, eat, sleep, repeat. But do each one as if it were the only thing.",source:"Sardinian proverb"},
+  {text:"Hygge is not about things. It is about togetherness, presence, and the pleasure of simple moments.",source:"Danish proverb"},
+  {text:"Walking is a man's best medicine.",source:"Hippocrates"},
+  {text:"The people who live the longest do not try to live longer. They live fully.",source:"Blue Zones research"},
+  {text:"An early morning walk is a blessing for the whole day.",source:"Henry David Thoreau, c. 1850"},
+  {text:"The cure for anything is salt water: sweat, tears, or the sea.",source:"Isak Dinesen, c. 1934"},
+  {text:"Let food be thy medicine and medicine be thy food.",source:"Hippocrates"},
+  {text:"She resolved to be the maker of her own happiness.",source:"Louisa May Alcott, Little Women"},
+  {text:"Drink your tea slowly and reverently, as if it is the axis on which the whole earth revolves.",source:"Thich Nhat Hanh"},
+  {text:"The greatest wealth is health.",source:"Virgil"},
+  {text:"Sleep is the golden chain that ties health and our bodies together.",source:"Thomas Dekker, c. 1609"},
+  {text:"One cannot think well, love well, sleep well, if one has not dined well.",source:"Virginia Woolf, c. 1929"},
+  {text:"Marmee always said that a good laugh and a long sleep are the two best cures.",source:"Louisa May Alcott, Little Women"},
+  {text:"Real kindness is doing a little thing well, and doing it every day.",source:"Marmee, Little Women"},
+  {text:"Have regular hours for work and play. Make each day both useful and pleasant.",source:"Marmee, Little Women"},
+  {text:"There is always light, if only we are brave enough to see it.",source:"Louisa May Alcott"},
+  {text:"Lagom is not settling for less. It is knowing that enough is exactly right.",source:"Swedish proverb"},
+  {text:"The body needs movement the way the mind needs stillness.",source:"Scandinavian folk wisdom"},
+];
+const SEASONAL=[
+  {season:"Winter",text:"January is for hygge. The Danes and Norwegians do not hibernate in winter. They light candles, gather close, and make the indoors feel like a gift. Tend your faith and your warmth this month."},
+  {season:"Winter",text:"February is for connection. The March girls wrote letters and paid visits. Who have you been meaning to reach out to?"},
+  {season:"Spring",text:"March is for opening windows and going outside. Jo March flung hers open every spring morning. In Norway, the first warm day is practically a national holiday. Step out and feel the season turning."},
+  {season:"Spring",text:"April is for movement. The Edwardians cycled and walked the moment the weather turned. Scandinavians head into the forest. Find your version and get outside."},
+  {season:"Spring",text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew, picked, or bought from someone who did."},
+  {season:"Summer",text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. In Scandinavia, June means long light and meals that go on for hours. Eat the season fully."},
+  {season:"Summer",text:"July is for water and friluftsliv. Scandinavians swim in cold lakes, walk barefoot, and sleep with the windows open. Find your version of being fully outside this month."},
+  {season:"Summer",text:"August is for creative work. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. Use it."},
+  {season:"Autumn",text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. In Scandinavia, September is for foraging. In Blue Zones, it is for gathering."},
+  {season:"Autumn",text:"October is for connection. In Sardinia, October means communal feasts. In Scandinavia, it means pulling the people you love inside before the dark comes. Gather your people."},
+  {season:"Autumn",text:"November is for faith and hygge. The days are short. Marmee counted her blessings out loud in November. The Scandinavians light every candle they own. What are yours?"},
+  {season:"Winter",text:"December is the heart of hygge season. The March Christmas had very little and it was everything. Blue Zones elders know what enough looks like. Scandinavians know what warmth feels like. Build both this month."},
+];
+const WHY_INSPIRATIONS=[
+  {label:"Blue Zones",color:"#6B8C5A",fg:"#384E28",text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day, eat mostly plants, stop before they are full, and share meals with others. They belong to faith communities and tight social circles. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome."},
+  {label:"Edwardian England",color:"#A07848",fg:"#6A4820",text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden."},
+  {label:"Little Women",color:"#567E90",fg:"#2A5060",text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. The March family is poor, but their days are full. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness."},
+  {label:"Scandinavian cultures",color:"#7888A8",fg:"#384870",text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv, the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge, the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments."},
+];
+const WHY_PILLARS=[
+  {label:"Faith",color:"#8B6878",tags:["Blue Zones","Little Women","Edwardian"],text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ."},
+  {label:"Movement",color:"#6B8C5A",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity."},
+  {label:"Nourishment",color:"#A07848",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation — the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention and stopping before fullness supports better digestion, healthier weight regulation, and a more stable mood."},
+  {label:"Water",color:"#567E90",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Chronic mild dehydration is one of the most common contributors to fatigue, poor concentration, headaches, and low mood. Each 8 oz splash here is one glass — a simple, steady act of maintenance that most people simply do not do consistently."},
+  {label:"Connection",color:"#B86858",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, and are the most consistent predictor of happiness across cultures and age groups."},
+  {label:"Service",color:"#C4A040",tags:["Blue Zones","Little Women","Edwardian"],text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction and lower rates of depression. Marmee taught her daughters that the surest way out of their own struggles was to look outward."},
+  {label:"Stewardship",color:"#788C68",tags:["Blue Zones","Edwardian","Little Women"],text:"Having things in your care gives the day shape and meaning. People who feel responsible for something beyond themselves live longer and report higher life satisfaction. Tending faithfully to small things is one of the most underrated forms of self-care."},
+  {label:"Creative Work",color:"#C07858",tags:["Edwardian","Little Women","Scandinavian"],text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. Even ten minutes of something made is neurologically different from ten minutes of something consumed."},
+  {label:"Joy & Hygge",color:"#D4907A",tags:["Blue Zones","Little Women","Scandinavian"],text:"The ability to notice and create small moments of warmth and pleasure is a trainable skill. People who regularly experience positive emotions show greater cardiovascular resilience and longer lives. You do not need large exceptional experiences. You need reliable small ones."},
+  {label:"Rest",color:"#7888A8",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Sleep is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, and resetting the immune system. The evening routine is not indulgence. It is infrastructure."},
 ];
 
-const WHY_INSPIRATIONS = [
-  { label:"Blue Zones", color:"#5C8A58", fg:"#2E5C2A", text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day without structured exercise. They eat mostly plants, stop before they are full, and share meals with others. They have a strong sense of purpose. They belong to faith communities and tight social circles. They manage stress through daily ritual rather than willpower. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome." },
-  { label:"Edwardian England", color:"#A87C1E", fg:"#7A4E08", text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. The culture placed high value on making things, reading, visiting friends, playing sport, and spending time outdoors regardless of weather. Meals were simple and seasonal. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden." },
-  { label:"Little Women", color:"#5A7E90", fg:"#2A5060", text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. It is included here as one of literatures clearest portraits of a life well-lived on very little. The March family is poor, but their days are full. They read, write, play music, sew, cook, go outdoors, argue, laugh, and look after one another. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness. Wellbeing is not a condition you arrive at. It is a practice you return to every day." },
-  { label:"Scandinavian cultures", color:"#8A7A9E", fg:"#4A3A6A", text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv (free-loofts-leev), the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge (hoo-gah), the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments. Lagom (lah-gom), the Swedish principle of just the right amount, runs through everything from work schedules to portion sizes. Do not pursue happiness as a destination. Build it into the texture of every ordinary day." },
-];
-
-function getDateKey(d) { return d.toISOString().slice(0,10); }
-function offsetDate(base, days) { const d=new Date(base); d.setDate(d.getDate()+days); return d; }
-function getWeekDates(anchor) {
-  const dow=anchor.getDay();
-  const sun=new Date(anchor);
-  sun.setDate(anchor.getDate()-dow);
-  return Array.from({length:7},(_,i)=>{ const d=new Date(sun); d.setDate(sun.getDate()+i); return d; });
-}
-function fmtDate(d) { return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}); }
-function fmtShort(d) { return d.toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
-function isSundayDate(d) { return d.getDay()===0; }
-
+// ────────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────────────────────────
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+function getDateKey(d){return d.toISOString().slice(0,10);}
+function offsetDate(base,days){const d=new Date(base);d.setDate(d.getDate()+days);return d;}
+function getWeekDates(anchor){
+  const dow=anchor.getDay(),sun=new Date(anchor);
+  sun.setDate(anchor.getDate()-dow);
+  return Array.from({length:7},(_,i)=>{const d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
+}
+function fmtDate(d){return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+function fmtShort(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
+function localDayIndex(){const d=new Date();return d.getFullYear()*10000+d.getMonth()*100+d.getDate();}
+function loadData(){try{return JSON.parse(localStorage.getItem("ftc-v3")||"{}");}catch{return {};}}
+function saveData(d){try{localStorage.setItem("ftc-v3",JSON.stringify(d));}catch{}}
 
-function movementDone(entry) {
-  if (!entry) return false;
-  const mins=entry.minutes||0, cals=!!entry.calisthenics;
-  return cals ? mins>=45 : mins>=WALK_GOAL;
+// ────────────────────────────────────────────────────────────────────────────────
+// CUP STATISTICS
+// Fill level = unique pillars / 10 (affects glass height)
+// Segments   = proportional by splash count within that fill height
+// ────────────────────────────────────────────────────────────────────────────────
+function getCupStats(splashes){
+  const uniquePillars=[...new Set(splashes.map(s=>s.pillarId))];
+  const total=splashes.length;
+  const byPillar={};
+  for(const s of splashes) byPillar[s.pillarId]=(byPillar[s.pillarId]||0)+1;
+  const breakdown=Object.entries(byPillar).map(([id,count])=>({
+    id,count,pct:total>0?Math.round(count/total*100):0,
+    pillar:PILLARS.find(p=>p.id===id)
+  })).sort((a,b)=>b.count-a.count);
+  return{uniquePillars,uniqueCount:uniquePillars.length,fillLevel:Math.min(1,uniquePillars.length/10),breakdown,total};
 }
 
-function pillarDone(p, entry) {
-  if (!entry) return false;
-  if (p.isWater)      return (entry.totalOz||0)>=WATER_GOAL;
-  if (p.hasMinutes)   return movementDone(entry);
-  if (p.hasFaith)     return FAITH_BOOLS.every(b=>!!entry.faith?.[b.id]);
-  if (p.hasNutrition) {
-    const n=entry.nutrition||{};
-    const pos=(n.plants?1:0)+(n.homemade?1:0)+(n.satisfied?1:0)+(n.slow?1:0);
-    const neg=(n.sugar==="some"?1:n.sugar==="a lot"?3:0)+(n.processed==="some"?1:n.processed==="a lot"?3:0)+(n.caffeine==="two or more"?1:0);
-    return pos-neg>=2;
-  }
-  return !!entry.checked;
-}
-
-function dayScore(data, key) {
-  if (!data[key]) return null;
-  const date=new Date(key+"T12:00:00");
-  const isSun=isSundayDate(date);
-  const active=PILLARS.filter(p=>!(isSun&&p.hasMinutes));
-  return active.map(p=>pillarDone(p,data[key][p.id])?1:0).reduce((a,b)=>a+b,0)/active.length;
-}
-
-function localDayIndex() {
-  const d=new Date();
-  return d.getFullYear()*10000+d.getMonth()*100+d.getDate();
-}
-
-function buildNudge(data, todayKey, yKey) {
-  const tE=data[todayKey]||{}, yE=data[yKey]||{};
-  const y2Key=getDateKey(offsetDate(new Date(todayKey),-1)), y2E=data[y2Key]||{};
-  const neglected=PILLARS.filter(p=>!pillarDone(p,tE[p.id])&&!pillarDone(p,yE[p.id])&&!pillarDone(p,y2E[p.id]));
-  if (!neglected.length) return null;
+function buildNudge(data,todayKey){
+  const todayPillars=new Set((data[todayKey]?.splashes||[]).map(s=>s.pillarId));
+  const past3=[1,2,3].map(i=>getDateKey(offsetDate(new Date(todayKey+"T12:00:00"),-i)));
+  const neglected=PILLARS.filter(p=>{
+    if(todayPillars.has(p.id)) return false;
+    return past3.every(k=>!data[k]?.splashes?.some(s=>s.pillarId===p.id));
+  });
+  if(!neglected.length) return null;
   const idx=localDayIndex();
   const pick=neglected[idx%neglected.length];
   const pool=NUDGES[pick.id];
-  if (!pool||!pool.length) return null;
-  return { pillar:pick.label, text:pool[idx%pool.length] };
+  return pool?{pillar:pick.label,text:pool[idx%pool.length]}:null;
 }
-
-function buildEncouragement(data) {
-  const past7=Array.from({length:7},(_,i)=>{ const d=new Date(TODAY); d.setDate(TODAY.getDate()-i-1); return getDateKey(d); });
-  const scored=PILLARS.map(p=>({ id:p.id, label:p.label, count:past7.filter(k=>data[k]&&pillarDone(p,data[k][p.id])).length }));
+function buildEncouragement(data){
+  const past7=Array.from({length:7},(_,i)=>getDateKey(offsetDate(TODAY,-i-1)));
+  const scored=PILLARS.map(p=>({id:p.id,label:p.label,count:past7.filter(k=>data[k]?.splashes?.some(s=>s.pillarId===p.id)).length}));
   const best=scored.reduce((a,b)=>b.count>a.count?b:a,scored[0]);
-  if (best.count<3) return null;
+  if(best.count<3) return null;
   const pool=ENCOURAGEMENT[best.id];
-  if (!pool||!pool.length) return null;
-  const idx=localDayIndex();
-  return { pillar:best.label, count:best.count, text:pool[idx%pool.length] };
+  return pool?{pillar:best.label,count:best.count,text:pool[localDayIndex()%pool.length]}:null;
 }
+function warmthBg(pct){if(!pct)return"#EEEAE2";if(pct<0.3)return"#DDD9D0";if(pct<0.55)return"#EEE0AA";if(pct<0.8)return"#DFC06A";return"#C8A030";}
+function warmthFg(pct){if(!pct)return"#747060";if(pct<0.3)return"#3D3D30";if(pct<0.55)return"#8A6010";if(pct<0.8)return"#6A4808";return"#3A2800";}
 
-function buildNourishmentInsight(data) {
-  const past7=Array.from({length:7},(_,i)=>{ const d=new Date(TODAY); d.setDate(TODAY.getDate()-i-1); return getDateKey(d); });
-  const entries=past7.map(k=>data[k]?.nourishment?.nutrition).filter(Boolean);
-  if (entries.length<2) return null;
-  const count=entries.length, threshold=Math.ceil(count*0.6);
-  const wins=[], concerns=[];
-  if (entries.filter(n=>n.plants).length>=threshold)    wins.push("getting your fruits and vegetables");
-  if (entries.filter(n=>n.homemade).length>=threshold)  wins.push("cooking at home");
-  if (entries.filter(n=>n.satisfied).length>=threshold) wins.push("stopping when satisfied");
-  if (entries.filter(n=>n.slow).length>=threshold)      wins.push("eating slowly");
-  if (entries.filter(n=>n.sugar==="a lot").length>=2)        concerns.push("quite a bit of added sugar");
-  else if (entries.filter(n=>n.sugar==="some").length>=3)    concerns.push("some added sugar most days");
-  if (entries.filter(n=>n.processed==="a lot").length>=2)    concerns.push("quite a bit of processed food");
-  else if (entries.filter(n=>n.processed==="some").length>=3) concerns.push("some processed food most days");
-  if (entries.filter(n=>n.caffeine==="two or more").length>=2) concerns.push("two or more caffeinated drinks a day");
-  if (!wins.length&&!concerns.length) return null;
-  if (wins.length&&concerns.length) return "You have been doing well with "+wins.join(" and ")+" this week. One thing worth noticing: "+concerns[0]+" has been showing up regularly.";
-  if (wins.length) return "Your nourishment has been on a good track this week, especially "+wins.join(" and ")+". Keep it going.";
-  return "Something worth noticing in your eating this week: "+concerns.join(" and ")+". No guilt, just an invitation to bring a little more balance today.";
-}
+// ────────────────────────────────────────────────────────────────────────────────
+// SVG CUP — proportional segments
+// ────────────────────────────────────────────────────────────────────────────────
+function renderCup(stats){
+  const{uniquePillars,uniqueCount,fillLevel,breakdown,total}=stats;
+  const at80=uniqueCount>=8,full=uniqueCount>=10,over=uniqueCount>10;
+  const W=130,H=210,rimY=14,rimRx=50,baseY=H-20,baseRx=40,bodyH=baseY-rimY;
+  const lR=W/2-rimRx,rR=W/2+rimRx,lB=W/2-baseRx,rB=W/2+baseRx;
+  const xL=y=>lR+(lB-lR)*(y-rimY)/bodyH;
+  const xR=y=>rR+(rB-rR)*(y-rimY)/bodyH;
+  const fillH=bodyH*Math.min(1,uniqueCount/10);
 
-function warmthBg(s) {
-  if (s===null) return "#EEEAE2";
-  if (s<0.3) return "#D4CFC8";
-  if (s<0.55) return "#F0E2B6";
-  if (s<EIGHTY_PCT/TOTAL_PILLARS) return "#E8C96A";
-  return "#D4A017";
-}
-function warmthFg(s) {
-  if (s===null) return "#747060";
-  if (s<0.3) return "#3D3D30";
-  if (s<0.55) return "#9A6E10";
-  if (s<EIGHTY_PCT/TOTAL_PILLARS) return "#7A4E08";
-  return "#4A2E04";
-}
+  // Segments: ordered by first-added pillar, sized by splash proportion
+  let segs="";
+  if(total>0&&uniqueCount>0){
+    const ordered=uniquePillars.map(pid=>{
+      const b=breakdown.find(b=>b.id===pid)||{id:pid,count:0};
+      return{...b,pillar:PILLARS.find(p=>p.id===pid)};
+    });
+    let curY=baseY;
+    for(const b of ordered){
+      const sh=(b.count/total)*fillH;
+      const yB=curY,yT=curY-sh;
+      const col=b.pillar?b.pillar.color:"#CEC8BC";
+      const p=(pts=>pts.map(([x,y])=>x.toFixed(1)+","+y.toFixed(1)).join(" "))([
+        [xL(yT),yT],[xR(yT),yT],[xR(yB),yB],[xL(yB),yB]
+      ]);
+      segs+=`<polygon points="${p}" fill="${col}" opacity="0.82"/>`;
+      curY=yT;
+    }
+  }
 
-function usePopOnTrue(val) {
-  const [popping,setPopping]=useState(false);
-  const prev=useRef(val);
-  useEffect(()=>{
-    if (val&&!prev.current) { setPopping(true); const t=setTimeout(()=>setPopping(false),400); return ()=>clearTimeout(t); }
-    prev.current=val;
-  },[val]);
-  return popping;
-}
+  // Meniscus
+  let men="";
+  if(uniqueCount>0){
+    const fTop=baseY-fillH;
+    if(fTop>rimY){
+      const lp=PILLARS.find(p=>p.id===uniquePillars[uniquePillars.length-1]);
+      const rx=(xR(fTop)-xL(fTop))/2-1;
+      men=`<ellipse cx="${W/2}" cy="${fTop.toFixed(1)}" rx="${rx.toFixed(1)}" ry="2.5" fill="${lp?lp.color:"#567E90"}" opacity="0.25"/>`;
+    }
+  }
 
-function UndoToast({ message, onUndo, onDismiss }) {
-  useEffect(()=>{ const t=setTimeout(onDismiss,4000); return ()=>clearTimeout(t); },[]);
-  return (
-    <div style={{position:"fixed",bottom:28,left:"50%",transform:"translateX(-50%)",background:C.inkMid,color:C.cream,borderRadius:8,padding:"10px 18px",display:"flex",alignItems:"center",gap:14,fontFamily:sans,fontSize:14,zIndex:200,boxShadow:"0 4px 16px rgba(0,0,0,0.2)",whiteSpace:"nowrap"}}>
-      <span>{message}</span>
-      <button onClick={onUndo} style={{background:"none",border:"1px solid rgba(255,255,255,0.4)",borderRadius:4,color:C.cream,fontFamily:sans,fontSize:13,cursor:"pointer",padding:"3px 10px"}}>Undo</button>
+  // 80% line
+  const l80Y=rimY+bodyH*0.2;
+  const ll=xL(l80Y)+2,lr=xR(l80Y)-2;
+  const l80=!full?`<line x1="${ll.toFixed(1)}" y1="${l80Y.toFixed(1)}" x2="${lr.toFixed(1)}" y2="${l80Y.toFixed(1)}" stroke="${at80?C.sageDark:C.parchDark}" stroke-width="0.9" stroke-dasharray="3,3" opacity="${at80?0.6:0.4}"/>
+    <text x="${(ll-3).toFixed(1)}" y="${(l80Y+4).toFixed(1)}" text-anchor="end" font-family="Inter,sans-serif" font-size="8" fill="${C.inkLight}" opacity="0.5">80%</text>`:"";
+
+  const sk=full?C.sageDark:C.parchDark,sw=full?1.6:1.1;
+  const glow=full?`filter="drop-shadow(0 5px 14px rgba(106,138,80,0.22))"`:""
+  const uid="c"+(Math.random()*1e8|0);
+  const svg=`<svg width="${W}" height="${H+10}" viewBox="0 0 ${W} ${H+10}" style="overflow:visible" ${glow}>
+    <defs><clipPath id="${uid}"><polygon points="${lR},${rimY} ${rR},${rimY} ${rB},${baseY} ${lB},${baseY}"/></clipPath></defs>
+    <polygon points="${lR},${rimY} ${rR},${rimY} ${rB},${baseY} ${lB},${baseY}" fill="${C.parchment}"/>
+    <g clip-path="url(#${uid})">${segs}${men}</g>
+    ${l80}
+    <line x1="${lR}" y1="${rimY}" x2="${lB}" y2="${baseY}" stroke="${sk}" stroke-width="${sw}"/>
+    <line x1="${rR}" y1="${rimY}" x2="${rB}" y2="${baseY}" stroke="${sk}" stroke-width="${sw}"/>
+    <ellipse cx="${W/2}" cy="${rimY}" rx="${rimRx}" ry="5.5" fill="${C.cream}" stroke="${sk}" stroke-width="${sw}"/>
+    <ellipse cx="${W/2}" cy="${baseY}" rx="${baseRx}" ry="4" fill="${C.cream}" stroke="${sk}" stroke-width="${sw}"/>
+    <ellipse cx="${W/2}" cy="${baseY+5}" rx="${baseRx-6}" ry="1.8" fill="${C.parchDark}" opacity="0.1"/>
+  </svg>`;
+
+  const stxt=over?"Overflowing — what a day":full?"Cup full — a wonderful day":at80?"80% — that is enough":uniqueCount===0?"Add your first splash":`${uniqueCount} of 10 pillars`;
+  const scol=over?C.sageDark:full?C.sageDark:at80?C.sageDark:C.inkLight;
+  return`<div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    ${svg}
+    <div style="text-align:center">
+      <span style="font-family:Georgia,serif;font-size:26px;color:${full?C.sageDark:C.ink}">${uniqueCount}</span>
+      <span style="font-family:Inter,sans-serif;font-size:14px;color:${C.inkLight}"> / 10 pillars</span>
+      <div style="font-family:Inter,sans-serif;font-size:11px;color:${scol};margin-top:3px;letter-spacing:0.05em;text-transform:uppercase">${stxt}</div>
     </div>
-  );
+  </div>`;
 }
 
-function NavBtn({ onClick, label, disabled }) {
-  return <button onClick={onClick} disabled={disabled} style={{background:"none",border:"1px solid "+C.parchDark,borderRadius:4,padding:"6px 14px",cursor:disabled?"default":"pointer",fontFamily:sans,fontSize:14,color:disabled?C.parchDark:C.inkMid,opacity:disabled?0.4:1}}>{label}</button>;
+function renderMiniCup(stats,size=30){
+  const{uniquePillars,uniqueCount,fillLevel,breakdown,total}=stats;
+  const W=size,H=size*1.45,rimY=H*0.09,rimRx=W*0.42,baseY=H-H*0.09,baseRx=W*0.34,bodyH=baseY-rimY;
+  const lR=W/2-rimRx,rR=W/2+rimRx,lB=W/2-baseRx,rB=W/2+baseRx;
+  const xL=y=>lR+(lB-lR)*(y-rimY)/bodyH;
+  const xR=y=>rR+(rB-rR)*(y-rimY)/bodyH;
+  const fillH=bodyH*Math.min(1,uniqueCount/10);
+  let segs="";
+  if(total>0&&uniqueCount>0){
+    const ord=uniquePillars.map(pid=>({...(breakdown.find(b=>b.id===pid)||{id:pid,count:0}),pillar:PILLARS.find(p=>p.id===pid)}));
+    let cy=baseY;
+    for(const b of ord){
+      const sh=(b.count/total)*fillH;
+      const yB=cy,yT=cy-sh;
+      const col=b.pillar?b.pillar.color:"#CEC8BC";
+      const p=`${xL(yT).toFixed(1)},${yT.toFixed(1)} ${xR(yT).toFixed(1)},${yT.toFixed(1)} ${xR(yB).toFixed(1)},${yB.toFixed(1)} ${xL(yB).toFixed(1)},${yB.toFixed(1)}`;
+      segs+=`<polygon points="${p}" fill="${col}" opacity="0.8"/>`;
+      cy=yT;
+    }
+  }
+  const sk=uniqueCount>=8?C.sageDark:C.parchDark;
+  const uid="m"+(Math.random()*1e9|0);
+  return`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <defs><clipPath id="${uid}"><polygon points="${lR},${rimY} ${rR},${rimY} ${rB},${baseY} ${lB},${baseY}"/></clipPath></defs>
+    <polygon points="${lR},${rimY} ${rR},${rimY} ${rB},${baseY} ${lB},${baseY}" fill="${C.parchment}"/>
+    <g clip-path="url(#${uid})">${segs}</g>
+    <line x1="${lR}" y1="${rimY}" x2="${lB}" y2="${baseY}" stroke="${sk}" stroke-width="0.8"/>
+    <line x1="${rR}" y1="${rimY}" x2="${rB}" y2="${baseY}" stroke="${sk}" stroke-width="0.8"/>
+    <ellipse cx="${W/2}" cy="${rimY}" rx="${rimRx}" ry="${H*0.045}" fill="${C.cream}" stroke="${sk}" stroke-width="0.8"/>
+    <ellipse cx="${W/2}" cy="${baseY}" rx="${baseRx}" ry="${H*0.035}" fill="${C.cream}" stroke="${sk}" stroke-width="0.8"/>
+  </svg>`;
 }
 
-function CheckBox({ on }) {
-  const pop=usePopOnTrue(on);
-  return (
-    <div style={{width:22,height:22,borderRadius:3,flexShrink:0,border:"1.5px solid "+(on?C.sage:C.inkLight),background:on?C.sage:"transparent",display:"flex",alignItems:"center",justifyContent:"center",transform:pop?"scale(1.35)":"scale(1)",boxShadow:pop?"0 0 0 4px #B0CCAD66":"none",transition:"background .15s, border-color .15s, transform .2s, box-shadow .2s"}}>
-      {on&&<svg width="12" height="12" viewBox="0 0 10 10"><path d="M1.5 5.5l2.5 2.5 5-5" stroke={C.cream} strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+// ────────────────────────────────────────────────────────────────────────────────
+// APP STATE
+// ────────────────────────────────────────────────────────────────────────────────
+const state={
+  view:"today",data:loadData(),
+  dayOffset:0,weekOffset:0,monthOffset:0,
+  showSheet:false,sheetStep:"pillar",sheetPillar:null,
+  selectedActivities:{},waterCount:1,
+  confirmClear:false,toast:null,toastTimer:null,
+  openWhyPillars:new Set(),
+};
+function getViewDate(){return offsetDate(TODAY,state.dayOffset);}
+function getViewKey(){return getDateKey(getViewDate());}
+function getSplashes(){return state.data[getViewKey()]?.splashes||[];}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// RENDER
+// ────────────────────────────────────────────────────────────────────────────────
+function render(){document.getElementById("root").innerHTML=buildApp();bindEsc();}
+
+function buildApp(){return`<div style="background:${C.cream};min-height:100vh">
+  ${state.confirmClear?buildConfirm():""}
+  ${state.toast?buildToast():""}
+  ${state.showSheet?buildSheet():""}
+  <div style="max-width:460px;margin:0 auto;padding:36px 20px 100px">
+    ${buildHeader()}${buildNav()}
+    ${state.view==="today"?buildToday():""}
+    ${state.view==="week"?buildWeek():""}
+    ${state.view==="month"?buildMonth():""}
+    ${state.view==="why"?buildWhy():""}
+  </div>
+  ${state.view==="today"?`<div class="fab"><button onclick="openSheet()" style="padding:14px 36px;border-radius:30px;border:none;background:#7A8C5A;color:#F8F6F1;font-family:Georgia,serif;font-size:18px;box-shadow:0 4px 20px rgba(106,138,80,0.35);letter-spacing:0.02em">+ Splash</button></div>`:""}
+</div>`;}
+
+function buildHeader(){
+  const now=new Date(),idx=now.getFullYear()*10000+now.getMonth()*100+now.getDate(),q=QUOTES[idx%QUOTES.length];
+  return`<div style="margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid ${C.parchDark}">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <h1 style="font-family:Georgia,serif;font-size:34px;font-weight:400;letter-spacing:-0.5px">Fill the Cup</h1>
+      <p style="font-family:Inter,sans-serif;font-size:12px;color:${C.inkMid};letter-spacing:0.06em;text-transform:uppercase">${now.toLocaleDateString("en-US",{weekday:"short",month:"long",day:"numeric"})}</p>
     </div>
-  );
-}
+    <div style="margin-top:14px;padding-top:14px;border-top:1px dashed ${C.parchDark}">
+      <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${C.inkMid};line-height:1.7;margin-bottom:5px">"${q.text}"</p>
+      <p style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};letter-spacing:0.05em;text-transform:uppercase">${q.source}</p>
+    </div>
+  </div>`;}
 
-function NoteField({ value, onChange, onClick }) {
-  return <textarea placeholder="A note for today..." value={value||""} onChange={onChange} onClick={onClick} rows={2} style={{width:"100%",boxSizing:"border-box",resize:"none",border:"1px solid "+C.parchDark,borderRadius:4,padding:"10px 12px",fontSize:15,fontFamily:serif,fontStyle:"italic",background:C.cream,color:C.ink,outline:"none",lineHeight:1.7}}/>;
-}
+function buildNav(){return`<div style="display:flex;gap:20px;margin-bottom:24px;border-bottom:1px solid ${C.parchDark};padding-bottom:14px">
+  ${[["today","Today"],["week","This week"],["month","Month"],["why","Why"]].map(([v,l])=>`<button class="tab-btn${state.view===v?" active":""}" onclick="setView('${v}')">${l}</button>`).join("")}
+</div>`;}
 
-function ClearBtn({ onClear }) {
-  return <button onClick={onClear} style={{background:"none",border:"none",cursor:"pointer",fontFamily:sans,fontSize:12,color:C.inkLight,textDecoration:"underline",padding:"6px 0 0",display:"block"}}>Clear this entry</button>;
-}
+// ─── TODAY ──────────────────────────────────────────────────────────────────────
+function buildToday(){
+  const vd=getViewDate(),isToday=state.dayOffset===0;
+  const splashes=getSplashes(),stats=getCupStats(splashes);
+  const{uniqueCount,breakdown,fillLevel}=stats;
+  const at80=uniqueCount>=8;
+  const nudge=isToday?buildNudge(state.data,getViewKey()):null;
+  const enc=isToday&&!nudge?buildEncouragement(state.data):null;
 
-function FlagRow({ label, hint, options, value, onChange }) {
-  return (
-    <div style={{marginBottom:14}}>
-      <div style={{fontFamily:sans,fontSize:14,color:C.ink,marginBottom:7}}>{label} <span style={{color:C.inkLight,fontSize:13}}>- {hint}</span></div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {options.map(o=>{ const sel=value===o,good=o===options[0]; return <button key={o} onClick={()=>onChange(o)} style={{padding:"5px 14px",borderRadius:12,border:"1px solid",borderColor:sel?(good?C.sageDark:C.clay):C.parchDark,background:sel?(good?"#EDF4EC":C.clayPale):"transparent",fontFamily:sans,fontSize:13,color:sel?(good?C.sageDark:C.clay):C.inkLight,cursor:"pointer"}}>{o}</button>; })}
+  const nav=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <button class="nav-btn" onclick="addDayOffset(-1)">Earlier</button>
+    <div style="text-align:center">
+      <div style="font-family:Georgia,serif;font-size:17px;color:${C.ink}">${isToday?"Today":fmtDate(vd)}</div>
+      ${!isToday?`<button onclick="addDayOffset(${-state.dayOffset})" style="background:none;border:none;font-family:Inter,sans-serif;font-size:13px;color:${C.inkMid};text-decoration:underline;padding:2px 0 0">Back to today</button>`:""}
+    </div>
+    <button class="nav-btn" onclick="addDayOffset(1)"${state.dayOffset>=0?" disabled":""}>Later</button>
+  </div>`;
+
+  const past=!isToday?`<div style="margin-bottom:16px;padding:12px 16px;border-radius:4px;background:${uniqueCount>0?warmthBg(fillLevel):C.parchment};border:1px solid ${C.parchDark}">
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${uniqueCount>0?warmthFg(fillLevel):C.inkLight};margin:0">${uniqueCount>0?`${uniqueCount} pillars — ${Math.round(fillLevel*100)}%${at80?" — a good day.":"."}`:fmtDate(vd)+" — nothing logged yet."}</p>
+  </div>`:"";
+
+  const banner=(isToday&&at80)?`<div style="margin-bottom:16px;padding:12px 16px;border-radius:4px;background:#EAF0E4;border-left:3px solid ${C.sageDark}">
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${C.sageDark};line-height:1.7;margin:0">${uniqueCount>=10?"A truly full cup. Every pillar tended to.":"You reached your 80 today. That is enough."}</p>
+  </div>`:"";
+
+  const nudgeCard=(isToday&&(nudge||enc))?`<div style="margin-bottom:14px;padding:12px 16px;border-radius:4px;background:${nudge?C.goldPale:"#EAF0E4"};border-left:3px solid ${nudge?C.gold:C.sage}">
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:13px;color:${C.inkMid};line-height:1.7;margin:0">${(nudge||enc).text}</p>
+    <p style="font-family:Inter,sans-serif;font-size:11px;color:${nudge?C.gold:C.sageDark};margin:8px 0 0;letter-spacing:0.05em;text-transform:uppercase">${nudge?nudge.pillar+" — hasn't shown up in a few days":enc.pillar+" — "+enc.count+" of the last 7 days"}</p>
+  </div>`:"";
+
+  const greet=(isToday&&!at80)?`<p style="font-family:Georgia,serif;font-size:18px;color:${C.inkMid};margin-bottom:16px;font-style:italic">${uniqueCount===0?"How is today unfolding?":uniqueCount<4?"Every splash counts. Keep going.":"More than halfway there. You are doing well."}</p>`:"";
+
+  const bd=breakdown.length>0?`<div style="margin-top:4px;margin-bottom:4px">
+    <div style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px">Pillar breakdown</div>
+    ${breakdown.map(b=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:9px;height:9px;border-radius:50%;background:${b.pillar.color};flex-shrink:0"></div>
+      <div style="font-family:Inter,sans-serif;font-size:13px;color:${C.ink};width:112px;flex-shrink:0">${b.pillar.label}</div>
+      <div style="flex:1;height:4px;border-radius:2px;background:${C.parchDark};overflow:hidden"><div style="height:100%;border-radius:2px;width:${b.pct}%;background:${b.pillar.color}"></div></div>
+      <div style="font-family:Inter,sans-serif;font-size:12px;color:${C.inkLight};width:34px;text-align:right;flex-shrink:0">${b.pct}%</div>
+    </div>`).join("")}
+  </div>`:"";
+
+  const sl=splashes.length>0?`<div style="margin-top:18px">
+    <div style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">${isToday?"Today's":"This day's"} splashes</div>
+    ${splashes.map((s,i)=>{const p=PILLARS.find(p=>p.id===s.pillarId);return`<div class="splash-item" style="background:${p?.pale||C.parchment};border:1px solid ${p?.color||C.parchDark}28">
+      <div style="width:8px;height:8px;border-radius:50%;background:${p?.color||C.parchDark};flex-shrink:0"></div>
+      <span style="font-family:Inter,sans-serif;font-size:14px;color:${p?.dark||C.inkMid};flex:1">${s.label}</span>
+      <span style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};flex-shrink:0">${p?.label||""}</span>
+      <button class="remove-btn" onclick="removeSplash(${i})">×</button>
+    </div>`;}).join("")}
+  </div>`:"";
+
+  const clr=splashes.length>0?`<div style="display:flex;justify-content:center;margin-top:12px"><button onclick="state.confirmClear=true;render()" style="background:none;border:none;font-family:Inter,sans-serif;font-size:12px;color:${C.inkLight};text-decoration:underline">Clear this day</button></div>`:"";
+
+  return`${nav}${past}${banner}${nudgeCard}${greet}
+  <div style="display:flex;flex-direction:column;align-items:center;padding:24px 0 16px">${renderCup(stats)}</div>
+  ${bd}${sl}${clr}`;}
+
+// ─── WEEK ───────────────────────────────────────────────────────────────────────
+function buildWeek(){
+  const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const anchor=offsetDate(TODAY,state.weekOffset*7),weekDates=getWeekDates(anchor);
+  const label=state.weekOffset===0?"This week":state.weekOffset===-1?"Last week":`${fmtShort(weekDates[0])} – ${fmtShort(weekDates[6])}`;
+
+  // FIX: use data-key attribute so date strings don't break onclick
+  const cups=weekDates.map((dt,i)=>{
+    const key=getDateKey(dt),splashes=state.data[key]?.splashes||[],stats=getCupStats(splashes);
+    const isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY;
+    return`<div style="text-align:center;opacity:${isFuture?0.35:1}">
+      <div style="font-family:Inter,sans-serif;font-size:10px;color:${C.inkLight};margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">${DAYS[i]}</div>
+      <div ${isFuture?"":`data-key="${key}" onclick="jumpToDay(this.dataset.key)"`} style="cursor:${isFuture?"default":"pointer"};display:flex;flex-direction:column;align-items:center;padding:5px 0 3px;border-radius:4px;border:${isTodayCell?"2":"1"}px solid ${isTodayCell?C.sage:C.parchDark};background:${isTodayCell?"#EAF0E4":C.cream}">
+        ${renderMiniCup(stats,30)}
+        <div style="font-family:Inter,sans-serif;font-size:11px;color:${stats.uniqueCount>=8?C.sageDark:C.inkLight};margin-top:2px">${stats.uniqueCount||"–"}</div>
       </div>
+    </div>`;
+  }).join("");
+
+  // Pillar % breakdown — sorted highest first
+  const wByP={};let wTot=0;
+  for(const dt of weekDates){for(const s of state.data[getDateKey(dt)]?.splashes||[]){wByP[s.pillarId]=(wByP[s.pillarId]||0)+1;wTot++;}}
+  const wRows=PILLARS.map(p=>({p,cnt:wByP[p.id]||0})).filter(x=>x.cnt>0).sort((a,b)=>b.cnt-a.cnt).map(({p,cnt})=>{
+    const pct=wTot>0?Math.round(cnt/wTot*100):0;
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+      <div style="width:112px;font-family:Inter,sans-serif;font-size:13px;color:${C.ink};flex-shrink:0">${p.label}</div>
+      <div style="flex:1;height:4px;border-radius:2px;background:${C.parchDark};overflow:hidden"><div style="height:100%;border-radius:2px;width:${pct}%;background:${p.color}"></div></div>
+      <div style="font-family:Inter,sans-serif;font-size:12px;color:${C.inkLight};width:34px;text-align:right;flex-shrink:0">${pct}%</div>
+    </div>`;}).join("");
+
+  const s=SEASONAL[new Date().getMonth()],mn=MONTHS[new Date().getMonth()];
+  return`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <button class="nav-btn" onclick="addWeekOffset(-1)">Earlier</button>
+    <div style="font-family:Georgia,serif;font-size:15px;color:${C.ink}">${label}</div>
+    <button class="nav-btn" onclick="addWeekOffset(1)"${state.weekOffset>=0?" disabled":""}>Later</button>
+  </div>
+  <p style="font-family:Georgia,serif;font-size:15px;color:${C.inkLight};font-style:italic;margin-bottom:16px">Weekly cups</p>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:24px">${cups}</div>
+  <div style="border-top:1px solid ${C.parchDark};padding-top:18px;margin-bottom:24px">
+    <p style="font-family:Georgia,serif;font-size:14px;color:${C.inkLight};font-style:italic;margin-bottom:14px">By pillar this week</p>
+    ${wTot===0?`<p style="font-family:Inter,sans-serif;font-size:14px;color:${C.inkLight}">No splashes logged this week yet.</p>`:wRows}
+  </div>
+  <div style="padding:20px 22px;border-radius:6px;background:${C.parchment};border-left:3px solid #B0CCAD">
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${C.inkMid};line-height:1.8;margin:0">${s.text}</p>
+    <p style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};margin-top:12px;letter-spacing:0.05em;text-transform:uppercase">${s.season} — ${mn}</p>
+  </div>`;}
+
+// ─── MONTH ──────────────────────────────────────────────────────────────────────
+function buildMonth(){
+  const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DAYS_S=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const monthRef=new Date(TODAY.getFullYear(),TODAY.getMonth()+state.monthOffset,1);
+  const y=monthRef.getFullYear(),m=monthRef.getMonth(),last=new Date(y,m+1,0),dow=new Date(y,m,1).getDay();
+  const s=SEASONAL[new Date().getMonth()],mn=MONTHS[new Date().getMonth()];
+
+  // FIX: data-key on day cells
+  let cells="<div></div>".repeat(dow);
+  for(let d=1;d<=last.getDate();d++){
+    const dt=new Date(y,m,d),key=getDateKey(dt),stats=getCupStats(state.data[key]?.splashes||[]);
+    const n=stats.uniqueCount,pct=n/10,isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY;
+    cells+=`<div ${isFuture?"":`data-key="${key}" onclick="jumpToDay(this.dataset.key)"`} style="aspect-ratio:1;border-radius:4px;background:${isFuture?C.cream:n>0?warmthBg(pct):C.parchment};border:${isTodayCell?"2":"1"}px solid ${isTodayCell?C.sage:C.parchDark};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:${isFuture?"default":"pointer"};opacity:${isFuture?0.35:1}">
+      <span style="font-family:Inter,sans-serif;font-size:12px;color:${isFuture?C.inkLight:n>0?warmthFg(pct):C.inkLight};font-weight:${isTodayCell?700:400}">${d}</span>
+      ${n>0&&!isFuture?`<span style="font-family:Inter,sans-serif;font-size:9px;color:${warmthFg(pct)};opacity:0.85;margin-top:1px">${n}</span>`:""}
+    </div>`;
+  }
+
+  // Stats
+  let scores=[],at80c=0;
+  for(let d=1;d<=last.getDate();d++){
+    const dt=new Date(y,m,d);if(dt>TODAY)continue;
+    const st=getCupStats(state.data[getDateKey(dt)]?.splashes||[]);
+    if(st.uniqueCount>0){scores.push(st.uniqueCount/10);if(st.uniqueCount>=8)at80c++;}
+  }
+  const cnt=scores.length,avg=cnt?Math.round(scores.reduce((a,b)=>a+b,0)/cnt*100):0,best=cnt?Math.round(Math.max(...scores)*100):0;
+
+  // Top 3 pillars this month
+  const mByP={};let mTot=0;
+  for(let d=1;d<=last.getDate();d++){
+    const dt=new Date(y,m,d);if(dt>TODAY)continue;
+    for(const s of state.data[getDateKey(dt)]?.splashes||[]){mByP[s.pillarId]=(mByP[s.pillarId]||0)+1;mTot++;}
+  }
+  const top3=Object.entries(mByP).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id,c])=>({p:PILLARS.find(p=>p.id===id),cnt:c,pct:mTot>0?Math.round(c/mTot*100):0}));
+  const top3Html=top3.length>0?`<div style="border-top:1px solid ${C.parchDark};padding-top:18px;margin-bottom:24px">
+    <p style="font-family:Georgia,serif;font-size:15px;color:${C.inkLight};font-style:italic;margin-bottom:14px">Most active pillars this month</p>
+    ${top3.map(({p,cnt,pct},i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:22px;height:22px;border-radius:50%;background:${p.color};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;color:#fff">${i+1}</span></div>
+      <div style="flex:1"><div style="font-family:Inter,sans-serif;font-size:14px;color:${C.ink}">${p.label}</div><div style="font-family:Inter,sans-serif;font-size:12px;color:${C.inkLight}">${cnt} splash${cnt!==1?"es":""} · ${pct}% of the month</div></div>
+    </div>`).join("")}
+  </div>`:"";
+
+  const legend=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+    ${[["#DDD9D0","Just starting"],["#EEE0AA","Building"],["#DFC06A","Almost there"],["#C8A030","80% reached"]].map(([bg,l])=>`<div style="display:flex;align-items:center;gap:5px;font-family:Inter,sans-serif;font-size:12px;color:${C.inkLight}"><div style="width:11px;height:11px;border-radius:2px;background:${bg};border:1px solid ${C.parchDark}"></div>${l}</div>`).join("")}
+  </div>`;
+
+  return`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <button class="nav-btn" onclick="addMonthOffset(-1)">Earlier</button>
+    <div style="font-family:Georgia,serif;font-size:15px;color:${C.ink}">${MONTHS[m]} ${y}</div>
+    <button class="nav-btn" onclick="addMonthOffset(1)"${state.monthOffset>=0?" disabled":""}>Later</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
+    ${DAYS_S.map(d=>`<div style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};text-align:center;text-transform:uppercase;letter-spacing:0.05em">${d}</div>`).join("")}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:18px">${cells}</div>
+  ${legend}
+  <div style="border-top:1px solid ${C.parchDark};padding-top:18px;margin-bottom:24px">
+    <p style="font-family:Georgia,serif;font-size:15px;color:${C.inkLight};font-style:italic;margin-bottom:14px">This month at a glance</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[["Days logged",cnt],["Days at 80%+",at80c],["Avg fill",cnt?avg+"%":"--"],["Best day",cnt?best+"%":"--"]].map(([l,v])=>`<div style="padding:14px 16px;border-radius:4px;background:${C.parchment};border:1px solid ${C.parchDark}"><div style="font-family:Georgia,serif;font-size:24px;color:${C.ink};margin-bottom:4px">${v}</div><div style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight}">${l}</div></div>`).join("")}
     </div>
-  );
-}
+  </div>
+  ${top3Html}
+  <div style="padding:20px 22px;border-radius:6px;background:${C.parchment};border-left:3px solid #B0CCAD">
+    <p style="font-family:Georgia,serif;font-style:italic;font-size:15px;color:${C.inkMid};line-height:1.8;margin:0">${s.text}</p>
+    <p style="font-family:Inter,sans-serif;font-size:11px;color:${C.inkLight};margin-top:12px;letter-spacing:0.05em;text-transform:uppercase">${s.season} — ${mn}</p>
+  </div>`;}
 
-function BoolRow({ label, hint, value, onChange }) {
-  return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-      <span style={{fontFamily:sans,fontSize:14,color:C.ink,flex:1,paddingRight:12}}>{label} <span style={{color:C.inkLight,fontSize:13}}>{hint}</span></span>
-      <div onClick={()=>onChange(!value)} style={{width:42,height:26,borderRadius:13,cursor:"pointer",background:value?C.sage:C.parchDark,position:"relative",transition:"background .2s",flexShrink:0}}>
-        <div style={{position:"absolute",top:4,left:value?20:4,width:18,height:18,borderRadius:9,background:C.cream,transition:"left .2s"}}/>
-      </div>
-    </div>
-  );
-}
-
-function SeasonalCard({ month }) {
-  const s=SEASONAL[month];
-  return (
-    <div style={{padding:"20px 22px",borderRadius:4,background:C.parchment,borderLeft:"3px solid "+C.sagePale}}>
-      <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>{s.text}</p>
-      <p style={{fontFamily:sans,fontSize:12,color:C.inkLight,margin:"12px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{s.season} - {MONTHS_LONG[month]}</p>
-    </div>
-  );
-}
-
-function MonthStats({ monthDays, data }) {
-  const scores=monthDays.filter(d=>d&&d<=TODAY).map(d=>dayScore(data,getDateKey(d))).filter(s=>s!==null);
-  const count=scores.length, avg=count?Math.round(scores.reduce((a,b)=>a+b,0)/count*100):0;
-  const best=count?Math.round(Math.max(...scores)*100):0, at80=scores.filter(s=>s>=EIGHTY_PCT/TOTAL_PILLARS).length;
-  const stats=[{label:"Days logged",val:count},{label:"Days at 80%+",val:at80},{label:"Average",val:count?avg+"%":"--"},{label:"Best day",val:count?best+"%":"--"}];
-  return (
-    <div style={{borderTop:"1px solid "+C.parchDark,paddingTop:20,marginBottom:24}}>
-      <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,fontStyle:"italic",margin:"0 0 14px"}}>This month at a glance</p>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        {stats.map(item=>(
-          <div key={item.label} style={{padding:"14px 16px",borderRadius:4,background:C.parchment,border:"1px solid "+C.parchDark}}>
-            <div style={{fontFamily:serif,fontSize:24,color:C.ink,marginBottom:4}}>{item.val}</div>
-            <div style={{fontFamily:sans,fontSize:13,color:C.inkLight}}>{item.label}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ConfirmModal({ target, onConfirm, onCancel }) {
-  const pillar=PILLARS.find(p=>p.id===target), isDay=target==="day";
-  return (
-    <div style={{position:"fixed",inset:0,background:"rgba(44,36,22,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,padding:"0 24px"}}>
-      <div style={{background:C.cream,borderRadius:12,padding:"28px 24px",maxWidth:320,width:"100%"}}>
-        <p style={{fontFamily:serif,fontSize:17,color:C.ink,margin:"0 0 8px",fontWeight:400}}>{isDay?"Clear this whole day?":"Clear "+(pillar?pillar.label:"entry")+"?"}</p>
-        <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:"0 0 24px",lineHeight:1.6}}>{isDay?"All entries for this day will be reset to blank.":"This pillar's data and notes will be reset to blank."}</p>
-        <div style={{display:"flex",gap:10}}>
-          <button onClick={onCancel} style={{flex:1,padding:"10px 0",borderRadius:6,border:"1px solid "+C.parchDark,background:"transparent",fontFamily:sans,fontSize:14,color:C.inkMid,cursor:"pointer"}}>Cancel</button>
-          <button onClick={onConfirm} style={{flex:1,padding:"10px 0",borderRadius:6,border:"none",background:C.clay,fontFamily:sans,fontSize:14,color:C.cream,cursor:"pointer"}}>Clear</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FaithPillar({ entry, onSetFaith, onSetNote, onClear, open, onToggleOpen }) {
-  const faithData=entry?.faith||{};
-  const checkedCount=FAITH_BOOLS.filter(b=>!!faithData[b.id]).length;
-  const done=checkedCount===FAITH_BOOLS.length;
-  const pop=usePopOnTrue(done);
-  const summary=checkedCount===0?"Did you connect with Heavenly Father and Jesus Christ?":done?"All four practices complete":checkedCount+" of 4 complete";
-  return (
-    <div style={{borderRadius:4,border:"1px solid "+(done?C.sagePale:C.parchDark),background:done?"#EDF4EC":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
-        <div style={{flex:1}}>
-          <div style={{fontFamily:serif,fontSize:19,color:done?C.sageDark:C.ink,transition:"color .3s",transform:pop?"scale(1.02)":"scale(1)"}}>Faith</div>
-          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{summary}</div>
-        </div>
-        <button onClick={onToggleOpen} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
-      </div>
-      {open&&(
-        <div style={{padding:"12px 16px 14px",borderTop:"1px dashed "+C.parchDark}}>
-          {FAITH_BOOLS.map(b=>(
-            <BoolRow key={b.id} label={b.label} hint={b.hint} value={!!faithData[b.id]} onChange={v=>onSetFaith(b.id,v)}/>
-          ))}
-          <div style={{marginTop:10}}>
-            <NoteField value={entry?.note} onChange={e=>onSetNote(e.target.value)} onClick={e=>e.stopPropagation()}/>
-          </div>
-          <ClearBtn onClear={onClear}/>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function WaterPillar({ waterEntry, onAddDrink, onRemoveDrink, onClear }) {
-  const [inputVal,setInputVal]=useState("");
-  const inputRef=useRef(null);
-  const drinks=waterEntry?.drinks||[], totalOz=waterEntry?.totalOz||0;
-  const done=totalOz>=WATER_GOAL, remaining=Math.max(0,WATER_GOAL-totalOz);
-  const pct=Math.min(100,(totalOz/WATER_GOAL)*100);
-  const pop=usePopOnTrue(done);
-  function handleAdd() { const n=parseInt(inputVal); if (!n||n<=0||n>200) return; onAddDrink(n); setInputVal(""); inputRef.current?.focus(); }
-  return (
-    <div style={{borderRadius:4,border:"1px solid "+(totalOz>0?C.dustBluePale:C.parchDark),background:done?"#EAF3F7":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
-      <div style={{padding:"14px 16px 10px"}}>
-        <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:3}}>
-          <div style={{fontFamily:serif,fontSize:19,color:done?C.sageDark:C.ink,transition:"color .3s"}}>Water</div>
-          <div style={{fontFamily:serif,fontSize:22,color:done?C.sageDark:C.dustBlueDark,fontWeight:400,transform:pop?"scale(1.2)":"scale(1)",transition:"color .3s, transform .2s"}}>
-            {totalOz} <span style={{fontSize:14,color:C.inkLight}}>/ {WATER_GOAL} oz</span>
-          </div>
-        </div>
-        <div style={{fontFamily:sans,fontSize:13,color:C.inkMid,marginBottom:10}}>{totalOz===0?"Log your drinks below":done?"Goal reached - well hydrated today":`${remaining} oz to go`}</div>
-        <div style={{height:6,borderRadius:3,background:C.parchDark,overflow:"hidden"}}>
-          <div style={{height:"100%",borderRadius:3,width:pct+"%",background:done?C.sage:C.dustBlue,transition:"width .4s ease, background .3s"}}/>
-        </div>
-      </div>
-      {drinks.length>0&&(
-        <div style={{padding:"0 16px 10px",display:"flex",flexWrap:"wrap",gap:6}}>
-          {drinks.map((oz,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:12,background:C.dustBluePale,border:"1px solid "+C.dustBlue}}>
-              <span style={{fontFamily:sans,fontSize:13,color:C.dustBlueDark}}>{oz} oz</span>
-              <button onClick={()=>onRemoveDrink(i,oz)} style={{background:"none",border:"none",cursor:"pointer",color:C.dustBlue,fontSize:14,lineHeight:1,padding:"0 0 0 2px",fontFamily:sans}}>x</button>
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={{padding:"0 16px 14px",display:"flex",gap:8,alignItems:"center"}}>
-        <input ref={inputRef} type="number" min="1" max="200" placeholder="oz" value={inputVal}
-          onChange={e=>setInputVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdd()}
-          style={{width:72,padding:"7px 10px",border:"1px solid "+C.parchDark,borderRadius:4,fontFamily:sans,fontSize:14,color:C.ink,background:C.cream,outline:"none",boxSizing:"border-box"}}/>
-        <button onClick={handleAdd} style={{padding:"7px 16px",borderRadius:4,border:"none",background:C.dustBlue,color:C.cream,fontFamily:sans,fontSize:13,cursor:"pointer"}}>Add drink</button>
-        {totalOz>0&&<ClearBtn onClear={onClear}/>}
-      </div>
-    </div>
-  );
-}
-
-function MovementPillar({ entry, onAddWalk, onRemoveWalk, onToggleCalisthenics, onSetNote, onClear, open, onToggleOpen }) {
-  const [inputVal,setInputVal]=useState("");
-  const inputRef=useRef(null);
-  const walks=entry?.walks||[];
-  const walkMins=entry?.minutes||0;
-  const cals=!!entry?.calisthenics;
-  const target=cals?45:WALK_GOAL;
-  const mDone=movementDone(entry);
-  const pop=usePopOnTrue(mDone);
-  const remaining=Math.max(0,target-walkMins);
-  const status=mDone?"goal met":walkMins>0?remaining+" min to go":"";
-  function handleAdd() { const n=parseInt(inputVal); if (!n||n<=0) return; onAddWalk(n); setInputVal(""); inputRef.current?.focus(); }
-  return (
-    <div style={{borderRadius:4,border:"1px solid "+(mDone?C.sagePale:C.parchDark),background:mDone?"#EDF4EC":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
-        <div style={{flex:1}}>
-          <div style={{fontFamily:serif,fontSize:19,color:mDone?C.sageDark:C.ink,transition:"color .3s"}}>Movement & Fresh Air</div>
-          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>Did you move your body and spend time outside?</div>
-        </div>
-        <button onClick={onToggleOpen} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
-      </div>
-      <div style={{padding:"0 16px 14px"}}>
-        <div onClick={onToggleCalisthenics} style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,cursor:"pointer"}}>
-          <span style={{fontFamily:sans,fontSize:14,color:C.ink}}>Daily calisthenics</span>
-          <div style={{width:42,height:26,borderRadius:13,background:cals?C.sage:C.parchDark,position:"relative",transition:"background .2s",flexShrink:0}}>
-            <div style={{position:"absolute",top:4,left:cals?20:4,width:18,height:18,borderRadius:9,background:C.cream,transition:"left .2s"}}/>
-          </div>
-        </div>
-        <div style={{fontFamily:sans,fontSize:14,color:C.ink,marginBottom:8}}>Walk goal: {target} min</div>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-          <div style={{flex:1,height:6,borderRadius:3,background:C.parchDark,overflow:"hidden"}}>
-            <div style={{height:"100%",borderRadius:3,width:Math.min(100,(walkMins/90)*100)+"%",background:mDone?C.sage:walkMins>0?C.gold:"transparent",transition:"width .4s ease, background .3s"}}/>
-          </div>
-          <span style={{fontFamily:serif,fontSize:16,color:mDone?C.sageDark:C.ink,minWidth:36,textAlign:"right",transform:pop?"scale(1.2)":"scale(1)",transition:"color .3s, transform .2s"}}>{walkMins}<span style={{fontFamily:sans,fontSize:12,color:C.inkLight}}> min</span></span>
-          {status&&<span style={{fontFamily:sans,fontSize:12,color:mDone?C.sageDark:C.inkLight,minWidth:60}}>{status}</span>}
-        </div>
-        {walks.length>0&&(
-          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
-            {walks.map((mins,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:12,background:C.sagePale,border:"1px solid "+C.sage}}>
-                <span style={{fontFamily:sans,fontSize:13,color:C.sageDark}}>{mins} min</span>
-                <button onClick={()=>onRemoveWalk(i,mins)} style={{background:"none",border:"none",cursor:"pointer",color:C.sage,fontSize:14,lineHeight:1,padding:"0 0 0 2px",fontFamily:sans}}>x</button>
-              </div>
-            ))}
-          </div>
-        )}
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <input ref={inputRef} type="number" min="1" max="300" placeholder="min" value={inputVal}
-            onChange={e=>setInputVal(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAdd()}
-            style={{width:72,padding:"7px 10px",border:"1px solid "+C.parchDark,borderRadius:4,fontFamily:sans,fontSize:14,color:C.ink,background:C.cream,outline:"none",boxSizing:"border-box"}}/>
-          <button onClick={handleAdd} style={{padding:"7px 16px",borderRadius:4,border:"none",background:C.sage,color:C.cream,fontFamily:sans,fontSize:13,cursor:"pointer"}}>Log walk</button>
-          {walkMins>0&&<ClearBtn onClear={onClear}/>}
-        </div>
-        {open&&(
-          <div style={{marginTop:12}}>
-            <NoteField value={entry?.note} onChange={e=>onSetNote(e.target.value)} onClick={e=>e.stopPropagation()}/>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CheckPillar({ p, entry, onToggle, onSetNote, onClear, open, onToggleOpen }) {
-  const on=pillarDone(p,entry), pop=usePopOnTrue(on);
-  return (
-    <div style={{borderRadius:4,border:"1px solid "+(on?C.sagePale:C.parchDark),background:on?"#EDF4EC":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
-      <div style={{display:"flex",alignItems:"center",padding:"14px 16px",gap:14,cursor:"pointer"}} onClick={onToggle}>
-        <div style={{transform:pop?"scale(1.35)":"scale(1)",transition:"transform .2s"}}><CheckBox on={on}/></div>
-        <div style={{flex:1}}>
-          <div style={{fontFamily:serif,fontSize:19,color:on?C.sageDark:C.ink,transition:"color .3s"}}>{p.label}</div>
-          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{p.prompt}</div>
-        </div>
-        <button onClick={e=>{e.stopPropagation();onToggleOpen();}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
-      </div>
-      {open&&<div style={{padding:"0 16px 14px"}}><NoteField value={entry?.note} onChange={e=>onSetNote(e.target.value)} onClick={e=>e.stopPropagation()}/><ClearBtn onClear={onClear}/></div>}
-    </div>
-  );
-}
-
-function InspirationTag({ insKey }) {
-  const insp=INSPIRATIONS.find(i=>i.key===insKey);
-  if (!insp) return null;
-  return (
-    <span style={{display:"inline-block",padding:"2px 10px",borderRadius:12,border:"1px solid "+insp.color,background:insp.bg,fontFamily:sans,fontSize:11,color:insp.fg,letterSpacing:"0.03em",marginRight:6,marginBottom:4}}>
-      {insp.label}
-    </span>
-  );
-}
-
-function WhyPillarItem({ label, text, tags }) {
-  const [open,setOpen]=useState(false);
-  return (
-    <div style={{borderBottom:"1px solid "+C.parchDark}}>
-      <button onClick={()=>setOpen(o=>!o)} style={{width:"100%",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 0",textAlign:"left"}}>
-        <span style={{fontFamily:serif,fontSize:18,fontWeight:400,color:C.ink}}>{label}</span>
-        <span style={{fontFamily:serif,fontSize:22,color:C.inkLight,lineHeight:1,flexShrink:0,marginLeft:12}}>{open?"-":"+"}</span>
+// ─── WHY ────────────────────────────────────────────────────────────────────────
+function buildWhy(){return`<div style="display:flex;flex-direction:column">
+  <div style="margin-bottom:28px">
+    <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:${C.ink};margin-bottom:12px">The idea behind Fill the Cup</h2>
+    <p style="font-family:Inter,sans-serif;font-size:15px;color:${C.inkMid};line-height:1.8">Fill the Cup is not a diet app. It does not count calories, track macros, or reward streaks. It is a daily practice — a quiet invitation to add small, deliberate acts of goodness to your day. Each splash represents one thing done well. The goal is not perfection. It is fullness, one pillar at a time.</p>
+  </div>
+  <div class="divider"></div>
+  <div style="margin-bottom:28px">
+    <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:${C.ink};margin-bottom:20px">Four inspirations</h2>
+    ${WHY_INSPIRATIONS.map(x=>`<div style="margin-bottom:16px;padding:18px 20px;border-radius:6px;background:${C.parchment};border-left:3px solid ${x.color}"><h3 style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:${x.fg};margin-bottom:10px">${x.label}</h3><p style="font-family:Inter,sans-serif;font-size:14px;color:${C.inkMid};line-height:1.8;margin:0">${x.text}</p></div>`).join("")}
+  </div>
+  <div class="divider"></div>
+  <div style="margin-bottom:28px">
+    <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:${C.ink};margin-bottom:12px">The 80% principle</h2>
+    <p style="font-family:Inter,sans-serif;font-size:15px;color:${C.inkMid};line-height:1.8">In Okinawa, people say a phrase before every meal: hara hachi bu. Eat until you are eight parts full. Fill the Cup applies the same principle to your whole day. Eight pillars covered is a genuinely good day. Perfection is fragile. Consistency is sturdy. A cup at 80% every day for a year is a transformed life.</p>
+  </div>
+  <div class="divider"></div>
+  <div style="margin-bottom:28px">
+    <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:${C.ink};margin-bottom:12px">What counts as a splash</h2>
+    <p style="font-family:Inter,sans-serif;font-size:15px;color:${C.inkMid};line-height:1.8;margin-bottom:14px">A splash is any deliberate act of goodness that belongs to one of the ten pillars. Morning prayer is a splash. A walk outside is a splash. Calling a friend, cooking a real meal, tending the garden, turning the screens off early — each one is a splash.</p>
+    <p style="font-family:Inter,sans-serif;font-size:15px;color:${C.inkMid};line-height:1.8;margin-bottom:14px">The <em>fill level</em> of the glass rises each time a new pillar is represented — covering all ten fills it completely. Within that fill, each pillar's segment is sized proportionally by how many of your splashes came from it. A pillar with five splashes takes up more space than one with one.</p>
+    <p style="font-family:Inter,sans-serif;font-size:15px;color:${C.inkMid};line-height:1.8">Water is simple: each 8 oz is one splash. Multiple splashes from the same pillar each count toward the breakdown but only the first raises the fill line.</p>
+  </div>
+  <div class="divider"></div>
+  <div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;font-weight:400;color:${C.ink};margin-bottom:4px">Ten pillars</h2>
+    <p style="font-family:Inter,sans-serif;font-size:14px;color:${C.inkLight};font-style:italic;margin-bottom:16px">Tap any pillar to read about it.</p>
+    ${WHY_PILLARS.map(x=>`<div style="border-bottom:1px solid ${C.parchDark}">
+      <button class="why-pillar-btn" onclick="toggleWhy('${x.label}')">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:10px;height:10px;border-radius:50%;background:${x.color};flex-shrink:0"></div><span style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:${C.ink}">${x.label}</span></div>
+        <span style="font-family:Georgia,serif;font-size:20px;color:${C.inkLight};line-height:1;flex-shrink:0">${state.openWhyPillars.has(x.label)?"-":"+"}</span>
       </button>
-      {open&&(
-        <div style={{paddingBottom:16,paddingRight:8}}>
-          <p style={{fontFamily:sans,fontSize:14,color:C.inkMid,lineHeight:1.8,margin:"0 0 12px"}}>{text}</p>
-          <div style={{display:"flex",flexWrap:"wrap"}}>
-            {tags.map(t=><InspirationTag key={t} insKey={t}/>)}
-          </div>
+      ${state.openWhyPillars.has(x.label)?`<div class="why-pillar-content"><p style="font-family:Inter,sans-serif;font-size:14px;color:${C.inkMid};line-height:1.8;margin-bottom:12px">${x.text}</p><div>${x.tags.map(t=>`<span class="tag" style="border:1px solid ${x.color};background:${x.color}18;color:${x.color}">${t}</span>`).join("")}</div></div>`:""}
+    </div>`).join("")}
+  </div>
+</div>`;}
+
+// ─── SHEET ──────────────────────────────────────────────────────────────────────
+function buildSheet(){
+  if(state.sheetStep==="pillar"){
+    return`<div class="sheet-overlay" onclick="if(event.target===this)closeSheet()">
+      <div class="sheet">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div><div style="font-family:Georgia,serif;font-size:20px;color:${C.ink}">Add a splash</div><div style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};margin-top:3px">Which pillar does it belong to?</div></div>
+          <button onclick="closeSheet()" style="background:none;border:none;font-size:22px;color:${C.inkLight}">×</button>
         </div>
-      )}
-    </div>
-  );
-}
-
-export default function App() {
-  const [view,         setView]         = useState("today");
-  const [data,         setData]         = useState(()=>{ try { const s=localStorage.getItem("rhythm-data"); return s?JSON.parse(s):{}; } catch { return {}; } });
-  const [expanded,     setExpanded]     = useState(null);
-  const [dayOffset,    setDayOffset]    = useState(0);
-  const [weekOffset,   setWeekOffset]   = useState(0);
-  const [monthOffset,  setMonthOffset]  = useState(0);
-  const [confirmClear, setConfirmClear] = useState(null);
-  const [toast,        setToast]        = useState(null);
-
-  const viewDate           = useMemo(()=>offsetDate(TODAY,dayOffset),[dayOffset]);
-  const viewKey            = getDateKey(viewDate);
-  const isToday            = dayOffset===0;
-  const isSunday           = viewDate.getDay()===0;
-  const yKey               = getDateKey(offsetDate(viewDate,-1));
-  const viewData           = data[viewKey]||{};
-  const activePillars      = PILLARS.filter(p=>!(isSunday&&p.hasMinutes));
-  const checkedCount       = activePillars.filter(p=>pillarDone(p,viewData[p.id])).length;
-  const nudge              = isToday?buildNudge(data,viewKey,yKey):null;
-  const encourage          = isToday?buildEncouragement(data):null;
-  const nourishmentInsight = isToday?buildNourishmentInsight(data):null;
-  const idx                = localDayIndex();
-  const quote              = QUOTES[idx%QUOTES.length];
-  const nowMonth           = new Date().getMonth();
-  const rawN               = viewData.nourishment?.nutrition||{};
-  const nutrition          = { plants:!!rawN.plants, homemade:!!rawN.homemade, satisfied:!!rawN.satisfied, sugar:rawN.sugar||"none", processed:rawN.processed||"none", caffeine:rawN.caffeine||"none", slow:!!rawN.slow };
-  const hasDayData         = data[viewKey]&&Object.keys(data[viewKey]).length>0;
-  const pastScore          = !isToday?dayScore(data,viewKey):null;
-  const activeTotal        = activePillars.length;
-
-  const weekAnchor= useMemo(()=>offsetDate(TODAY,weekOffset*7),[weekOffset]);
-  const weekDates = useMemo(()=>getWeekDates(weekAnchor),[weekAnchor]);
-  const monthRef  = useMemo(()=>new Date(TODAY.getFullYear(),TODAY.getMonth()+monthOffset,1),[monthOffset]);
-  const monthDays = useMemo(()=>{
-    const y=monthRef.getFullYear(),m=monthRef.getMonth();
-    const first=new Date(y,m,1),last=new Date(y,m+1,0);
-    const dow=first.getDay(), days=[];
-    for(let i=0;i<dow;i++) days.push(null);
-    for(let d=1;d<=last.getDate();d++) days.push(new Date(y,m,d));
-    return days;
-  },[monthRef]);
-
-  useEffect(()=>{ try { localStorage.setItem("rhythm-data",JSON.stringify(data)); } catch {} },[data]);
-
-  function showToast(message, onUndo) { setToast({ message, onUndo }); }
-
-  function setFaith(field, val) {
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],faith:{...prev[viewKey]?.faith,faith:{...prev[viewKey]?.faith?.faith,[field]:val}}}}));
-  }
-  function toggle(pid) {
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:{...prev[viewKey]?.[pid],checked:!prev[viewKey]?.[pid]?.checked}}}));
-  }
-  function setNote(pid,val) {
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:{...prev[viewKey]?.[pid],note:val}}}));
-  }
-  function addWalk(mins) {
-    setData(prev=>{
-      const cur=prev[viewKey]?.movement||{walks:[],minutes:0};
-      const walks=[...(cur.walks||[]),mins];
-      return {...prev,[viewKey]:{...prev[viewKey],movement:{...cur,walks,minutes:walks.reduce((a,b)=>a+b,0)}}};
-    });
-  }
-  function removeWalk(idx2, mins) {
-    const snap=viewData.movement;
-    setData(prev=>{
-      const cur=prev[viewKey]?.movement||{walks:[],minutes:0};
-      const walks=(cur.walks||[]).filter((_,i)=>i!==idx2);
-      return {...prev,[viewKey]:{...prev[viewKey],movement:{...cur,walks,minutes:walks.reduce((a,b)=>a+b,0)}}};
-    });
-    showToast("Removed "+mins+" min",()=>setData(prev=>({...prev,[viewKey]:{...prev[viewKey],movement:snap}})));
-  }
-  function toggleCalisthenics() {
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],movement:{...prev[viewKey]?.movement,calisthenics:!prev[viewKey]?.movement?.calisthenics}}}));
-  }
-  function addDrink(oz) {
-    setData(prev=>{ const cur=prev[viewKey]?.water||{drinks:[],totalOz:0}; const drinks=[...(cur.drinks||[]),oz]; return {...prev,[viewKey]:{...prev[viewKey],water:{...cur,drinks,totalOz:drinks.reduce((a,b)=>a+b,0)}}}; });
-  }
-  function removeDrink(idx2, oz) {
-    const snap=viewData.water;
-    setData(prev=>{ const cur=prev[viewKey]?.water||{drinks:[],totalOz:0}; const drinks=(cur.drinks||[]).filter((_,i)=>i!==idx2); return {...prev,[viewKey]:{...prev[viewKey],water:{...cur,drinks,totalOz:drinks.reduce((a,b)=>a+b,0)}}}; });
-    showToast("Removed "+oz+" oz",()=>setData(prev=>({...prev,[viewKey]:{...prev[viewKey],water:snap}})));
-  }
-  function setNutrition(field,val) {
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],nourishment:{...prev[viewKey]?.nourishment,nutrition:{...prev[viewKey]?.nourishment?.nutrition,[field]:val}}}}));
-  }
-  function clearPillar(pid) {
-    let blank;
-    if (pid==="water")      blank={drinks:[],totalOz:0};
-    else if (pid==="faith") blank={faith:{},note:""};
-    else { const p=PILLARS.find(p=>p.id===pid); if(p.hasMinutes) blank={walks:[],minutes:0,note:""}; else if(p.hasNutrition) blank={checked:false,note:"",nutrition:{plants:false,homemade:false,satisfied:false,sugar:"none",processed:"none",caffeine:"none",slow:false}}; else blank={checked:false,note:""}; }
-    setData(prev=>({...prev,[viewKey]:{...prev[viewKey],[pid]:blank}}));
-    setConfirmClear(null);
-  }
-  function clearDay() { setData(prev=>({...prev,[viewKey]:{}})); setConfirmClear(null); }
-
-  const greet=!isToday?null:checkedCount===0?"How is today unfolding?":checkedCount<4?"Every habit counts. Keep going.":checkedCount<EIGHTY_PCT?"More than halfway there. You are doing well.":checkedCount===activeTotal?"A perfect day. Soak it in.":"You reached your 80 today. That is enough.";
-  const isCurrentMonth=monthOffset===0, monthLabel=MONTHS_LONG[monthRef.getMonth()]+" "+monthRef.getFullYear();
-  function jumpToDay(dt) { setView("today"); setDayOffset(Math.round((dt-TODAY)/86400000)); }
-
-  return (
-    <div style={{background:C.cream,minHeight:"100vh",color:C.ink}}>
-      {confirmClear&&<ConfirmModal target={confirmClear} onConfirm={()=>confirmClear==="day"?clearDay():clearPillar(confirmClear)} onCancel={()=>setConfirmClear(null)}/>}
-      {toast&&<UndoToast message={toast.message} onUndo={()=>{ toast.onUndo(); setToast(null); }} onDismiss={()=>setToast(null)}/>}
-      <div style={{maxWidth:460,margin:"0 auto",padding:"36px 20px 64px"}}>
-
-        <div style={{marginBottom:20,paddingBottom:18,borderBottom:"1px solid "+C.parchDark}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-            <h1 style={{fontFamily:serif,fontSize:42,fontWeight:400,margin:0,letterSpacing:"-0.5px"}}>Rhythm</h1>
-            <p style={{fontFamily:sans,fontSize:14,color:C.inkMid,margin:0,letterSpacing:"0.06em",textTransform:"uppercase"}}>{new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}</p>
-          </div>
-          <div style={{marginTop:14,paddingTop:14,borderTop:"1px dashed "+C.parchDark}}>
-            <p style={{fontFamily:serif,fontStyle:"italic",fontSize:16,color:C.inkMid,lineHeight:1.7,margin:"0 0 5px"}}>"{quote.text}"</p>
-            <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:0,letterSpacing:"0.05em",textTransform:"uppercase"}}>{quote.source}</p>
-          </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${PILLARS.map(p=>`<button class="pillar-btn" onclick="selectPillar('${p.id}')" style="border-color:${p.color}44;background:${p.pale}">
+            <div style="width:10px;height:10px;border-radius:50%;background:${p.color};flex-shrink:0"></div>
+            <span style="font-family:Georgia,serif;font-size:14px;color:${p.dark}">${p.label}</span>
+          </button>`).join("")}
         </div>
-
-        <div style={{display:"flex",gap:24,marginBottom:24,borderBottom:"1px solid "+C.parchDark,paddingBottom:14}}>
-          {[["today","Journal"],["week","This week"],["month","Month"],["why","Why"]].map(([v,l])=>(
-            <button key={v} onClick={()=>setView(v)} style={{background:"none",border:"none",cursor:"pointer",padding:"0 0 2px",fontFamily:serif,fontSize:20,color:view===v?C.sageDark:C.inkLight,borderBottom:view===v?"2px solid "+C.sage:"2px solid transparent",transition:"all .15s"}}>{l}</button>
-          ))}
-        </div>
-
-        {view==="today"&&(
-          <>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-              <NavBtn onClick={()=>setDayOffset(d=>d-1)} label="Earlier" disabled={false}/>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontFamily:serif,fontSize:18,color:C.ink}}>{isToday?"Today":fmtDate(viewDate)}</div>
-                {!isToday&&<button onClick={()=>setDayOffset(0)} style={{background:"none",border:"none",cursor:"pointer",fontFamily:sans,fontSize:13,color:C.inkMid,padding:"2px 0 0",textDecoration:"underline"}}>Back to today</button>}
-              </div>
-              <NavBtn onClick={()=>setDayOffset(d=>d+1)} label="Later" disabled={dayOffset>=0}/>
-            </div>
-            {hasDayData&&(
-              <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
-                <button onClick={()=>setConfirmClear("day")} style={{background:"none",border:"none",cursor:"pointer",fontFamily:sans,fontSize:12,color:C.inkLight,textDecoration:"underline",padding:0}}>Clear this day</button>
-              </div>
-            )}
-            {!isToday&&!isSunday&&(
-              <div style={{marginBottom:16,padding:"12px 16px",borderRadius:4,background:pastScore!==null?warmthBg(pastScore):C.parchment,border:"1px solid "+C.parchDark}}>
-                {pastScore!==null?(
-                  <>
-                    <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:warmthFg(pastScore),margin:0}}>{Math.round(pastScore*100)}% - {pastScore>=EIGHTY_PCT/TOTAL_PILLARS?"a strong day.":pastScore>=0.5?"more than halfway there.":"still a day logged."}</p>
-                    <p style={{fontFamily:sans,fontSize:12,color:warmthFg(pastScore),margin:"6px 0 0",opacity:0.75}}>{fmtDate(viewDate)} - editing past entry</p>
-                  </>
-                ):(
-                  <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.inkLight,margin:0}}>{fmtDate(viewDate)} - nothing logged yet. Fill it in below.</p>
-                )}
-              </div>
-            )}
-            {isToday&&nudge&&nudge.pillar!=="Nourishment"&&(
-              <div style={{marginBottom:12,padding:"12px 16px",borderRadius:4,background:C.goldPale,borderLeft:"3px solid "+C.gold}}>
-                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:13,color:C.inkMid,lineHeight:1.7,margin:0}}>{nudge.text}</p>
-                <p style={{fontFamily:sans,fontSize:12,color:C.gold,margin:"8px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{nudge.pillar} - has not shown up in a few days</p>
-              </div>
-            )}
-            {isToday&&nourishmentInsight&&(
-              <div style={{marginBottom:12,padding:"12px 16px",borderRadius:4,background:C.goldPale,borderLeft:"3px solid "+C.gold}}>
-                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:13,color:C.inkMid,lineHeight:1.7,margin:0}}>{nourishmentInsight}</p>
-                <p style={{fontFamily:sans,fontSize:12,color:C.gold,margin:"8px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>Nourishment - this week's pattern</p>
-              </div>
-            )}
-            {isToday&&encourage&&encourage.pillar!=="Nourishment"&&(
-              <div style={{marginBottom:12,padding:"12px 16px",borderRadius:4,background:"#EDF4EC",borderLeft:"3px solid "+C.sage}}>
-                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:13,color:C.inkMid,lineHeight:1.7,margin:0}}>{encourage.text}</p>
-                <p style={{fontFamily:sans,fontSize:12,color:C.sageDark,margin:"8px 0 0",letterSpacing:"0.05em",textTransform:"uppercase"}}>{encourage.pillar} - {encourage.count} of the last 7 days</p>
-              </div>
-            )}
-            {isToday&&checkedCount>=EIGHTY_PCT&&(
-              <div style={{marginBottom:18,padding:"12px 16px",borderRadius:4,background:"#EDF4EC",borderLeft:"3px solid "+C.sageDark}}>
-                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:15,color:C.sageDark,lineHeight:1.7,margin:0}}>{checkedCount===activeTotal?"A truly full day. Every pillar tended to.":"You reached your 80 today. That is enough."}</p>
-              </div>
-            )}
-            {isToday&&checkedCount<EIGHTY_PCT&&<p style={{fontFamily:serif,fontSize:19,color:C.inkMid,marginBottom:20,marginTop:0,fontStyle:"italic"}}>{greet}</p>}
-
-            {isSunday&&(
-              <div style={{padding:"20px 18px",borderRadius:4,background:C.parchment,border:"1px solid "+C.parchDark,marginBottom:8,textAlign:"center"}}>
-                <p style={{fontFamily:serif,fontStyle:"italic",fontSize:17,color:C.inkLight,margin:0}}>Sunday is a rest day.</p>
-                <p style={{fontFamily:sans,fontSize:13,color:C.inkLight,margin:"6px 0 0"}}>No tracking today. Come back tomorrow.</p>
-              </div>
-            )}
-            <div style={{display:"flex",flexDirection:"column",gap:5,opacity:isSunday?0.3:1,pointerEvents:isSunday?"none":"auto"}}>
-              {PILLARS.map(p=>{
-                const st=viewData[p.id], open=expanded===p.id;
-                const toggleOpen=()=>setExpanded(open?null:p.id);
-                if (p.hasFaith)     return <FaithPillar key={p.id} entry={st} onSetFaith={setFaith} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
-                if (p.isWater)      return <WaterPillar key={p.id} waterEntry={st} onAddDrink={addDrink} onRemoveDrink={removeDrink} onClear={()=>setConfirmClear("water")}/>;
-                if (p.hasMinutes)   return <MovementPillar key={p.id} entry={st} onAddWalk={addWalk} onRemoveWalk={removeWalk} onToggleCalisthenics={toggleCalisthenics} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
-                if (p.hasNutrition) {
-                  const nDone=pillarDone(p,st);
-                  const parts=[nutrition.plants&&"3+ fruit & veg",nutrition.homemade&&"home-cooked",nutrition.satisfied&&"stopped when full",nutrition.slow&&"ate slowly",nutrition.caffeine!=="none"&&("caffeine: "+nutrition.caffeine),nutrition.sugar!=="none"&&("sugar: "+nutrition.sugar)].filter(Boolean);
-                  const nSummary=parts.length>0?parts.join(" - "):p.prompt;
-                  return (
-                    <div key={p.id} style={{borderRadius:4,border:"1px solid "+(nDone?C.sagePale:C.parchDark),background:nDone?"#EDF4EC":C.parchment,overflow:"hidden",transition:"background .3s, border-color .3s"}}>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px"}}>
-                        <div style={{flex:1}}>
-                          <div style={{fontFamily:serif,fontSize:19,color:nDone?C.sageDark:C.ink,transition:"color .3s"}}>Nourishment</div>
-                          <div style={{fontFamily:sans,fontSize:14,color:C.inkMid,marginTop:3}}>{nSummary}</div>
-                        </div>
-                        <button onClick={e=>{e.stopPropagation();toggleOpen();}} style={{background:"none",border:"none",cursor:"pointer",padding:"0 4px",fontFamily:serif,fontSize:24,lineHeight:1,color:C.inkLight,flexShrink:0}}>{open?"-":"+"}</button>
-                      </div>
-                      {open&&(
-                        <div style={{padding:"12px 16px 14px",borderTop:"1px dashed "+C.parchDark}}>
-                          {NUTRITION_BOOLS.map(nb=><BoolRow key={nb.id} label={nb.label} hint={nb.hint} value={!!nutrition[nb.id]} onChange={v=>setNutrition(nb.id,v)}/>)}
-                          <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
-                          <FlagRow label="Added sugar" hint="sweets, syrups, sweet drinks" options={["little or none","some","a lot"]} value={nutrition.sugar} onChange={v=>setNutrition("sugar",v)}/>
-                          <FlagRow label="Processed food" hint="packaged, fast food" options={["none","some","a lot"]} value={nutrition.processed} onChange={v=>setNutrition("processed",v)}/>
-                          <FlagRow label="Caffeine" hint="one = 12oz or less" options={["none","one","two or more"]} value={nutrition.caffeine} onChange={v=>setNutrition("caffeine",v)}/>
-                          <div style={{height:1,background:C.parchDark,margin:"10px 0"}}/>
-                          <BoolRow label="Ate slowly" hint="sat down, present, no rush" value={nutrition.slow} onChange={v=>setNutrition("slow",v)}/>
-                          <div style={{marginTop:10}}><NoteField value={st?.note} onChange={e=>setNote(p.id,e.target.value)} onClick={e=>e.stopPropagation()}/></div>
-                          <ClearBtn onClear={()=>setConfirmClear(p.id)}/>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                return <CheckPillar key={p.id} p={p} entry={st} onToggle={()=>toggle(p.id)} onSetNote={v=>setNote(p.id,v)} onClear={()=>setConfirmClear(p.id)} open={open} onToggleOpen={toggleOpen}/>;
-              })}
-            </div>
-          </>
-        )}
-
-        {view==="week"&&(
-          <>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-              <NavBtn onClick={()=>setWeekOffset(w=>w-1)} label="Earlier" disabled={false}/>
-              <div style={{fontFamily:serif,fontSize:14,color:C.ink,textAlign:"center"}}>{weekOffset===0?"This week":weekOffset===-1?"Last week":fmtShort(weekDates[0])+" - "+fmtShort(weekDates[6])}</div>
-              <NavBtn onClick={()=>setWeekOffset(w=>w+1)} label="Later" disabled={weekOffset>=0}/>
-            </div>
-            <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,fontStyle:"italic",margin:"0 0 14px"}}>Weekly warmth</p>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,marginBottom:10}}>
-              {weekDates.map((dt,i)=>{
-                const key=getDateKey(dt),score=dayScore(data,key),isTodayCell=key===getDateKey(TODAY);
-                return (
-                  <div key={i} style={{textAlign:"center"}}>
-                    <div style={{fontFamily:sans,fontSize:11,color:C.inkLight,marginBottom:5,textTransform:"uppercase",letterSpacing:"0.05em"}}>{DAYS_SHORT[i]}</div>
-                    <div onClick={()=>jumpToDay(dt)} style={{height:52,borderRadius:3,cursor:"pointer",background:warmthBg(score),border:(isTodayCell?"2":"1")+"px solid "+(isTodayCell?C.sage:C.parchDark),display:"flex",alignItems:"center",justifyContent:"center",fontFamily:sans,fontSize:12,color:warmthFg(score),fontWeight:isTodayCell?600:400}}>
-                      {score!==null?Math.round(score*100)+"%":"--"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{display:"flex",gap:14,marginBottom:12,flexWrap:"wrap"}}>
-              {[["#D4CFC8","Just starting"],["#F0E2B6","Building momentum"],["#E8C96A","Almost there"],["#D4A017","80% reached"]].map(([bg,l])=>(
-                <div key={l} style={{display:"flex",alignItems:"center",gap:6,fontFamily:sans,fontSize:13,color:C.inkLight}}>
-                  <div style={{width:12,height:12,borderRadius:2,background:bg,border:"1px solid "+C.parchDark}}/>{l}
-                </div>
-              ))}
-            </div>
-            {(()=>{ const at80=weekDates.filter(dt=>{ const s=dayScore(data,getDateKey(dt)); return s!==null&&s>=EIGHTY_PCT/TOTAL_PILLARS; }).length; return at80>0?<p style={{fontFamily:serif,fontStyle:"italic",fontSize:14,color:C.inkMid,margin:"0 0 20px"}}>{at80} of 7 days at 80% this week{at80>=5?" - a strong week.":at80>=3?" - good momentum.":"."}</p>:null; })()}
-            <div style={{borderTop:"1px solid "+C.parchDark,marginBottom:24}}/>
-            <p style={{fontFamily:serif,fontSize:15,color:C.inkLight,fontStyle:"italic",margin:"0 0 16px"}}>By pillar</p>
-            <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:32}}>
-              {PILLARS.map(p=>{
-                const dots=weekDates.map(dt=>{ const k=getDateKey(dt); if(!data[k]) return "empty"; if(isSundayDate(dt)&&p.hasMinutes) return "skip"; return pillarDone(p,data[k][p.id])?"yes":"no"; });
-                const cnt=dots.filter(d=>d==="yes").length;
-                return (
-                  <div key={p.id} style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:120,fontFamily:serif,fontSize:13,color:C.ink,flexShrink:0}}>{p.label}</div>
-                    <div style={{display:"flex",gap:3,flex:1}}>{dots.map((d,i)=><div key={i} style={{width:20,height:20,borderRadius:3,background:d==="yes"?(p.isWater?C.dustBluePale:C.sage):d==="skip"?C.parchment:d==="no"?C.parchment:"transparent",border:d==="empty"||d==="skip"?"none":"1px solid "+(d==="yes"?(p.isWater?C.dustBlue:C.sageDark):C.parchDark),opacity:d==="skip"?0.3:1,flexShrink:0}}/>)}</div>
-                    <div style={{fontFamily:sans,fontSize:13,color:C.inkLight,width:30,textAlign:"right",flexShrink:0}}>{cnt}/7</div>
-                  </div>
-                );
-              })}
-            </div>
-            <SeasonalCard month={nowMonth}/>
-          </>
-        )}
-
-        {view==="month"&&(
-          <>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-              <NavBtn onClick={()=>setMonthOffset(m=>m-1)} label="Earlier" disabled={false}/>
-              <div style={{fontFamily:serif,fontSize:15,color:C.ink}}>{monthLabel}</div>
-              <NavBtn onClick={()=>setMonthOffset(m=>m+1)} label="Later" disabled={isCurrentMonth}/>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:6}}>
-              {DAYS_SHORT.map(d=><div key={d} style={{fontFamily:sans,fontSize:11,color:C.inkLight,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.05em"}}>{d}</div>)}
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:28}}>
-              {monthDays.map((dt,i)=>{
-                if (!dt) return <div key={i}/>;
-                const key=getDateKey(dt),score=dayScore(data,key),isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY;
-                return (
-                  <div key={i} onClick={()=>{ if(!isFuture) jumpToDay(dt); }} style={{aspectRatio:"1",borderRadius:4,background:isFuture?C.cream:score===null?C.parchment:warmthBg(score),border:(isTodayCell?"2":"1")+"px solid "+(isTodayCell?C.sage:C.parchDark),display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:isFuture?"default":"pointer",opacity:isFuture?0.35:1}}>
-                    <span style={{fontFamily:sans,fontSize:12,color:isFuture?C.inkLight:score!==null?warmthFg(score):C.inkLight,fontWeight:isTodayCell?700:400}}>{dt.getDate()}</span>
-                    {score!==null&&!isFuture&&<span style={{fontFamily:sans,fontSize:10,color:warmthFg(score),opacity:0.85,marginTop:1}}>{Math.round(score*100)+"%"}</span>}
-                  </div>
-                );
-              })}
-            </div>
-            <MonthStats monthDays={monthDays} data={data}/>
-            <SeasonalCard month={nowMonth}/>
-          </>
-        )}
-
-        {view==="why"&&(
-          <div style={{display:"flex",flexDirection:"column",gap:0}}>
-            <div style={{marginBottom:28}}>
-              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 12px"}}>The idea behind Rhythm</h2>
-              <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>Rhythm is not a diet app. It does not count calories, track macros, or reward streaks. It is a daily practice, a quiet check-in with the parts of life that matter most for long-term health and happiness. The goal is not perfection. It is rhythm.</p>
-            </div>
-            <div style={{height:1,background:C.parchDark,marginBottom:28}}/>
-            <div style={{marginBottom:28}}>
-              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 20px"}}>Four inspirations</h2>
-              {WHY_INSPIRATIONS.map(item=>(
-                <div key={item.label} style={{marginBottom:16,padding:"18px 20px",borderRadius:4,background:C.parchment,borderLeft:"3px solid "+item.color}}>
-                  <h3 style={{fontFamily:serif,fontSize:18,fontWeight:400,color:item.fg,margin:"0 0 10px"}}>{item.label}</h3>
-                  <p style={{fontFamily:sans,fontSize:14,color:C.inkMid,lineHeight:1.8,margin:0}}>{item.text}</p>
-                </div>
-              ))}
-            </div>
-            <div style={{height:1,background:C.parchDark,marginBottom:28}}/>
-            <div style={{marginBottom:28}}>
-              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 12px"}}>The 80% principle</h2>
-              <p style={{fontFamily:sans,fontSize:15,color:C.inkMid,lineHeight:1.8,margin:0}}>In Okinawa, people say a phrase before every meal: hara hachi bu. It means eat until you are eight parts full. Rhythm applies the same principle to your whole day. Hitting 8 out of 10 pillars is a genuinely good day. Perfection is fragile. Consistency is sturdy. A day at 80% every day for a year is a transformed life.</p>
-            </div>
-            <div style={{height:1,background:C.parchDark,marginBottom:28}}/>
-            <div>
-              <h2 style={{fontFamily:serif,fontSize:24,fontWeight:400,color:C.ink,margin:"0 0 4px"}}>Ten pillars</h2>
-              <p style={{fontFamily:sans,fontSize:14,color:C.inkLight,fontStyle:"italic",margin:"0 0 16px"}}>Tap any pillar to read about it.</p>
-              {WHY_PILLARS.map(item=><WhyPillarItem key={item.label} label={item.label} text={item.text} tags={item.tags}/>)}
-            </div>
-          </div>
-        )}
-
       </div>
+    </div>`;}
+
+  const p=state.sheetPillar;
+
+  // Water: stepper UI
+  if(p.id==="water"){
+    const wc=state.waterCount;
+    return`<div class="sheet-overlay" onclick="if(event.target===this)closeSheet()">
+      <div class="sheet">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <button onclick="backToStep1()" style="background:none;border:none;font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};text-decoration:underline;margin-bottom:4px">← Back</button>
+            <div style="font-family:Georgia,serif;font-size:20px;color:${p.dark}">Water</div>
+            <div style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};margin-top:3px">How many 8 oz glasses?</div>
+          </div>
+          <button onclick="closeSheet()" style="background:none;border:none;font-size:22px;color:${C.inkLight}">×</button>
+        </div>
+        <div class="water-stepper">
+          <button class="w-btn" onclick="adjWater(-1)"${wc<=1?" disabled":""}>−</button>
+          <div class="w-count">${wc}</div>
+          <button class="w-btn" onclick="adjWater(1)">+</button>
+        </div>
+        <div style="text-align:center;font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};margin-bottom:18px">${wc*8} oz total</div>
+        <button onclick="confirmWater()" style="display:block;width:100%;padding:13px;border-radius:6px;border:none;background:${p.color};color:#fff;font-family:Georgia,serif;font-size:17px">Add ${wc} splash${wc!==1?"es":""}</button>
+      </div>
+    </div>`;}
+
+  // All other pillars: multi-select
+  const sel=state.selectedActivities[p.id]||new Set();
+  const acts=ACTIVITIES[p.id].map(act=>{
+    const isSel=sel.has(act);
+    // Escape single quotes in act for safe inline attribute
+    const safeAct=act.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    return`<button class="activity-row" onclick="toggleActivity('${safeAct}')">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:16px;height:16px;border-radius:3px;border:1.5px solid ${isSel?p.color:C.parchDark};background:${isSel?p.color:"transparent"};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          ${isSel?`<svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5.5l2.5 2.5 5-5" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`:""}
+        </div>
+        <span>${act}</span>
+      </div>
+    </button>`;}).join("");
+
+  return`<div class="sheet-overlay" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <button onclick="backToStep1()" style="background:none;border:none;font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};text-decoration:underline;margin-bottom:4px">← Back</button>
+          <div style="font-family:Georgia,serif;font-size:20px;color:${p.dark}">${p.label}</div>
+          <div style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};margin-top:3px">Tap to select. Choose as many as apply.</div>
+        </div>
+        <button onclick="closeSheet()" style="background:none;border:none;font-size:22px;color:${C.inkLight}">×</button>
+      </div>
+      <div>${acts}</div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid ${C.parchDark}">
+        <div style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};margin-bottom:7px">Or write your own:</div>
+        <div style="display:flex;gap:8px">
+          <input id="cai" class="custom-input" type="text" placeholder="What did you do?" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustom();}"/>
+          <button onclick="addCustom()" style="padding:9px 16px;border-radius:4px;border:none;background:${p.color};color:#fff;font-family:Inter,sans-serif;font-size:13px">Add</button>
+        </div>
+      </div>
+      ${sel.size>0?`<div style="margin-top:16px;padding-top:14px;border-top:1px solid ${C.parchDark};display:flex;align-items:center;justify-content:space-between">
+        <div style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkMid}">${sel.size} selected</div>
+        <button onclick="confirmActivities()" style="padding:10px 24px;border-radius:6px;border:none;background:${p.color};color:#fff;font-family:Georgia,serif;font-size:15px">Add ${sel.size>1?sel.size+" splashes":"splash"}</button>
+      </div>`:""}
     </div>
-  );
+  </div>`;}
+
+function buildConfirm(){return`<div class="modal-overlay">
+  <div class="modal">
+    <p style="font-family:Georgia,serif;font-size:17px;color:${C.ink};margin-bottom:8px">Clear this day?</p>
+    <p style="font-family:Inter,sans-serif;font-size:13px;color:${C.inkLight};margin-bottom:24px;line-height:1.6">All splashes for this day will be removed.</p>
+    <div style="display:flex;gap:10px">
+      <button onclick="state.confirmClear=false;render()" style="flex:1;padding:10px;border-radius:6px;border:1px solid ${C.parchDark};background:transparent;font-family:Inter,sans-serif;font-size:14px;color:${C.inkMid}">Cancel</button>
+      <button onclick="clearDay()" style="flex:1;padding:10px;border-radius:6px;border:none;background:${C.clay};font-family:Inter,sans-serif;font-size:14px;color:#fff">Clear</button>
+    </div>
+  </div>
+</div>`;}
+
+function buildToast(){return`<div class="toast">
+  <span>${state.toast.message}</span>
+  <button onclick="undoToast()" style="background:none;border:1px solid rgba(255,255,255,0.4);border-radius:4px;color:#F8F6F1;font-family:Inter,sans-serif;font-size:13px;padding:3px 10px">Undo</button>
+</div>`;}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// ACTIONS
+// ────────────────────────────────────────────────────────────────────────────────
+function setView(v){state.view=v;render();}
+function addDayOffset(n){state.dayOffset=Math.min(0,state.dayOffset+n);render();}
+function addWeekOffset(n){state.weekOffset=Math.min(0,state.weekOffset+n);render();}
+function addMonthOffset(n){state.monthOffset=Math.min(0,state.monthOffset+n);render();}
+
+// FIX: accepts YYYY-MM-DD key string via data attribute, no quoting issues
+function jumpToDay(key){
+  const dt=new Date(key+"T12:00:00");
+  state.dayOffset=Math.round((dt-TODAY)/86400000);
+  state.view="today";render();
 }
+
+function toggleWhy(label){
+  if(state.openWhyPillars.has(label))state.openWhyPillars.delete(label);
+  else state.openWhyPillars.add(label);render();
+}
+function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=1;render();}
+function closeSheet(){state.showSheet=false;state.selectedActivities={};render();}
+function backToStep1(){state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};render();}
+function selectPillar(id){
+  state.sheetPillar=PILLARS.find(p=>p.id===id);
+  state.sheetStep="activity";
+  if(!state.selectedActivities[id])state.selectedActivities[id]=new Set();
+  render();
+}
+function toggleActivity(act){
+  const id=state.sheetPillar.id;
+  if(!state.selectedActivities[id])state.selectedActivities[id]=new Set();
+  const sel=state.selectedActivities[id];
+  if(sel.has(act))sel.delete(act);else sel.add(act);
+  render();
+}
+// FIX: addCustom reads input value, adds to selection, clears input, refocuses — no re-render issue
+function addCustom(){
+  const el=document.getElementById("cai");
+  if(!el)return;
+  const val=el.value.trim();
+  if(!val)return;
+  const id=state.sheetPillar.id;
+  if(!state.selectedActivities[id])state.selectedActivities[id]=new Set();
+  state.selectedActivities[id].add(val);
+  render();
+  // Restore focus after render
+  const nel=document.getElementById("cai");
+  if(nel){nel.value="";nel.focus();}
+}
+function confirmActivities(){
+  const id=state.sheetPillar.id,sel=state.selectedActivities[id]||new Set();
+  if(!sel.size)return;
+  const key=getViewKey(),cur=state.data[key]||{};
+  state.data[key]={...cur,splashes:[...(cur.splashes||[]),...[...sel].map((label,i)=>({pillarId:id,label,timestamp:Date.now()+i}))]};
+  saveData(state.data);state.showSheet=false;state.selectedActivities={};render();
+}
+function adjWater(n){state.waterCount=Math.max(1,Math.min(16,(state.waterCount||1)+n));render();}
+function confirmWater(){
+  const key=getViewKey(),cur=state.data[key]||{},n=state.waterCount;
+  state.data[key]={...cur,splashes:[...(cur.splashes||[]),...Array.from({length:n},(_,i)=>({pillarId:"water",label:"8 oz of water",timestamp:Date.now()+i}))]};
+  saveData(state.data);state.showSheet=false;state.waterCount=1;render();
+}
+function removeSplash(idx){
+  const key=getViewKey(),snap=JSON.parse(JSON.stringify(state.data[key]));
+  const label=state.data[key]?.splashes?.[idx]?.label;
+  state.data[key].splashes.splice(idx,1);
+  saveData(state.data);
+  showToast(label?`Removed "${label}"`:"Splash removed",()=>{state.data[key]=snap;saveData(state.data);render();});
+  render();
+}
+function clearDay(){state.data[getViewKey()]={};saveData(state.data);state.confirmClear=false;render();}
+function showToast(msg,undoFn){
+  if(state.toastTimer)clearTimeout(state.toastTimer);
+  state.toast={message:msg,undoFn};
+  state.toastTimer=setTimeout(()=>{state.toast=null;render();},4000);
+  render();
+}
+function undoToast(){
+  if(state.toastTimer)clearTimeout(state.toastTimer);
+  if(state.toast?.undoFn)state.toast.undoFn();
+  state.toast=null;render();
+}
+function bindEsc(){
+  document.onkeydown=e=>{
+    if(e.key==="Escape"){
+      if(state.showSheet)closeSheet();
+      else if(state.confirmClear){state.confirmClear=false;render();}
+    }
+  };
+}
+
+// Boot
+render();
+</script>
+</body>
+</html>
