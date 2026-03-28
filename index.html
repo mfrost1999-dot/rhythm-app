@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fill the Cup">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23F8F6F1'/%3E%3Cdefs%3E%3CclipPath id='cup'%3E%3Cpolygon points='36,28 144,28 126,158 54,158'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpolygon points='36,28 144,28 126,158 54,158' fill='%23EEEAE2'/%3E%3Cg clip-path='url(%23cup)'%3E%3Crect x='36' y='145' width='108' height='13' fill='%237BA7D4' opacity='0.92'/%3E%3Crect x='36' y='132' width='108' height='13' fill='%231E6E9E' opacity='0.92'/%3E%3Crect x='36' y='120' width='108' height='12' fill='%23E8A820' opacity='0.92'/%3E%3Crect x='36' y='109' width='108' height='11' fill='%233A6B3A' opacity='0.92'/%3E%3Crect x='36' y='99' width='108' height='10' fill='%2382B882' opacity='0.92'/%3E%3Crect x='36' y='90' width='108' height='9' fill='%23B07C08' opacity='0.92'/%3E%3Crect x='36' y='82' width='108' height='8' fill='%23F0CC55' opacity='0.92'/%3E%3Crect x='36' y='75' width='108' height='7' fill='%232A4E8A' opacity='0.92'/%3E%3Crect x='36' y='69' width='108' height='6' fill='%237EC8BF' opacity='0.92'/%3E%3Crect x='36' y='28' width='108' height='41' fill='%232A7A72' opacity='0.92'/%3E%3C/g%3E%3Cellipse cx='90' cy='28' rx='54' ry='7' fill='%23F8F6F1' stroke='%231A4E48' stroke-width='3'/%3E%3Cellipse cx='90' cy='158' rx='36' ry='5' fill='%23F8F6F1' stroke='%231A4E48' stroke-width='3'/%3E%3Cline x1='36' y1='28' x2='54' y2='158' stroke='%231A4E48' stroke-width='3'/%3E%3Cline x1='144' y1='28' x2='126' y2='158' stroke='%231A4E48' stroke-width='3'/%3E%3Cellipse cx='90' cy='165' rx='30' ry='3.5' fill='%23CEC8BC' opacity='0.3'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#F8F6F1;color:#1C1C18;font-family:Georgia,'Times New Roman',serif;min-height:100vh}
@@ -30,7 +30,8 @@ input{font-family:'Inter','Helvetica Neue',sans-serif}
 .pillar-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:6px;border:1.5px solid transparent;background:none;text-align:left;width:100%}
 .pillar-btn:hover{opacity:0.82}
 .splash-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;margin-bottom:4px}
-.remove-btn{background:none;border:none;color:#747060;font-size:18px;line-height:1;padding:0 0 0 6px;flex-shrink:0}
+.remove-btn{background:none;border:none;padding:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.6}
+.remove-btn:hover{opacity:1}
 .divider{height:1px;background:#CEC8BC;margin:28px 0}
 .why-pillar-btn{width:100%;background:none;border:none;border-bottom:1px solid #CEC8BC;display:flex;align-items:center;justify-content:space-between;padding:16px 0;text-align:left;gap:12px}
 .why-pillar-content{padding-bottom:16px;padding-right:8px}
@@ -46,19 +47,19 @@ input{font-family:'Inter','Helvetica Neue',sans-serif}
 <body>
 <div id="root"></div>
 <script>
-var C={cream:"#F8F6F1",parchment:"#EEEAE2",parchDark:"#CEC8BC",sage:"#7A8C5A",sageDark:"#4A5C2A",ink:"#1C1C18",inkMid:"#3D3D30",inkLight:"#747060",clay:"#9E5A2E",gold:"#A87C1E",goldPale:"#F0E4A8"};
+var C={cream:"#F8F6F1",parchment:"#EEEAE2",parchDark:"#CEC8BC",ink:"#1C1C18",inkMid:"#3D3D30",inkLight:"#747060",clay:"#9E5A2E",gold:"#A87C1E",goldPale:"#F0E4A8",sage:"#4A7C59",sageDark:"#2A5C39"};
 
 var PILLARS=[
   {id:"faith",       label:"Faith",        color:"#2A7A72", pale:"#D4F0EC", dark:"#1A4E48"},
-  {id:"movement",    label:"Movement",     color:"#2A4E8A", pale:"#D4E0F4", dark:"#1A3060"},
-  {id:"nourishment", label:"Nourishment",  color:"#3A6B3A", pale:"#D4EAD4", dark:"#224422"},
+  {id:"movement",    label:"Movement",     color:"#E8A820", pale:"#FDF0C4", dark:"#8A6010"},
+  {id:"nourishment", label:"Nourishment",  color:"#2A4E8A", pale:"#D4E0F4", dark:"#1A3060"},
   {id:"water",       label:"Water",        color:"#1E6E9E", pale:"#C8E4F4", dark:"#104868"},
-  {id:"connection",  label:"Connection",   color:"#B07C08", pale:"#F4E8C4", dark:"#785204"},
-  {id:"service",     label:"Service",      color:"#7EC8BF", pale:"#D8F4F0", dark:"#2A7A72"},
-  {id:"stewardship", label:"Stewardship",  color:"#F0CC55", pale:"#FDF4CC", dark:"#8A7010"},
-  {id:"creative",    label:"Creative Work",color:"#82B882", pale:"#D8EED8", dark:"#3A6B3A"},
-  {id:"joy",         label:"Joy & Hygge",  color:"#E8A820", pale:"#FDF0C4", dark:"#8A6010"},
-  {id:"rest",        label:"Rest",         color:"#7BA7D4", pale:"#D4E8F8", dark:"#2A4E8A"}
+  {id:"connection",  label:"Connection",   color:"#3A6B3A", pale:"#D4EAD4", dark:"#224422"},
+  {id:"service",     label:"Service",      color:"#7BA7D4", pale:"#D4E8F8", dark:"#2A4E8A"},
+  {id:"stewardship", label:"Stewardship",  color:"#B07C08", pale:"#F4E8C4", dark:"#785204"},
+  {id:"creative",    label:"Creative Work",color:"#7EC8BF", pale:"#D8F4F0", dark:"#2A7A72"},
+  {id:"joy",         label:"Joy & Hygge",  color:"#F0CC55", pale:"#FDF4CC", dark:"#8A7010"},
+  {id:"rest",        label:"Rest",         color:"#82B882", pale:"#D8EED8", dark:"#3A6B3A"}
 ];
 
 var ACTIVITIES={
@@ -146,53 +147,48 @@ var SEASONAL=[
 ];
 
 var WHY_INSPIRATIONS=[
-  {label:"Blue Zones",color:"#6B8C5A",fg:"#384E28",text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day, eat mostly plants, stop before they are full, and share meals with others. They belong to faith communities and tight social circles. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome."},
-  {label:"Edwardian England",color:"#A07848",fg:"#6A4820",text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden."},
-  {label:"Little Women",color:"#567E90",fg:"#2A5060",text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. The March family is poor, but their days are full. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness."},
-  {label:"Scandinavian cultures",color:"#7888A8",fg:"#384870",text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv, the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge, the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments."}
+  {label:"Blue Zones",color:"#3A6B3A",fg:"#224422",text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day, eat mostly plants, stop before they are full, and share meals with others. They belong to faith communities and tight social circles. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome."},
+  {label:"Edwardian England",color:"#B07C08",fg:"#785204",text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden."},
+  {label:"Little Women",color:"#1E6E9E",fg:"#104868",text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. The March family is poor, but their days are full. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness."},
+  {label:"Scandinavian cultures",color:"#2A7A72",fg:"#1A4E48",text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv, the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge, the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments."}
 ];
 
 var WHY_PILLARS=[
-  {label:"Faith",color:"#8B6878",tags:["Blue Zones","Little Women","Edwardian"],text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ."},
-  {label:"Movement",color:"#6B8C5A",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity."},
-  {label:"Nourishment",color:"#A07848",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention and stopping before fullness supports better digestion, healthier weight regulation, and a more stable mood."},
-  {label:"Water",color:"#567E90",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Chronic mild dehydration is one of the most common contributors to fatigue, poor concentration, headaches, and low mood. Each 8 oz splash here is one glass, a simple, steady act of maintenance that most people simply do not do consistently."},
-  {label:"Connection",color:"#B86858",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, and are the most consistent predictor of happiness across cultures and age groups."},
-  {label:"Service",color:"#C4A040",tags:["Blue Zones","Little Women","Edwardian"],text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction and lower rates of depression. Marmee taught her daughters that the surest way out of their own struggles was to look outward."},
-  {label:"Stewardship",color:"#788C68",tags:["Blue Zones","Edwardian","Little Women"],text:"Having things in your care gives the day shape and meaning. People who feel responsible for something beyond themselves live longer and report higher life satisfaction. Tending faithfully to small things is one of the most underrated forms of self-care."},
-  {label:"Creative Work",color:"#C07858",tags:["Edwardian","Little Women","Scandinavian"],text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. Even ten minutes of something made is neurologically different from ten minutes of something consumed."},
-  {label:"Joy & Hygge",color:"#D4907A",tags:["Blue Zones","Little Women","Scandinavian"],text:"The ability to notice and create small moments of warmth and pleasure is a trainable skill. People who regularly experience positive emotions show greater cardiovascular resilience and longer lives. You do not need large exceptional experiences. You need reliable small ones."},
-  {label:"Rest",color:"#7888A8",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Sleep is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, and resetting the immune system. The evening routine is not indulgence. It is infrastructure."}
+  {label:"Faith",        pid:"faith",       tags:["Blue Zones","Little Women","Edwardian"],    text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ."},
+  {label:"Movement",     pid:"movement",    tags:["Blue Zones","Edwardian","Scandinavian"],     text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity."},
+  {label:"Nourishment",  pid:"nourishment", tags:["Blue Zones","Edwardian","Little Women","Scandinavian"], text:"A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention and stopping before fullness supports better digestion, healthier weight regulation, and a more stable mood."},
+  {label:"Water",        pid:"water",       tags:["Blue Zones","Edwardian","Scandinavian"],     text:"Chronic mild dehydration is one of the most common contributors to fatigue, poor concentration, headaches, and low mood. Each 8 oz splash here is one glass, a simple, steady act of maintenance that most people simply do not do consistently."},
+  {label:"Connection",   pid:"connection",  tags:["Blue Zones","Edwardian","Little Women","Scandinavian"], text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, and are the most consistent predictor of happiness across cultures and age groups."},
+  {label:"Service",      pid:"service",     tags:["Blue Zones","Little Women","Edwardian"],     text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction and lower rates of depression. Marmee taught her daughters that the surest way out of their own struggles was to look outward."},
+  {label:"Stewardship",  pid:"stewardship", tags:["Blue Zones","Edwardian","Little Women"],     text:"Having things in your care gives the day shape and meaning. People who feel responsible for something beyond themselves live longer and report higher life satisfaction. Tending faithfully to small things is one of the most underrated forms of self-care."},
+  {label:"Creative Work",pid:"creative",    tags:["Edwardian","Little Women","Scandinavian"],   text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. Even ten minutes of something made is neurologically different from ten minutes of something consumed."},
+  {label:"Joy & Hygge",  pid:"joy",         tags:["Blue Zones","Little Women","Scandinavian"],  text:"The ability to notice and create small moments of warmth and pleasure is a trainable skill. People who regularly experience positive emotions show greater cardiovascular resilience and longer lives. You do not need large exceptional experiences. You need reliable small ones."},
+  {label:"Rest",         pid:"rest",        tags:["Blue Zones","Edwardian","Little Women","Scandinavian"], text:"Sleep is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, and resetting the immune system. The evening routine is not indulgence. It is infrastructure."}
 ];
 
 var TODAY=new Date();TODAY.setHours(0,0,0,0);
-
 function getDateKey(d){return d.toISOString().slice(0,10);}
 function offsetDate(base,days){var d=new Date(base);d.setDate(d.getDate()+days);return d;}
-function getWeekDates(anchor){
-  var dow=anchor.getDay(),sun=new Date(anchor);
-  sun.setDate(anchor.getDate()-dow);
-  return Array.from({length:7},function(_,i){var d=new Date(sun);d.setDate(sun.getDate()+i);return d;});
-}
+function getWeekDates(anchor){var dow=anchor.getDay(),sun=new Date(anchor);sun.setDate(anchor.getDate()-dow);return Array.from({length:7},function(_,i){var d=new Date(sun);d.setDate(sun.getDate()+i);return d;});}
 function fmtDate(d){return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
 function fmtShort(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
 function localDayIndex(){var d=new Date();return d.getFullYear()*10000+d.getMonth()*100+d.getDate();}
 function loadData(){try{return JSON.parse(localStorage.getItem("ftc-v3")||"{}");}catch(e){return {};}}
 function saveData(d){try{localStorage.setItem("ftc-v3",JSON.stringify(d));}catch(e){}}
+function getPillar(id){for(var i=0;i<PILLARS.length;i++){if(PILLARS[i].id===id)return PILLARS[i];}return null;}
 
 function getCupStats(splashes){
   var uniquePillars=[],seen={};
   for(var i=0;i<splashes.length;i++){if(!seen[splashes[i].pillarId]){seen[splashes[i].pillarId]=true;uniquePillars.push(splashes[i].pillarId);}}
   var total=splashes.length,byPillar={};
   for(var j=0;j<splashes.length;j++){var pid=splashes[j].pillarId;byPillar[pid]=(byPillar[pid]||0)+1;}
-  var breakdown=Object.keys(byPillar).map(function(id){return{id:id,count:byPillar[id],pct:total>0?Math.round(byPillar[id]/total*100):0,pillar:PILLARS.filter(function(p){return p.id===id;})[0]};});
+  var breakdown=Object.keys(byPillar).map(function(id){return{id:id,count:byPillar[id],pct:total>0?Math.round(byPillar[id]/total*100):0,pillar:getPillar(id)};});
   breakdown.sort(function(a,b){return b.count-a.count;});
   return{uniquePillars:uniquePillars,uniqueCount:uniquePillars.length,fillLevel:Math.min(1,uniquePillars.length/10),breakdown:breakdown,total:total};
 }
 
 function buildNudge(data,todayKey){
-  var todaySplashes=(data[todayKey]&&data[todayKey].splashes)||[];
-  var todayPillarIds={};
+  var todaySplashes=(data[todayKey]&&data[todayKey].splashes)||[],todayPillarIds={};
   for(var i=0;i<todaySplashes.length;i++)todayPillarIds[todaySplashes[i].pillarId]=true;
   var past3=[1,2,3].map(function(i){return getDateKey(offsetDate(new Date(todayKey+"T12:00:00"),-i));});
   var neglected=PILLARS.filter(function(p){
@@ -223,33 +219,24 @@ function renderCup(stats){
   var lR=W/2-rimRx,rR=W/2+rimRx,lB=W/2-baseRx,rB=W/2+baseRx;
   function xL(y){return lR+(lB-lR)*(y-rimY)/bodyH;}
   function xR(y){return rR+(rB-rR)*(y-rimY)/bodyH;}
-  var fillH=bodyH*Math.min(1,uc/10);
-  var segs="";
+  var fillH=bodyH*Math.min(1,uc/10),segs="";
   if(tot>0&&uc>0){
     var curY=baseY;
     for(var i=0;i<up.length;i++){
-      var pid=up[i],b=null;
-      for(var j=0;j<bd.length;j++){if(bd[j].id===pid){b=bd[j];break;}}
+      var b=null;for(var j=0;j<bd.length;j++){if(bd[j].id===up[i]){b=bd[j];break;}}
       if(!b)continue;
       var sh=(b.count/tot)*fillH,yB=curY,yT=curY-sh;
       var col=(b.pillar&&b.pillar.color)||"#CEC8BC";
       var pts=xL(yT).toFixed(1)+","+yT.toFixed(1)+" "+xR(yT).toFixed(1)+","+yT.toFixed(1)+" "+xR(yB).toFixed(1)+","+yB.toFixed(1)+" "+xL(yB).toFixed(1)+","+yB.toFixed(1);
-      segs+="<polygon points='"+pts+"' fill='"+col+"' opacity='0.82'/>";
+      segs+="<polygon points='"+pts+"' fill='"+col+"' opacity='0.92'/>";
       curY=yT;
     }
   }
   var men="";
-  if(uc>0){
-    var fTop=baseY-fillH;
-    if(fTop>rimY){
-      var lp=null;for(var pi=0;pi<PILLARS.length;pi++){if(PILLARS[pi].id===up[up.length-1]){lp=PILLARS[pi];break;}}
-      var rx=(xR(fTop)-xL(fTop))/2-1;
-      men="<ellipse cx='"+W/2+"' cy='"+fTop.toFixed(1)+"' rx='"+rx.toFixed(1)+"' ry='2.5' fill='"+(lp?lp.color:"#567E90")+"' opacity='0.25'/>";
-    }
-  }
+  if(uc>0){var fTop=baseY-fillH;if(fTop>rimY){var lp=getPillar(up[up.length-1]);var rx=(xR(fTop)-xL(fTop))/2-1;men="<ellipse cx='"+W/2+"' cy='"+fTop.toFixed(1)+"' rx='"+rx.toFixed(1)+"' ry='2.5' fill='"+(lp?lp.color:"#567E90")+"' opacity='0.25'/>";}}
   var l80Y=rimY+bodyH*0.2,ll=xL(l80Y)+2,lr=xR(l80Y)-2;
-  var l80=!full?"<line x1='"+ll.toFixed(1)+"' y1='"+l80Y.toFixed(1)+"' x2='"+lr.toFixed(1)+"' y2='"+l80Y.toFixed(1)+"' stroke='"+(at80?C.sageDark:C.parchDark)+"' stroke-width='0.9' stroke-dasharray='3,3' opacity='"+(at80?0.6:0.4)+"'/><text x='"+(ll-3).toFixed(1)+"' y='"+(l80Y+4).toFixed(1)+"' text-anchor='end' font-family='Inter,sans-serif' font-size='8' fill='"+C.inkLight+"' opacity='0.5'>80%</text>":"";
-  var sk=full?C.sageDark:C.parchDark,sw=full?1.6:1.1;
+  var l80=!full?"<line x1='"+ll.toFixed(1)+"' y1='"+l80Y.toFixed(1)+"' x2='"+lr.toFixed(1)+"' y2='"+l80Y.toFixed(1)+"' stroke='"+(at80?"#2A5C39":C.parchDark)+"' stroke-width='0.9' stroke-dasharray='3,3' opacity='"+(at80?0.6:0.4)+"'/><text x='"+(ll-3).toFixed(1)+"' y='"+(l80Y+4).toFixed(1)+"' text-anchor='end' font-family='Inter,sans-serif' font-size='8' fill='"+C.inkLight+"' opacity='0.5'>80%</text>":"";
+  var sk=full?"#1A4E48":C.parchDark,sw=full?1.6:1.1;
   var uid="c"+(Math.random()*1e8|0);
   var poly="<polygon points='"+lR+","+rimY+" "+rR+","+rimY+" "+rB+","+baseY+" "+lB+","+baseY+"'";
   var svg="<svg width='"+W+"' height='"+(H+10)+"' viewBox='0 0 "+W+" "+(H+10)+"' style='overflow:visible'>"
@@ -264,10 +251,10 @@ function renderCup(stats){
     +"<ellipse cx='"+W/2+"' cy='"+(baseY+5)+"' rx='"+(baseRx-6)+"' ry='1.8' fill='"+C.parchDark+"' opacity='0.1'/>"
     +"</svg>";
   var stxt=full?"Cup full - a wonderful day":at80?"80% - that is enough":uc===0?"Add your first splash":uc+" of 10 pillars";
-  var scol=(full||at80)?C.sageDark:C.inkLight;
+  var scol=(full||at80)?"#2A5C39":C.inkLight;
   return "<div style='display:flex;flex-direction:column;align-items:center;gap:10px'>"+svg
     +"<div style='text-align:center'>"
-    +"<span style='font-family:Georgia,serif;font-size:26px;color:"+(full?C.sageDark:C.ink)+"'>"+uc+"</span>"
+    +"<span style='font-family:Georgia,serif;font-size:26px;color:"+(full?"#2A5C39":C.ink)+"'>"+uc+"</span>"
     +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+"'> / 10 pillars</span>"
     +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+scol+";margin-top:3px;letter-spacing:0.05em;text-transform:uppercase'>"+stxt+"</div>"
     +"</div></div>";
@@ -289,11 +276,11 @@ function renderMiniCup(stats,size){
       var sh=(b.count/tot)*fillH,yB=cy,yT=cy-sh;
       var col=(b.pillar&&b.pillar.color)||"#CEC8BC";
       var pts=xLm(yT).toFixed(1)+","+yT.toFixed(1)+" "+xRm(yT).toFixed(1)+","+yT.toFixed(1)+" "+xRm(yB).toFixed(1)+","+yB.toFixed(1)+" "+xLm(yB).toFixed(1)+","+yB.toFixed(1);
-      segs+="<polygon points='"+pts+"' fill='"+col+"' opacity='0.8'/>";
+      segs+="<polygon points='"+pts+"' fill='"+col+"' opacity='0.9'/>";
       cy=yT;
     }
   }
-  var sk=uc>=8?C.sageDark:C.parchDark;
+  var sk=uc>=8?"#1A4E48":C.parchDark;
   var uid="m"+(Math.random()*1e9|0);
   var poly="<polygon points='"+lR+","+rimY+" "+rR+","+rimY+" "+rB+","+baseY+" "+lB+","+baseY+"'";
   return "<svg width='"+W+"' height='"+H+"' viewBox='0 0 "+W+" "+H+"'>"
@@ -307,18 +294,12 @@ function renderMiniCup(stats,size){
     +"</svg>";
 }
 
-var state={view:"today",data:loadData(),dayOffset:0,weekOffset:0,monthOffset:0,showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,confirmClear:false,toast:null,toastTimer:null,openWhyPillars:{}};
+var CLOSE_ICON="<svg width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M2 2l10 10M12 2L2 12' stroke='#747060' stroke-width='1.8' stroke-linecap='round'/></svg>";
 
+var state={view:"today",data:loadData(),dayOffset:0,weekOffset:0,monthOffset:0,showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,confirmClear:false,toast:null,toastTimer:null,openWhyPillars:{}};
 function getViewDate(){return offsetDate(TODAY,state.dayOffset);}
 function getViewKey(){return getDateKey(getViewDate());}
 function getSplashes(){return(state.data[getViewKey()]&&state.data[getViewKey()].splashes)||[];}
-
-function h(tag,attrs,inner){
-  var s="<"+tag;
-  if(attrs)s+=" "+attrs;
-  s+=">"+(inner||"")+"</"+tag+">";
-  return s;
-}
 
 function render(){document.getElementById("root").innerHTML=buildApp();bindEsc();}
 
@@ -334,7 +315,7 @@ function buildApp(){
     +(state.view==="month"?buildMonth():"")
     +(state.view==="why"?buildWhy():"")
     +"</div>"
-    +(state.view==="today"?"<div class='fab'><button onclick='openSheet()' style='padding:14px 36px;border-radius:30px;border:none;background:#7A8C5A;color:#F8F6F1;font-family:Georgia,serif;font-size:18px;box-shadow:0 4px 20px rgba(106,138,80,0.35)'>+ Splash</button></div>":"")
+    +(state.view==="today"?"<div class='fab'><button onclick='openSheet()' style='padding:14px 36px;border-radius:30px;border:none;background:#2A7A72;color:#F8F6F1;font-family:Georgia,serif;font-size:18px;box-shadow:0 4px 20px rgba(42,122,114,0.35)'>+ Splash</button></div>":"")
     +"</div>";
 }
 
@@ -352,9 +333,9 @@ function buildHeader(){
 }
 
 function buildNav(){
-  var tabs=[["today","Today"],["week","This week"],["month","Month"],["why","Why"]];
-  var btns=tabs.map(function(t){return "<button class='tab-btn"+(state.view===t[0]?" active":"")+"' onclick='setView(\""+t[0]+"\")'>"+t[1]+"</button>";}).join("");
-  return "<div style='display:flex;gap:20px;margin-bottom:24px;border-bottom:1px solid "+C.parchDark+";padding-bottom:14px'>"+btns+"</div>";
+  return "<div style='display:flex;gap:20px;margin-bottom:24px;border-bottom:1px solid "+C.parchDark+";padding-bottom:14px'>"
+    +[["today","Today"],["week","This week"],["month","Month"],["why","Why"]].map(function(t){return "<button class='tab-btn"+(state.view===t[0]?" active":"")+"' onclick='setView(\""+t[0]+"\")'>"+t[1]+"</button>";}).join("")
+    +"</div>";
 }
 
 function buildToday(){
@@ -379,15 +360,15 @@ function buildToday(){
     +(uc>0?uc+" pillars - "+Math.round(fl*100)+"%"+(at80?" - a good day.":"."):(fmtDate(vd)+" - nothing logged yet."))
     +"</p></div>":"";
 
-  var banner=isToday&&at80?"<div style='margin-bottom:16px;padding:12px 16px;border-radius:4px;background:#EAF0E4;border-left:3px solid "+C.sageDark+"'>"
-    +"<p style='font-family:Georgia,serif;font-style:italic;font-size:15px;color:"+C.sageDark+";line-height:1.7;margin:0'>"
+  var banner=isToday&&at80?"<div style='margin-bottom:16px;padding:12px 16px;border-radius:4px;background:#D4F0EC;border-left:3px solid #1A4E48'>"
+    +"<p style='font-family:Georgia,serif;font-style:italic;font-size:15px;color:#1A4E48;line-height:1.7;margin:0'>"
     +(uc>=10?"A truly full cup. Every pillar tended to.":"You reached your 80 today. That is enough.")
     +"</p></div>":"";
 
   var nc=nudge||enc;
-  var nudgeCard=isToday&&nc?"<div style='margin-bottom:14px;padding:12px 16px;border-radius:4px;background:"+(nudge?C.goldPale:"#EAF0E4")+";border-left:3px solid "+(nudge?C.gold:C.sage)+"'>"
+  var nudgeCard=isToday&&nc?"<div style='margin-bottom:14px;padding:12px 16px;border-radius:4px;background:"+(nudge?C.goldPale:"#D4F0EC")+";border-left:3px solid "+(nudge?C.gold:"#2A7A72")+"'>"
     +"<p style='font-family:Georgia,serif;font-style:italic;font-size:13px;color:"+C.inkMid+";line-height:1.7;margin:0'>"+nc.text+"</p>"
-    +"<p style='font-family:Inter,sans-serif;font-size:11px;color:"+(nudge?C.gold:C.sageDark)+";margin:8px 0 0;letter-spacing:0.05em;text-transform:uppercase'>"+(nudge?nudge.pillar+" - has not shown up in a few days":enc.pillar+" - "+enc.count+" of the last 7 days")+"</p>"
+    +"<p style='font-family:Inter,sans-serif;font-size:11px;color:"+(nudge?C.gold:"#2A7A72")+";margin:8px 0 0;letter-spacing:0.05em;text-transform:uppercase'>"+(nudge?nudge.pillar+" - has not shown up in a few days":enc.pillar+" - "+enc.count+" of the last 7 days")+"</p>"
     +"</div>":"";
 
   var greet=isToday&&!at80?"<p style='font-family:Georgia,serif;font-size:18px;color:"+C.inkMid+";margin-bottom:16px;font-style:italic'>"
@@ -407,12 +388,12 @@ function buildToday(){
   var sl=splashes.length>0?"<div style='margin-top:18px'>"
     +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px'>"+(isToday?"Today":"This day")+"'s splashes</div>"
     +splashes.map(function(s,i){
-      var p=null;for(var k=0;k<PILLARS.length;k++){if(PILLARS[k].id===s.pillarId){p=PILLARS[k];break;}}
+      var p=getPillar(s.pillarId);
       return "<div class='splash-item' style='background:"+(p?p.pale:C.parchment)+";border:1px solid "+(p?p.color:C.parchDark)+"28'>"
         +"<div style='width:8px;height:8px;border-radius:50%;background:"+(p?p.color:C.parchDark)+";flex-shrink:0'></div>"
         +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+(p?p.dark:C.inkMid)+";flex:1'>"+s.label+"</span>"
         +"<span style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";flex-shrink:0'>"+(p?p.label:"")+"</span>"
-        +"<button class='remove-btn' onclick='removeSplash("+i+")'>x</button>"
+        +"<button class='remove-btn' onclick='removeSplash("+i+")'>"+CLOSE_ICON+"</button>"
         +"</div>";}).join("")
     +"</div>":"";
 
@@ -428,21 +409,19 @@ function buildWeek(){
   var MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
   var anchor=offsetDate(TODAY,state.weekOffset*7),weekDates=getWeekDates(anchor);
   var label=state.weekOffset===0?"This week":state.weekOffset===-1?"Last week":fmtShort(weekDates[0])+" - "+fmtShort(weekDates[6]);
-
   var cups=weekDates.map(function(dt,i){
     var key=getDateKey(dt),sp=(state.data[key]&&state.data[key].splashes)||[],stats=getCupStats(sp);
     var isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY;
     return "<div style='text-align:center;opacity:"+(isFuture?0.35:1)+"'>"
       +"<div style='font-family:Inter,sans-serif;font-size:10px;color:"+C.inkLight+";margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em'>"+DAYS[i]+"</div>"
       +"<div "+(isFuture?"":"data-key='"+key+"' onclick='jumpToDay(this.dataset.key)'")
-      +" style='cursor:"+(isFuture?"default":"pointer")+";display:flex;flex-direction:column;align-items:center;padding:5px 0 3px;border-radius:4px;border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?C.sage:C.parchDark)+";background:"+(isTodayCell?"#EAF0E4":C.cream)+"'>"
+      +" style='cursor:"+(isFuture?"default":"pointer")+";display:flex;flex-direction:column;align-items:center;padding:5px 0 3px;border-radius:4px;border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";background:"+(isTodayCell?"#D4F0EC":C.cream)+"'>"
       +renderMiniCup(stats,30)
-      +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+(stats.uniqueCount>=8?C.sageDark:C.inkLight)+";margin-top:2px'>"+(stats.uniqueCount||"-")+"</div>"
+      +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+(stats.uniqueCount>=8?"#1A4E48":C.inkLight)+";margin-top:2px'>"+(stats.uniqueCount||"-")+"</div>"
       +"</div></div>";}).join("");
 
   var wByP={},wTot=0;
   weekDates.forEach(function(dt){var sp=(state.data[getDateKey(dt)]&&state.data[getDateKey(dt)].splashes)||[];sp.forEach(function(s){wByP[s.pillarId]=(wByP[s.pillarId]||0)+1;wTot++;});});
-
   var wRows=PILLARS.map(function(p){return{p:p,cnt:wByP[p.id]||0};}).filter(function(x){return x.cnt>0;}).sort(function(a,b){return b.cnt-a.cnt;}).map(function(x){
     var pct=wTot>0?Math.round(x.cnt/wTot*100):0;
     return "<div style='display:flex;align-items:center;gap:8px;margin-bottom:7px'>"
@@ -464,7 +443,7 @@ function buildWeek(){
     +"<p style='font-family:Georgia,serif;font-size:14px;color:"+C.inkLight+";font-style:italic;margin-bottom:14px'>By pillar this week</p>"
     +(wTot===0?"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+"'>No splashes logged this week yet.</p>":wRows)
     +"</div>"
-    +"<div style='padding:20px 22px;border-radius:6px;background:"+C.parchment+";border-left:3px solid #B0CCAD'>"
+    +"<div style='padding:20px 22px;border-radius:6px;background:"+C.parchment+";border-left:3px solid #82B882'>"
     +"<p style='font-family:Georgia,serif;font-style:italic;font-size:15px;color:"+C.inkMid+";line-height:1.8;margin:0'>"+s.text+"</p>"
     +"<p style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";margin-top:12px;letter-spacing:0.05em;text-transform:uppercase'>"+s.season+" - "+mn+"</p>"
     +"</div>";
@@ -476,25 +455,22 @@ function buildMonth(){
   var monthRef=new Date(TODAY.getFullYear(),TODAY.getMonth()+state.monthOffset,1);
   var y=monthRef.getFullYear(),m=monthRef.getMonth(),last=new Date(y,m+1,0),dow=new Date(y,m,1).getDay();
   var s=SEASONAL[new Date().getMonth()],mn=MONTHS[new Date().getMonth()];
-
   var cells="<div></div>".repeat(dow);
   for(var d=1;d<=last.getDate();d++){
     var dt=new Date(y,m,d),key=getDateKey(dt),stats=getCupStats((state.data[key]&&state.data[key].splashes)||[]);
     var n=stats.uniqueCount,pct=n/10,isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY;
     cells+="<div "+(isFuture?"":"data-key='"+key+"' onclick='jumpToDay(this.dataset.key)'")
-      +" style='aspect-ratio:1;border-radius:4px;background:"+(isFuture?C.cream:n>0?warmthBg(pct):C.parchment)+";border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?C.sage:C.parchDark)+";display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:"+(isFuture?"default":"pointer")+";opacity:"+(isFuture?0.35:1)+"'>"
+      +" style='aspect-ratio:1;border-radius:4px;background:"+(isFuture?C.cream:n>0?warmthBg(pct):C.parchment)+";border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:"+(isFuture?"default":"pointer")+";opacity:"+(isFuture?0.35:1)+"'>"
       +"<span style='font-family:Inter,sans-serif;font-size:12px;color:"+(isFuture?C.inkLight:n>0?warmthFg(pct):C.inkLight)+";font-weight:"+(isTodayCell?700:400)+"'>"+d+"</span>"
       +(n>0&&!isFuture?"<span style='font-family:Inter,sans-serif;font-size:9px;color:"+warmthFg(pct)+";opacity:0.85;margin-top:1px'>"+n+"</span>":"")
       +"</div>";
   }
-
   var scores=[],at80c=0;
   for(var dd=1;dd<=last.getDate();dd++){var dt2=new Date(y,m,dd);if(dt2>TODAY)continue;var st=getCupStats((state.data[getDateKey(dt2)]&&state.data[getDateKey(dt2)].splashes)||[]);if(st.uniqueCount>0){scores.push(st.uniqueCount/10);if(st.uniqueCount>=8)at80c++;}}
   var cnt=scores.length,avg=cnt?Math.round(scores.reduce(function(a,b){return a+b;},0)/cnt*100):0,best=cnt?Math.round(Math.max.apply(null,scores)*100):0;
-
   var mByP={},mTot=0;
   for(var ddd=1;ddd<=last.getDate();ddd++){var dt3=new Date(y,m,ddd);if(dt3>TODAY)continue;var sp2=(state.data[getDateKey(dt3)]&&state.data[getDateKey(dt3)].splashes)||[];sp2.forEach(function(s2){mByP[s2.pillarId]=(mByP[s2.pillarId]||0)+1;mTot++;});}
-  var top3=Object.keys(mByP).map(function(id){return{id:id,cnt:mByP[id]};}).sort(function(a,b){return b.cnt-a.cnt;}).slice(0,3).map(function(x){var p=null;for(var i=0;i<PILLARS.length;i++){if(PILLARS[i].id===x.id){p=PILLARS[i];break;}}return{p:p,cnt:x.cnt,pct:mTot>0?Math.round(x.cnt/mTot*100):0};});
+  var top3=Object.keys(mByP).map(function(id){return{id:id,cnt:mByP[id]};}).sort(function(a,b){return b.cnt-a.cnt;}).slice(0,3).map(function(x){var p=getPillar(x.id);return{p:p,cnt:x.cnt,pct:mTot>0?Math.round(x.cnt/mTot*100):0};});
   var top3Html=top3.length>0?"<div style='border-top:1px solid "+C.parchDark+";padding-top:18px;margin-bottom:24px'>"
     +"<p style='font-family:Georgia,serif;font-size:15px;color:"+C.inkLight+";font-style:italic;margin-bottom:14px'>Most active pillars this month</p>"
     +top3.map(function(x,i){return "<div style='display:flex;align-items:center;gap:10px;margin-bottom:10px'>"
@@ -516,7 +492,7 @@ function buildMonth(){
     +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"+[["Days logged",cnt],["Days at 80%+",at80c],["Avg fill",cnt?avg+"%":"--"],["Best day",cnt?best+"%":"--"]].map(function(x){return "<div style='padding:14px 16px;border-radius:4px;background:"+C.parchment+";border:1px solid "+C.parchDark+"'><div style='font-family:Georgia,serif;font-size:24px;color:"+C.ink+";margin-bottom:4px'>"+x[1]+"</div><div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+"'>"+x[0]+"</div></div>";}).join("")+"</div>"
     +"</div>"
     +top3Html
-    +"<div style='padding:20px 22px;border-radius:6px;background:"+C.parchment+";border-left:3px solid #B0CCAD'>"
+    +"<div style='padding:20px 22px;border-radius:6px;background:"+C.parchment+";border-left:3px solid #82B882'>"
     +"<p style='font-family:Georgia,serif;font-style:italic;font-size:15px;color:"+C.inkMid+";line-height:1.8;margin:0'>"+s.text+"</p>"
     +"<p style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";margin-top:12px;letter-spacing:0.05em;text-transform:uppercase'>"+s.season+" - "+mn+"</p>"
     +"</div>";
@@ -541,12 +517,16 @@ function buildWhy(){
     +"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";font-style:italic;margin-bottom:16px'>Tap any pillar to read about it.</p>"
     +WHY_PILLARS.map(function(x){
       var open=!!state.openWhyPillars[x.label];
+      var p=getPillar(x.pid);
+      var col=p?p.color:"#2A7A72",pale=p?p.pale:"#D4F0EC";
       return "<div style='border-bottom:1px solid "+C.parchDark+"'>"
         +"<button class='why-pillar-btn' onclick='toggleWhy(\""+x.label.replace(/"/g,"&quot;")+"\")'>"
-        +"<div style='display:flex;align-items:center;gap:10px'><div style='width:10px;height:10px;border-radius:50%;background:"+x.color+";flex-shrink:0'></div><span style='font-family:Georgia,serif;font-size:17px;font-weight:400;color:"+C.ink+"'>"+x.label+"</span></div>"
+        +"<div style='display:flex;align-items:center;gap:10px'><div style='width:10px;height:10px;border-radius:50%;background:"+col+";flex-shrink:0'></div>"
+        +"<span style='font-family:Georgia,serif;font-size:17px;font-weight:400;color:"+C.ink+"'>"+x.label+"</span></div>"
         +"<span style='font-family:Georgia,serif;font-size:20px;color:"+C.inkLight+";line-height:1;flex-shrink:0'>"+(open?"-":"+")+"</span>"
         +"</button>"
-        +(open?"<div class='why-pillar-content'><p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";line-height:1.8;margin-bottom:12px'>"+x.text+"</p><div>"+x.tags.map(function(t){return "<span class='tag' style='border:1px solid "+x.color+";background:"+x.color+"18;color:"+x.color+"'>"+t+"</span>";}).join("")+"</div></div>":"")
+        +(open?"<div class='why-pillar-content'><p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";line-height:1.8;margin-bottom:12px'>"+x.text+"</p>"
+          +"<div>"+x.tags.map(function(t){return "<span class='tag' style='border:1px solid "+col+";background:"+pale+";color:"+col+"'>"+t+"</span>";}).join("")+"</div></div>":"")
         +"</div>";}).join("")
     +"</div></div>";
 }
@@ -558,11 +538,11 @@ function buildSheet(){
       +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:20px'>"
       +"<div><div style='font-family:Georgia,serif;font-size:20px;color:"+C.ink+"'>Add a splash</div>"
       +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-top:3px'>Which pillar does it belong to?</div></div>"
-      +"<button onclick='closeSheet()' style='background:none;border:none;font-size:22px;color:"+C.inkLight+"'>x</button>"
+      +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button>"
       +"</div>"
       +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px'>"
       +PILLARS.map(function(p){
-        return "<button class='pillar-btn' onclick='selectPillar(\""+p.id+"\")' style='border-color:"+p.color+"44;background:"+p.pale+"'>"
+        return "<button class='pillar-btn' onclick='selectPillar(\""+p.id+"\")' style='border-color:"+p.color+"66;background:"+p.pale+"'>"
           +"<div style='width:10px;height:10px;border-radius:50%;background:"+p.color+";flex-shrink:0'></div>"
           +"<span style='font-family:Georgia,serif;font-size:14px;color:"+p.dark+"'>"+p.label+"</span>"
           +"</button>";}).join("")
@@ -579,7 +559,7 @@ function buildSheet(){
       +"<div><button onclick='backToStep1()' style='background:none;border:none;font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";text-decoration:underline;margin-bottom:4px'>Back</button>"
       +"<div style='font-family:Georgia,serif;font-size:20px;color:"+p.dark+"'>Water</div>"
       +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-top:3px'>How many 8 oz glasses?</div></div>"
-      +"<button onclick='closeSheet()' style='background:none;border:none;font-size:22px;color:"+C.inkLight+"'>x</button></div>"
+      +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button></div>"
       +"<div class='water-stepper'>"
       +"<button class='w-btn' onclick='adjWater(-1)'"+(wc<=1?" disabled":"")+">-</button>"
       +"<div class='w-count'>"+wc+"</div>"
@@ -607,7 +587,7 @@ function buildSheet(){
     +"<div><button onclick='backToStep1()' style='background:none;border:none;font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";text-decoration:underline;margin-bottom:4px'>Back</button>"
     +"<div style='font-family:Georgia,serif;font-size:20px;color:"+p.dark+"'>"+p.label+"</div>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-top:3px'>Tap to select. Choose as many as apply.</div></div>"
-    +"<button onclick='closeSheet()' style='background:none;border:none;font-size:22px;color:"+C.inkLight+"'>x</button></div>"
+    +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button></div>"
     +"<div>"+acts+"</div>"
     +"<div style='margin-top:14px;padding-top:12px;border-top:1px solid "+C.parchDark+"'>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:7px'>Or write your own:</div>"
@@ -647,7 +627,7 @@ function toggleWhy(label){state.openWhyPillars[label]=!state.openWhyPillars[labe
 function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=1;render();}
 function closeSheet(){state.showSheet=false;state.selectedActivities={};render();}
 function backToStep1(){state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};render();}
-function selectPillar(id){var p=null;for(var i=0;i<PILLARS.length;i++){if(PILLARS[i].id===id){p=PILLARS[i];break;}}state.sheetPillar=p;state.sheetStep="activity";if(!state.selectedActivities[id])state.selectedActivities[id]={};render();}
+function selectPillar(id){state.sheetPillar=getPillar(id);state.sheetStep="activity";if(!state.selectedActivities[id])state.selectedActivities[id]={};render();}
 function toggleActivity(act){var id=state.sheetPillar.id;if(!state.selectedActivities[id])state.selectedActivities[id]={};if(state.selectedActivities[id][act])delete state.selectedActivities[id][act];else state.selectedActivities[id][act]=true;render();}
 function addCustom(){var el=document.getElementById("cai");if(!el)return;var val=el.value.trim();if(!val)return;var id=state.sheetPillar.id;if(!state.selectedActivities[id])state.selectedActivities[id]={};state.selectedActivities[id][val]=true;render();var nel=document.getElementById("cai");if(nel){nel.value="";nel.focus();}}
 function confirmActivities(){var id=state.sheetPillar.id,sel=state.selectedActivities[id]||{},acts=Object.keys(sel);if(!acts.length)return;var key=getViewKey(),cur=state.data[key]||{},existing=cur.splashes||[];var newSplashes=acts.map(function(label,i){return{pillarId:id,label:label,timestamp:Date.now()+i};});state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});saveData(state.data);state.showSheet=false;state.selectedActivities={};render();}
