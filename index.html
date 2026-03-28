@@ -47,13 +47,12 @@ input{font-family:'Inter','Helvetica Neue',sans-serif}
 .edit-field{width:100%;padding:7px 10px;border:1px solid #CEC8BC;border-radius:4px;font-family:Inter,sans-serif;font-size:14px;color:#1C1C18;background:#EEEAE2;outline:none}
 .pillar-mini-btn{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:4px;border:1.5px solid transparent;font-family:Inter,sans-serif;font-size:13px;white-space:nowrap}
 .save-toggle{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-family:Inter,sans-serif;font-size:13px;color:#3D3D30;user-select:none}
-.custom-act-row{display:flex;align-items:center;justify-content:space-between;padding:10px 8px;border-bottom:1px solid #EEEAE2;background:#F0EDE4}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script>
-var C={cream:"#F8F6F1",parchment:"#EEEAE2",parchDark:"#CEC8BC",ink:"#1C1C18",inkMid:"#3D3D30",inkLight:"#747060",clay:"#9E5A2E",gold:"#A87C1E",goldPale:"#F0E4A8",sage:"#4A7C59",sageDark:"#2A5C39"};
+var C={cream:"#F8F6F1",parchment:"#EEEAE2",parchDark:"#CEC8BC",ink:"#1C1C18",inkMid:"#3D3D30",inkLight:"#747060",clay:"#9E5A2E",gold:"#A87C1E",goldPale:"#F0E4A8"};
 
 var PILLARS=[
   {id:"faith",       label:"Faith",        color:"#2A7A72", pale:"#D4F0EC", dark:"#1A4E48"},
@@ -104,7 +103,19 @@ function loadData(){try{return JSON.parse(localStorage.getItem("ftc-v3")||"{}");
 function saveData(d){try{localStorage.setItem("ftc-v3",JSON.stringify(d));}catch(e){}}
 function loadCustomActs(){try{return JSON.parse(localStorage.getItem("ftc-custom-acts")||"{}");}catch(e){return {};}}
 function saveCustomActs(d){try{localStorage.setItem("ftc-custom-acts",JSON.stringify(d));}catch(e){}}
+function loadActEdits(){try{return JSON.parse(localStorage.getItem("ftc-act-edits")||"{}");}catch(e){return {};}}
+function saveActEdits(d){try{localStorage.setItem("ftc-act-edits",JSON.stringify(d));}catch(e){}}
 function getPillar(id){for(var i=0;i<PILLARS.length;i++){if(PILLARS[i].id===id)return PILLARS[i];}return null;}
+
+// Returns effective builtin list (with renames applied, deletions removed) + custom list
+function getActivities(pid){
+  var edits=state.actEdits[pid]||{};
+  var deletions=edits.deletions||{};
+  var renames=edits.renames||{};
+  var builtin=(ACTIVITIES[pid]||[]).filter(function(a){return !deletions[a];}).map(function(a){return{orig:a,label:renames[a]||a,isCustom:false};});
+  var custom=(state.customActs[pid]||[]).map(function(a,i){return{orig:a,label:a,isCustom:true,idx:i};});
+  return builtin.concat(custom);
+}
 
 function getCupStats(splashes){
   var uniquePillars=[],seen={};
@@ -148,7 +159,6 @@ function renderCup(stats){
   var lR=W/2-rimRx,rR=W/2+rimRx,lB=W/2-baseRx,rB=W/2+baseRx;
   function xL(y){return lR+(lB-lR)*(y-rimY)/bodyH;}
   function xR(y){return rR+(rB-rR)*(y-rimY)/bodyH;}
-  // Fill polygons — extend bottom into ellipse by ry so liquid reaches the curve
   var fillH=bodyH*Math.min(1,uc/10),segs="";
   if(tot>0&&uc>0){
     var curY=baseY+ry;
@@ -169,21 +179,19 @@ function renderCup(stats){
   var sk=full?"#1A4E48":C.parchDark,sw=full?1.6:1.1;
   var uid="c"+(Math.random()*1e8|0);
   var clipPath="M "+lR+","+rimY+" L "+rR+","+rimY+" L "+rB+","+baseY+" A "+baseRx+","+ry+" 0 0,1 "+lB+","+baseY+" Z";
-  // Glass body uses same curved clip path
   var glassBody="<path d='"+clipPath+"' fill='"+C.parchment+"'/>";
+  var baseBack="<ellipse cx='"+W/2+"' cy='"+baseY+"' rx='"+baseRx+"' ry='"+ry+"' fill='"+C.cream+"' stroke='"+sk+"' stroke-width='"+sw+"'/>";
+  var baseFront="<path d='M "+(W/2-baseRx)+" "+baseY+" A "+baseRx+" "+ry+" 0 0 0 "+(W/2+baseRx)+" "+baseY+"' fill='none' stroke='"+sk+"' stroke-width='"+sw+"'/>";
   var poly="<polygon points='"+lR+","+rimY+" "+rR+","+rimY+" "+rB+","+baseY+" "+lB+","+baseY+"'";
-  var baseEllipseBack="<ellipse cx='"+W/2+"' cy='"+baseY+"' rx='"+baseRx+"' ry='"+ry+"' fill='"+C.cream+"' stroke='"+sk+"' stroke-width='"+sw+"'/>";
-  var baseEllipseFront="<path d='M "+(W/2-baseRx)+" "+baseY+" A "+baseRx+" "+ry+" 0 0 0 "+(W/2+baseRx)+" "+baseY+"' fill='none' stroke='"+sk+"' stroke-width='"+sw+"'/>";
   var svg="<svg width='"+W+"' height='"+(H+20)+"' viewBox='0 0 "+W+" "+(H+20)+"' style='overflow:visible'>"
     +"<defs><clipPath id='"+uid+"'><path d='"+clipPath+"'/></clipPath></defs>"
-    +glassBody
-    +baseEllipseBack
+    +glassBody+baseBack
     +"<g clip-path='url(#"+uid+")'>"+segs+"</g>"
     +l80
     +"<line x1='"+lR+"' y1='"+rimY+"' x2='"+lB+"' y2='"+baseY+"' stroke='"+sk+"' stroke-width='"+sw+"'/>"
     +"<line x1='"+rR+"' y1='"+rimY+"' x2='"+rB+"' y2='"+baseY+"' stroke='"+sk+"' stroke-width='"+sw+"'/>"
     +"<ellipse cx='"+W/2+"' cy='"+rimY+"' rx='"+rimRx+"' ry='5.5' fill='"+C.cream+"' stroke='"+sk+"' stroke-width='"+sw+"'/>"
-    +baseEllipseFront
+    +baseFront
     +"<ellipse cx='"+W/2+"' cy='"+(baseY+ry)+"' rx='"+(baseRx-6)+"' ry='1.8' fill='"+C.parchDark+"' opacity='0.1'/>"
     +"</svg>";
   var stxt=full?"Cup full - a wonderful day":at80?"80% - that is enough":uc===0?"Add your first splash":uc+" of 10 pillars";
@@ -225,8 +233,7 @@ function renderMiniCup(stats,size){
   var baseFront="<path d='M "+(W/2-baseRx)+" "+baseY+" A "+baseRx+" "+ry+" 0 0 0 "+(W/2+baseRx)+" "+baseY+"' fill='none' stroke='"+sk+"' stroke-width='0.8'/>";
   return "<svg width='"+W+"' height='"+(H+ry*2)+"' viewBox='0 0 "+W+" "+(H+ry*2)+"'>"
     +"<defs><clipPath id='"+uid+"'><path d='"+clipPath+"'/></clipPath></defs>"
-    +glassBody
-    +baseBack
+    +glassBody+baseBack
     +"<g clip-path='url(#"+uid+")'>"+segs+"</g>"
     +"<line x1='"+lR+"' y1='"+rimY+"' x2='"+lB+"' y2='"+baseY+"' stroke='"+sk+"' stroke-width='0.8'/>"
     +"<line x1='"+rR+"' y1='"+rimY+"' x2='"+rB+"' y2='"+baseY+"' stroke='"+sk+"' stroke-width='0.8'/>"
@@ -239,7 +246,15 @@ var EDIT_ICON="<svg width='13' height='13' viewBox='0 0 13 13' fill='none'><path
 var CLOSE_ICON="<svg width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M2 2l10 10M12 2L2 12' stroke='#747060' stroke-width='1.8' stroke-linecap='round'/></svg>";
 var STAR_ICON="<svg width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M6 1l1.3 3.9H11L8.2 6.9l1 3.9L6 8.6l-3.2 2.2 1-3.9L1 4.9h3.7z' stroke='currentColor' stroke-width='1.2' stroke-linejoin='round'/></svg>";
 
-var state={view:"today",data:loadData(),customActs:loadCustomActs(),dayOffset:0,weekOffset:0,monthOffset:0,showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,confirmClear:false,toast:null,toastTimer:null,openWhyPillars:{},editingIdx:null,editLabel:"",editPillarId:null,saveCustom:false,managingPillar:null};
+var state={
+  view:"today",data:loadData(),customActs:loadCustomActs(),actEdits:loadActEdits(),
+  dayOffset:0,weekOffset:0,monthOffset:0,
+  showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,
+  confirmClear:false,toast:null,toastTimer:null,openWhyPillars:{},
+  editingIdx:null,editLabel:"",editPillarId:null,
+  saveCustom:false,managingPillar:null,editingActKey:null
+};
+
 function getViewDate(){return offsetDate(TODAY,state.dayOffset);}
 function getViewKey(){return getDateKey(getViewDate());}
 function getSplashes(){return(state.data[getViewKey()]&&state.data[getViewKey()].splashes)||[];}
@@ -332,9 +347,7 @@ function buildToday(){
     +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px'>"+(isToday?"Today":"This day")+"'s splashes</div>"
     +splashes.map(function(s,i){
       var p=getPillar(s.pillarId);
-      if(state.editingIdx===i){
-        return buildEditRow(i,s,p);
-      }
+      if(state.editingIdx===i) return buildEditRow(i,s,p);
       return "<div class='splash-item' style='background:"+(p?p.pale:C.parchment)+";border:1px solid "+(p?p.color:C.parchDark)+"28;cursor:pointer' onclick='startEdit("+i+")'>"
         +"<div style='width:8px;height:8px;border-radius:50%;background:"+(p?p.color:C.parchDark)+";flex-shrink:0'></div>"
         +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+(p?p.dark:C.inkMid)+";flex:1'>"+s.label+"</span>"
@@ -384,7 +397,6 @@ function buildWeek(){
       +renderMiniCup(stats,30)
       +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+(stats.uniqueCount>=8?"#1A4E48":C.inkLight)+";margin-top:2px'>"+(stats.uniqueCount||"-")+"</div>"
       +"</div></div>";}).join("");
-
   var wByP={},wTot=0;
   weekDates.forEach(function(dt){var sp=(state.data[getDateKey(dt)]&&state.data[getDateKey(dt)].splashes)||[];sp.forEach(function(s){wByP[s.pillarId]=(wByP[s.pillarId]||0)+1;wTot++;});});
   var wRows=PILLARS.map(function(p){return{p:p,cnt:wByP[p.id]||0};}).filter(function(x){return x.cnt>0;}).sort(function(a,b){return b.cnt-a.cnt;}).map(function(x){
@@ -395,7 +407,6 @@ function buildWeek(){
       +"<div style='flex:1;height:4px;border-radius:2px;background:"+C.parchDark+";overflow:hidden'><div style='height:100%;border-radius:2px;width:"+pct+"%;background:"+x.p.color+"'></div></div>"
       +"<div style='font-family:Inter,sans-serif;font-size:12px;color:"+C.inkLight+";width:34px;text-align:right;flex-shrink:0'>"+pct+"%</div>"
       +"</div>";}).join("");
-
   var s=SEASONAL[new Date().getMonth()],mn=MONTHS[new Date().getMonth()];
   return "<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:20px'>"
     +"<button class='nav-btn' onclick='addWeekOffset(-1)'>Earlier</button>"
@@ -443,7 +454,6 @@ function buildMonth(){
       +"<div style='flex:1'><div style='font-family:Inter,sans-serif;font-size:14px;color:"+C.ink+"'>"+x.p.label+"</div><div style='font-family:Inter,sans-serif;font-size:12px;color:"+C.inkLight+"'>"+x.cnt+" splash"+(x.cnt!==1?"es":"")+" - "+x.pct+"% of the month</div></div>"
       +"</div>";}).join("")
     +"</div>":"";
-
   return "<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:20px'>"
     +"<button class='nav-btn' onclick='addMonthOffset(-1)'>Earlier</button>"
     +"<div style='font-family:Georgia,serif;font-size:15px;color:"+C.ink+"'>"+MONTHS[m]+" "+y+"</div>"
@@ -464,18 +474,21 @@ function buildMonth(){
 }
 
 function buildWhy(){
+  var WHY_PILLARS_LOCAL=[{label:"Faith",pid:"faith",tags:["Blue Zones","Little Women","Edwardian"],text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ."},{label:"Movement",pid:"movement",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity."},{label:"Nourishment",pid:"nourishment",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention and stopping before fullness supports better digestion, healthier weight regulation, and a more stable mood."},{label:"Water",pid:"water",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Chronic mild dehydration is one of the most common contributors to fatigue, poor concentration, headaches, and low mood. Each 8 oz splash here is one glass, a simple, steady act of maintenance that most people simply do not do consistently."},{label:"Connection",pid:"connection",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, and are the most consistent predictor of happiness across cultures and age groups."},{label:"Service",pid:"service",tags:["Blue Zones","Little Women","Edwardian"],text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction and lower rates of depression. Marmee taught her daughters that the surest way out of their own struggles was to look outward."},{label:"Stewardship",pid:"stewardship",tags:["Blue Zones","Edwardian","Little Women"],text:"Having things in your care gives the day shape and meaning. People who feel responsible for something beyond themselves live longer and report higher life satisfaction. Tending faithfully to small things is one of the most underrated forms of self-care."},{label:"Creative Work",pid:"creative",tags:["Edwardian","Little Women","Scandinavian"],text:"Regular creative engagement is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. Even ten minutes of something made is neurologically different from ten minutes of something consumed."},{label:"Joy & Hygge",pid:"joy",tags:["Blue Zones","Little Women","Scandinavian"],text:"The ability to notice and create small moments of warmth and pleasure is a trainable skill. People who regularly experience positive emotions show greater cardiovascular resilience and longer lives. You do not need large exceptional experiences. You need reliable small ones."},{label:"Rest",pid:"rest",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Sleep is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, and resetting the immune system. The evening routine is not indulgence. It is infrastructure."}];
+
   var managingPillar=state.managingPillar;
   var manageSection="<div class='divider'></div>"
     +"<div style='margin-bottom:28px'>"
     +"<h2 style='font-family:Georgia,serif;font-size:24px;font-weight:400;color:"+C.ink+";margin-bottom:6px'>My activity lists</h2>"
-    +"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";margin-bottom:18px'>Add or remove your own recurring activities for any pillar.</p>"
+    +"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";margin-bottom:18px'>Edit or remove activities for any pillar. Add new ones at the bottom.</p>"
     +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px'>"
     +PILLARS.map(function(p){
       var sel=managingPillar===p.id;
+      var total=getActivities(p.id).length;
       return "<button onclick='setManagingPillar(\""+p.id+"\")' style='display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:6px;border:1.5px solid "+(sel?p.color:C.parchDark)+";background:"+(sel?p.pale:C.cream)+";font-family:Inter,sans-serif;font-size:13px;color:"+(sel?p.dark:C.inkMid)+";text-align:left'>"
         +"<div style='width:9px;height:9px;border-radius:50%;background:"+p.color+";flex-shrink:0'></div>"
         +p.label
-        +(state.customActs[p.id]&&state.customActs[p.id].length?"<span style='margin-left:auto;background:"+p.color+";color:#fff;border-radius:8px;font-size:10px;padding:1px 6px;flex-shrink:0'>"+state.customActs[p.id].length+"</span>":"")
+        +(total?"<span style='margin-left:auto;background:"+p.color+";color:#fff;border-radius:8px;font-size:10px;padding:1px 6px;flex-shrink:0'>"+total+"</span>":"")
         +"</button>";}).join("")
     +"</div>"
     +(managingPillar?buildManagePanel(managingPillar):"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";font-style:italic'>Select a pillar above to manage its list.</p>")
@@ -498,7 +511,7 @@ function buildWhy(){
     +"<div class='divider'></div>"
     +"<div><h2 style='font-family:Georgia,serif;font-size:24px;font-weight:400;color:"+C.ink+";margin-bottom:4px'>Ten pillars</h2>"
     +"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";font-style:italic;margin-bottom:16px'>Tap any pillar to read about it.</p>"
-    +WHY_PILLARS.map(function(x){
+    +WHY_PILLARS_LOCAL.map(function(x){
       var open=!!state.openWhyPillars[x.label];
       var p=getPillar(x.pid);
       var col=p?p.color:"#2A7A72",pale=p?p.pale:"#D4F0EC";
@@ -511,6 +524,40 @@ function buildWhy(){
         +(open?"<div class='why-pillar-content'><p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";line-height:1.8;margin-bottom:12px'>"+x.text+"</p>"
           +"<div>"+x.tags.map(function(t){return "<span class='tag' style='border:1px solid "+col+";background:"+pale+";color:"+col+"'>"+t+"</span>";}).join("")+"</div></div>":"")
         +"</div>";}).join("")
+    +"</div></div>";
+}
+
+function buildManagePanel(pid){
+  var p=getPillar(pid);
+  var acts=getActivities(pid);
+  var rows=acts.map(function(act){
+    var key=pid+"::"+act.orig;
+    var isEditing=state.editingActKey===key;
+    var safeLabel=act.label.replace(/"/g,"&quot;");
+    if(isEditing){
+      return "<div style='display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid "+C.parchment+";background:"+C.cream+"'>"
+        +"<input id='manage-edit-input' class='custom-input' style='background:#fff' value=\""+safeLabel+"\" oninput='state.editingActVal=this.value' onkeydown='if(event.key===\"Enter\")saveActEdit()'/>"
+        +"<button onclick='saveActEdit()' style='padding:6px 12px;border-radius:4px;border:none;background:"+p.color+";color:#fff;font-family:Inter,sans-serif;font-size:13px;flex-shrink:0'>Save</button>"
+        +"<button onclick='state.editingActKey=null;render()' style='padding:6px 8px;border-radius:4px;border:1px solid "+C.parchDark+";background:transparent;font-family:Inter,sans-serif;font-size:13px;flex-shrink:0'>✕</button>"
+        +"</div>";
+    }
+    return "<div style='display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid "+C.parchment+";background:"+C.cream+"'>"
+      +(act.isCustom
+        ?"<div style='font-family:Inter,sans-serif;font-size:9px;color:"+p.color+";letter-spacing:0.04em;text-transform:uppercase;flex-shrink:0;width:28px'>mine</div>"
+        :"<div style='width:7px;height:7px;border-radius:50%;background:"+p.color+";flex-shrink:0;margin-right:5px'></div>")
+      +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";flex:1'>"+act.label+"</span>"
+      +"<button onclick='startActEdit(\""+pid+"\",\""+act.orig.replace(/"/g,"&quot;")+"\",\""+safeLabel+"\")' class='edit-btn' style='padding:3px 4px'>"+EDIT_ICON+"</button>"
+      +"<button onclick='deleteAct(\""+pid+"\",\""+act.orig.replace(/"/g,"&quot;")+"\","+(act.isCustom?"true":"false")+","+(act.isCustom?act.idx:-1)+")' class='remove-btn' style='padding:3px'>"+CLOSE_ICON+"</button>"
+      +"</div>";
+  }).join("");
+
+  if(!rows) rows="<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";padding:14px 16px;font-style:italic'>No activities for "+p.label+" yet.</p>";
+
+  return "<div style='border:1.5px solid "+p.color+"44;border-radius:8px;overflow:hidden'>"
+    +rows
+    +"<div style='padding:12px 14px;background:"+p.pale+";display:flex;gap:8px'>"
+    +"<input id='why-custom-input' class='custom-input' type='text' placeholder='Add new activity...' style='background:#fff' onkeydown='if(event.key===\"Enter\"){event.preventDefault();addCustomActWhy(\""+pid+"\");}'>"
+    +"<button onclick='addCustomActWhy(\""+pid+"\")' style='padding:9px 14px;border-radius:4px;border:none;background:"+p.color+";color:#fff;font-family:Inter,sans-serif;font-size:13px;flex-shrink:0'>Add</button>"
     +"</div></div>";
 }
 
@@ -553,34 +600,19 @@ function buildSheet(){
       +"</div></div>";
   }
 
-  var customActsForPillar=state.customActs[p.id]||[];
+  var acts=getActivities(p.id);
   var sel=state.selectedActivities[p.id]||{};
 
-  // Custom saved activities at top
-  var customRows=customActsForPillar.length>0
-    ?"<div style='margin-bottom:4px'>"
-      +"<div style='font-family:Inter,sans-serif;font-size:10px;color:"+C.inkLight+";letter-spacing:0.06em;text-transform:uppercase;padding:6px 8px 4px;display:flex;align-items:center;gap:5px'>"+STAR_ICON+" My activities</div>"
-      +customActsForPillar.map(function(act){
-        var isSel=!!sel[act];
-        var safeAct=act.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
-        return "<div class='custom-act-row'>"
-          +"<button class='activity-row' onclick='toggleActivity(\""+safeAct+"\")' style='border:none;background:transparent;flex:1;text-align:left;padding:0'>"
-          +"<div style='display:flex;align-items:center;gap:10px'>"
-          +"<div style='width:16px;height:16px;border-radius:3px;border:1.5px solid "+(isSel?p.color:C.parchDark)+";background:"+(isSel?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0'>"
-          +(isSel?"<svg width='10' height='10' viewBox='0 0 10 10'><path d='M1.5 5.5l2.5 2.5 5-5' stroke='#fff' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>":"")
-          +"</div><span style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+"'>"+act+"</span></div></button>"
-          +"<button onclick='removeCustomAct(\""+safeAct+"\")' style='background:none;border:none;padding:4px 6px;opacity:0.45;flex-shrink:0' title='Remove from list'>"+CLOSE_ICON+"</button>"
-          +"</div>";}).join("")
-      +"</div>":""  ;
-
-  var acts=ACTIVITIES[p.id].map(function(act){
-    var isSel=!!sel[act];
-    var safeAct=act.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
+  // All activities as simple checkboxes — no edit/delete here
+  var actRows=acts.map(function(act){
+    var isSel=!!sel[act.label];
+    var safeAct=act.label.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
     return "<button class='activity-row' onclick='toggleActivity(\""+safeAct+"\")'>"
       +"<div style='display:flex;align-items:center;gap:10px'>"
       +"<div style='width:16px;height:16px;border-radius:3px;border:1.5px solid "+(isSel?p.color:C.parchDark)+";background:"+(isSel?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0'>"
       +(isSel?"<svg width='10' height='10' viewBox='0 0 10 10'><path d='M1.5 5.5l2.5 2.5 5-5' stroke='#fff' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>":"")
-      +"</div><span>"+act+"</span></div></button>";}).join("");
+      +"</div><span>"+act.label+"</span></div></button>";
+  }).join("");
 
   var selCount=Object.keys(sel).length;
   var saveToggle="<label class='save-toggle'>"
@@ -597,8 +629,7 @@ function buildSheet(){
     +"<div style='font-family:Georgia,serif;font-size:20px;color:"+p.dark+"'>"+p.label+"</div>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-top:3px'>Tap to select. Choose as many as apply.</div></div>"
     +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button></div>"
-    +customRows
-    +"<div>"+acts+"</div>"
+    +"<div>"+actRows+"</div>"
     +"<div style='margin-top:14px;padding-top:12px;border-top:1px solid "+C.parchDark+"'>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:7px'>Or write your own:</div>"
     +"<div style='display:flex;gap:8px;margin-bottom:8px'>"
@@ -630,30 +661,7 @@ function buildToast(){
     +"</div>";
 }
 
-// --- Interaction handlers ---
-function buildManagePanel(pid){
-  var p=getPillar(pid);
-  var custom=state.customActs[pid]||[];
-  return "<div style='border:1.5px solid "+p.color+"44;border-radius:8px;overflow:hidden'>"
-    +(custom.length===0
-      ?"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";padding:14px 16px;font-style:italic'>No custom activities yet for "+p.label+".</p>"
-      :custom.map(function(act,i){
-        return "<div style='display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid "+C.parchment+";background:"+C.cream+"'>"
-          +"<div style='width:7px;height:7px;border-radius:50%;background:"+p.color+";flex-shrink:0'></div>"
-          +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";flex:1'>"+act+"</span>"
-          +"<button onclick='removeCustomActWhy(\""+pid+"\","+i+")' style='background:none;border:none;padding:3px;opacity:0.45;flex-shrink:0' title='Remove'>"+CLOSE_ICON+"</button>"
-          +"</div>";}).join(""))
-    +"<div style='padding:12px 14px;background:"+p.pale+";display:flex;gap:8px'>"
-    +"<input id='why-custom-input' class='custom-input' type='text' placeholder='New activity...' style='background:#fff' onkeydown='if(event.key===\"Enter\"){event.preventDefault();addCustomActWhy(\""+pid+"\");}'>"
-    +"<button onclick='addCustomActWhy(\""+pid+"\")' style='padding:9px 14px;border-radius:4px;border:none;background:"+p.color+";color:#fff;font-family:Inter,sans-serif;font-size:13px;flex-shrink:0'>Add</button>"
-    +"</div>"
-    +"</div>";
-}
-
-function setManagingPillar(id){state.managingPillar=state.managingPillar===id?null:id;render();setTimeout(function(){var el=document.getElementById("why-custom-input");if(el)el.focus();},30);}
-function addCustomActWhy(pid){var el=document.getElementById("why-custom-input");if(!el)return;var val=el.value.trim();if(!val)return;if(!state.customActs[pid])state.customActs[pid]=[];if(state.customActs[pid].indexOf(val)===-1){state.customActs[pid].push(val);saveCustomActs(state.customActs);}render();setTimeout(function(){var nel=document.getElementById("why-custom-input");if(nel){nel.value="";nel.focus();}},30);}
-function removeCustomActWhy(pid,idx){if(!state.customActs[pid])return;state.customActs[pid].splice(idx,1);saveCustomActs(state.customActs);render();}
-
+// --- Handlers ---
 function setView(v){state.view=v;render();}
 function addDayOffset(n){state.dayOffset=Math.min(0,state.dayOffset+n);render();}
 function addWeekOffset(n){state.weekOffset=Math.min(0,state.weekOffset+n);render();}
@@ -685,14 +693,6 @@ function addCustom(){
   if(nel){nel.value="";nel.focus();}
 }
 
-function removeCustomAct(act){
-  var id=state.sheetPillar.id;
-  if(!state.customActs[id])return;
-  state.customActs[id]=state.customActs[id].filter(function(a){return a!==act;});
-  saveCustomActs(state.customActs);
-  render();
-}
-
 function confirmActivities(){
   var id=state.sheetPillar.id,sel=state.selectedActivities[id]||{},acts=Object.keys(sel);
   if(!acts.length)return;
@@ -700,23 +700,17 @@ function confirmActivities(){
   var newSplashes=acts.map(function(label,i){return{pillarId:id,label:label,timestamp:Date.now()+i};});
   state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});
   saveData(state.data);
-  state.showSheet=false;
-  state.selectedActivities={};
-  state.saveCustom=false;
+  state.showSheet=false;state.selectedActivities={};state.saveCustom=false;
   render();
 }
 
 function adjWater(n){state.waterCount=Math.max(1,Math.min(16,(state.waterCount||1)+n));render();}
-
 function confirmWater(){
   var key=getViewKey(),cur=state.data[key]||{},n=state.waterCount,existing=cur.splashes||[];
   var newSplashes=[];
   for(var i=0;i<n;i++)newSplashes.push({pillarId:"water",label:"8 oz of water",timestamp:Date.now()+i});
   state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});
-  saveData(state.data);
-  state.showSheet=false;
-  state.waterCount=1;
-  render();
+  saveData(state.data);state.showSheet=false;state.waterCount=1;render();
 }
 
 function removeSplash(idx){
@@ -727,43 +721,82 @@ function removeSplash(idx){
   showToast(label?"Removed: "+label:"Splash removed",function(){state.data[key]=snap;saveData(state.data);render();});
   render();
 }
-
 function clearDay(){state.data[getViewKey()]={};saveData(state.data);state.confirmClear=false;render();}
-
-function showToast(msg,undoFn){
-  if(state.toastTimer)clearTimeout(state.toastTimer);
-  state.toast={message:msg,undoFn:undoFn};
-  state.toastTimer=setTimeout(function(){state.toast=null;render();},4000);
-  render();
-}
+function showToast(msg,undoFn){if(state.toastTimer)clearTimeout(state.toastTimer);state.toast={message:msg,undoFn:undoFn};state.toastTimer=setTimeout(function(){state.toast=null;render();},4000);render();}
 function undoToast(){if(state.toastTimer)clearTimeout(state.toastTimer);if(state.toast&&state.toast.undoFn)state.toast.undoFn();state.toast=null;render();}
 
-// --- Edit splash ---
 function startEdit(idx){
   var splashes=getSplashes();
-  state.editingIdx=idx;
-  state.editLabel=splashes[idx].label;
-  state.editPillarId=splashes[idx].pillarId;
+  state.editingIdx=idx;state.editLabel=splashes[idx].label;state.editPillarId=splashes[idx].pillarId;
   render();
-  // Focus the input after render
   setTimeout(function(){var el=document.getElementById("edit-input-"+idx);if(el){el.focus();el.select();}},30);
 }
 function cancelEdit(){state.editingIdx=null;state.editLabel="";state.editPillarId=null;render();}
-function setEditPillar(id){state.editPillarId=id;render();setTimeout(function(){var el=document.getElementById("edit-input-"+state.editingIdx);if(el){el.focus();}},20);}
+function setEditPillar(id){state.editPillarId=id;render();setTimeout(function(){var el=document.getElementById("edit-input-"+state.editingIdx);if(el)el.focus();},20);}
 function saveEdit(idx){
-  var key=getViewKey();
-  var label=(state.editLabel||"").trim();
+  var key=getViewKey(),label=(state.editLabel||"").trim();
   if(!label)return;
   var splashes=state.data[key]&&state.data[key].splashes?state.data[key].splashes:[];
   if(!splashes[idx])return;
   splashes[idx]=Object.assign({},splashes[idx],{label:label,pillarId:state.editPillarId||splashes[idx].pillarId});
   state.data[key]=Object.assign({},state.data[key],{splashes:splashes});
-  saveData(state.data);
-  state.editingIdx=null;state.editLabel="";state.editPillarId=null;
+  saveData(state.data);state.editingIdx=null;state.editLabel="";state.editPillarId=null;render();
+}
+
+// Why tab manage panel
+function setManagingPillar(id){state.managingPillar=state.managingPillar===id?null:id;state.editingActKey=null;render();setTimeout(function(){var el=document.getElementById("why-custom-input");if(el)el.focus();},30);}
+
+function addCustomActWhy(pid){
+  var el=document.getElementById("why-custom-input");if(!el)return;
+  var val=el.value.trim();if(!val)return;
+  if(!state.customActs[pid])state.customActs[pid]=[];
+  if(state.customActs[pid].indexOf(val)===-1){state.customActs[pid].push(val);saveCustomActs(state.customActs);}
+  render();
+  setTimeout(function(){var nel=document.getElementById("why-custom-input");if(nel){nel.value="";nel.focus();}},30);
+}
+
+function startActEdit(pid,orig,currentLabel){
+  state.editingActKey=pid+"::"+orig;
+  state.editingActVal=currentLabel;
+  render();
+  setTimeout(function(){var el=document.getElementById("manage-edit-input");if(el){el.focus();el.select();}},30);
+}
+
+function saveActEdit(){
+  if(!state.editingActKey)return;
+  var val=(state.editingActVal||"").trim();
+  if(!val){state.editingActKey=null;render();return;}
+  var parts=state.editingActKey.split("::");
+  var pid=parts[0],orig=parts.slice(1).join("::");
+  // Is it a custom act or builtin?
+  var customList=state.customActs[pid]||[];
+  var customIdx=customList.indexOf(orig);
+  if(customIdx!==-1){
+    customList[customIdx]=val;
+    state.customActs[pid]=customList;
+    saveCustomActs(state.customActs);
+  } else {
+    if(!state.actEdits[pid])state.actEdits[pid]={renames:{},deletions:{}};
+    state.actEdits[pid].renames[orig]=val;
+    saveActEdits(state.actEdits);
+  }
+  state.editingActKey=null;render();
+}
+
+function deleteAct(pid,orig,isCustom,customIdx){
+  if(isCustom){
+    if(!state.customActs[pid])return;
+    state.customActs[pid].splice(customIdx,1);
+    saveCustomActs(state.customActs);
+  } else {
+    if(!state.actEdits[pid])state.actEdits[pid]={renames:{},deletions:{}};
+    state.actEdits[pid].deletions[orig]=true;
+    saveActEdits(state.actEdits);
+  }
   render();
 }
 
-function bindEsc(){document.onkeydown=function(e){if(e.key==="Escape"){if(state.editingIdx!==null)cancelEdit();else if(state.showSheet)closeSheet();else if(state.confirmClear){state.confirmClear=false;render();}}};}
+function bindEsc(){document.onkeydown=function(e){if(e.key==="Escape"){if(state.editingActKey){state.editingActKey=null;render();}else if(state.editingIdx!==null)cancelEdit();else if(state.showSheet)closeSheet();else if(state.confirmClear){state.confirmClear=false;render();}}};}
 
 render();
 </script>
