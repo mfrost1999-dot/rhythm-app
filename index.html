@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fill the Cup">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23F8F6F1'/%3E%3Cdefs%3E%3CclipPath id='cup'%3E%3Cpolygon points='42,28 138,28 122,155 58,155'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpolygon points='42,28 138,28 122,155 58,155' fill='%23EEEAE2'/%3E%3Cg clip-path='url(%23cup)'%3E%3Crect x='42' y='124' width='96' height='31' fill='%237888A8' opacity='0.85'/%3E%3Crect x='42' y='110' width='96' height='14' fill='%23D4907A' opacity='0.85'/%3E%3Crect x='42' y='97' width='96' height='13' fill='%23C07858' opacity='0.85'/%3E%3Crect x='42' y='85' width='96' height='12' fill='%23788C68' opacity='0.85'/%3E%3Crect x='42' y='74' width='96' height='11' fill='%23C4A040' opacity='0.85'/%3E%3Crect x='42' y='64' width='96' height='10' fill='%23B86858' opacity='0.85'/%3E%3Crect x='42' y='55' width='96' height='9' fill='%23567E90' opacity='0.85'/%3E%3Crect x='42' y='47' width='96' height='8' fill='%23A07848' opacity='0.85'/%3E%3Crect x='42' y='40' width='96' height='7' fill='%236B8C5A' opacity='0.85'/%3E%3Crect x='42' y='28' width='96' height='12' fill='%238B6878' opacity='0.85'/%3E%3C/g%3E%3Cellipse cx='90' cy='28' rx='48' ry='6' fill='%23F8F6F1' stroke='%234A5C2A' stroke-width='2.5'/%3E%3Cellipse cx='90' cy='155' rx='32' ry='4.5' fill='%23F8F6F1' stroke='%234A5C2A' stroke-width='2.5'/%3E%3Cline x1='42' y1='28' x2='58' y2='155' stroke='%234A5C2A' stroke-width='2.5'/%3E%3Cline x1='138' y1='28' x2='122' y2='155' stroke='%234A5C2A' stroke-width='2.5'/%3E%3Cellipse cx='90' cy='162' rx='26' ry='3' fill='%23CEC8BC' opacity='0.4'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23F8F6F1'/%3E%3Cdefs%3E%3CclipPath id='cup'%3E%3Cpolygon points='36,28 144,28 126,158 54,158'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpolygon points='36,28 144,28 126,158 54,158' fill='%23EEEAE2'/%3E%3Cg clip-path='url(%23cup)'%3E%3Crect x='36' y='145' width='108' height='13' fill='%237BA7D4' opacity='0.92'/%3E%3Crect x='36' y='132' width='108' height='13' fill='%231E6E9E' opacity='0.92'/%3E%3Crect x='36' y='120' width='108' height='12' fill='%23E8A820' opacity='0.92'/%3E%3Crect x='36' y='109' width='108' height='11' fill='%233A6B3A' opacity='0.92'/%3E%3Crect x='36' y='99' width='108' height='10' fill='%2382B882' opacity='0.92'/%3E%3Crect x='36' y='90' width='108' height='9' fill='%23B07C08' opacity='0.92'/%3E%3Crect x='36' y='82' width='108' height='8' fill='%23F0CC55' opacity='0.92'/%3E%3Crect x='36' y='75' width='108' height='7' fill='%232A4E8A' opacity='0.92'/%3E%3Crect x='36' y='69' width='108' height='6' fill='%237EC8BF' opacity='0.92'/%3E%3Crect x='36' y='28' width='108' height='41' fill='%232A7A72' opacity='0.92'/%3E%3C/g%3E%3Cellipse cx='90' cy='28' rx='54' ry='7' fill='%23F8F6F1' stroke='%231A4E48' stroke-width='3'/%3E%3Cellipse cx='90' cy='158' rx='36' ry='5' fill='%23F8F6F1' stroke='%231A4E48' stroke-width='3'/%3E%3Cline x1='36' y1='28' x2='54' y2='158' stroke='%231A4E48' stroke-width='3'/%3E%3Cline x1='144' y1='28' x2='126' y2='158' stroke='%231A4E48' stroke-width='3'/%3E%3Cellipse cx='90' cy='165' rx='30' ry='3.5' fill='%23CEC8BC' opacity='0.3'/%3E%3C/svg%3E">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#F8F6F1;color:#1C1C18;font-family:Georgia,'Times New Roman',serif;min-height:100vh}
@@ -49,16 +49,16 @@ input{font-family:'Inter','Helvetica Neue',sans-serif}
 var C={cream:"#F8F6F1",parchment:"#EEEAE2",parchDark:"#CEC8BC",sage:"#7A8C5A",sageDark:"#4A5C2A",ink:"#1C1C18",inkMid:"#3D3D30",inkLight:"#747060",clay:"#9E5A2E",gold:"#A87C1E",goldPale:"#F0E4A8"};
 
 var PILLARS=[
-  {id:"faith",label:"Faith",color:"#8B6878",pale:"#F2EAED",dark:"#5A3048"},
-  {id:"movement",label:"Movement",color:"#6B8C5A",pale:"#E6F0DE",dark:"#384E28"},
-  {id:"nourishment",label:"Nourishment",color:"#A07848",pale:"#F4EAD8",dark:"#6A4820"},
-  {id:"water",label:"Water",color:"#567E90",pale:"#DFF0F4",dark:"#2A5060"},
-  {id:"connection",label:"Connection",color:"#B86858",pale:"#F8E8E4",dark:"#7A3028"},
-  {id:"service",label:"Service",color:"#C4A040",pale:"#FAF2D0",dark:"#7A6010"},
-  {id:"stewardship",label:"Stewardship",color:"#788C68",pale:"#E6EEE0",dark:"#384830"},
-  {id:"creative",label:"Creative Work",color:"#C07858",pale:"#F8EAE0",dark:"#7A4028"},
-  {id:"joy",label:"Joy & Hygge",color:"#D4907A",pale:"#FAEAE4",dark:"#8A4830"},
-  {id:"rest",label:"Rest",color:"#7888A8",pale:"#E6EAF4",dark:"#384870"}
+  {id:"faith",       label:"Faith",        color:"#2A7A72", pale:"#D4F0EC", dark:"#1A4E48"},
+  {id:"movement",    label:"Movement",     color:"#2A4E8A", pale:"#D4E0F4", dark:"#1A3060"},
+  {id:"nourishment", label:"Nourishment",  color:"#3A6B3A", pale:"#D4EAD4", dark:"#224422"},
+  {id:"water",       label:"Water",        color:"#1E6E9E", pale:"#C8E4F4", dark:"#104868"},
+  {id:"connection",  label:"Connection",   color:"#B07C08", pale:"#F4E8C4", dark:"#785204"},
+  {id:"service",     label:"Service",      color:"#7EC8BF", pale:"#D8F4F0", dark:"#2A7A72"},
+  {id:"stewardship", label:"Stewardship",  color:"#F0CC55", pale:"#FDF4CC", dark:"#8A7010"},
+  {id:"creative",    label:"Creative Work",color:"#82B882", pale:"#D8EED8", dark:"#3A6B3A"},
+  {id:"joy",         label:"Joy & Hygge",  color:"#E8A820", pale:"#FDF0C4", dark:"#8A6010"},
+  {id:"rest",        label:"Rest",         color:"#7BA7D4", pale:"#D4E8F8", dark:"#2A4E8A"}
 ];
 
 var ACTIVITIES={
