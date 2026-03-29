@@ -257,8 +257,7 @@ var state={
   showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,
   confirmClear:false,toast:null,toastTimer:null,openWhyPillars:{},
   editingIdx:null,editLabel:"",editPillarId:null,
-  saveCustom:false,managingPillar:null,editingActKey:null,editingActVal:"",
-  dragSrc:null
+  saveCustom:false,managingPillar:null,editingActKey:null,editingActVal:""
 };
 
 function getViewDate(){return offsetDate(TODAY,state.dayOffset);}
@@ -554,10 +553,11 @@ function buildManagePanel(pid){
         +"<button onclick='state.editingActKey=null;render()' style='padding:6px 8px;border-radius:4px;border:1px solid "+C.parchDark+";background:transparent;font-family:Inter,sans-serif;font-size:13px;flex-shrink:0'>&#x2715;</button>"
         +"</div>";
     }
-    return "<div draggable='true' data-pid='"+pid+"' data-idx='"+i+"'"
-      +" ondragstart='dragStart(event)' ondragover='dragOver(event)' ondrop='dragDrop(event,\""+pid+"\")' ondragend='dragEnd()'"
-      +" style='display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid "+C.parchment+";background:"+C.cream+";cursor:default'>"
-      +"<span style='color:"+C.parchDark+";font-size:16px;cursor:grab;user-select:none;flex-shrink:0'>&#8942;</span>"
+    return "<div style='display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid "+C.parchment+";background:"+C.cream+"'>"
+      +"<div style='display:flex;flex-direction:column;gap:1px;flex-shrink:0'>"
+      +"<button onclick='moveAct(\""+pid+"\","+i+","+(i-1)+")' style='background:none;border:none;padding:1px 4px;font-size:12px;color:"+(i===0?C.parchDark:C.inkLight)+";line-height:1;cursor:"+(i===0?"default":"pointer")+"' "+(i===0?"disabled":"")+">&#9650;</button>"
+      +"<button onclick='moveAct(\""+pid+"\","+i+","+(i+1)+")' style='background:none;border:none;padding:1px 4px;font-size:12px;color:"+(i===acts.length-1?C.parchDark:C.inkLight)+";line-height:1;cursor:"+(i===acts.length-1?"default":"pointer")+"' "+(i===acts.length-1?"disabled":"")+">&#9660;</button>"
+      +"</div>"
       +"<div style='width:7px;height:7px;border-radius:50%;background:"+p.color+";flex-shrink:0'></div>"
       +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";flex:1'>"+act.label+"</span>"
       +"<button onclick='startActEdit(\""+pid+"\",\""+safeOrig+"\",\""+safeLabel+"\")' class='edit-btn' style='padding:3px 4px'>"+EDIT_ICON+"</button>"
@@ -828,20 +828,13 @@ function deleteAct(pid,orig,isCustom,customIdx){
   render();
 }
 
-function dragStart(e){state.dragSrc=parseInt(e.currentTarget.dataset.idx);e.dataTransfer.effectAllowed="move";}
-function dragOver(e){e.preventDefault();e.dataTransfer.dropEffect="move";}
-function dragEnd(){state.dragSrc=null;}
-function dragDrop(e,pid){
-  e.preventDefault();
-  var to=parseInt(e.currentTarget.dataset.idx);
-  var from=state.dragSrc;
-  if(from===null||from===undefined||from===to)return;
+function moveAct(pid,from,to){
   var acts=getActivities(pid);
+  if(to<0||to>=acts.length)return;
   var order=acts.map(function(a){return a.orig;});
   var moved=order.splice(from,1)[0];
   order.splice(to,0,moved);
   state.actOrder[pid]=order;saveActOrder(state.actOrder);render();
-  setTimeout(function(){var el=document.getElementById("why-custom-input");if(el)el.focus();},30);
 }
 
 function bindEsc(){
