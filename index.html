@@ -534,7 +534,7 @@ function buildMonth(){
     var dt=new Date(y,m,d),key=getDateKey(dt),stats=getCupStats((state.data[key]&&state.data[key].splashes)||[]);
     var n=stats.uniqueCount,pct=n/10,isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY,isSun=isSunday(dt);
     cells+="<div "+(isFuture||isSun?"":"data-key='"+key+"' onclick='jumpToDay(this.dataset.key)'")+
-      " style='aspect-ratio:1;border-radius:4px;background:"+(isSun?C.parchment:isFuture?C.cream:n>0?warmthBg(pct):C.parchment)+";border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:"+(isFuture||isSun?"default":"pointer")+";opacity:"+(iFuture||isSun?0.35:1)+"'>"
+      " style='aspect-ratio:1;border-radius:4px;background:"+(isSun?C.parchment:isFuture?C.cream:n>0?warmthBg(pct):C.parchment)+";border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:"+(isFuture||isSun?"default":"pointer")+";opacity:"+(isFuture||isSun?0.35:1)+"'>"
       +"<span style='font-family:Inter,sans-serif;font-size:12px;color:"+(isFuture||isSun?C.inkLight:n>0?warmthFg(pct):C.inkLight)+";font-weight:"+(isTodayCell?700:400)+"'>"+d+"</span>"
       +(n>0&&!isFuture&&!isSun?"<span style='font-family:Inter,sans-serif;font-size:9px;color:"+warmthFg(pct)+";opacity:0.85;margin-top:1px'>"+n+"</span>":"")
       +"</div>";
