@@ -54,16 +54,16 @@ input{font-family:'Inter','Helvetica Neue',sans-serif}
 var C={cream:"#F8F6F1",parchment:"#EEEAE2",parchDark:"#CEC8BC",ink:"#1C1C18",inkMid:"#3D3D30",inkLight:"#747060",clay:"#9E5A2E",gold:"#A87C1E",goldPale:"#F0E4A8"};
 
 var PILLARS=[
-  {id:"faith",       label:"Faith",         color:"#2A7A72",pale:"#D4F0EC",dark:"#1A4E48"},
-  {id:"movement",    label:"Movement",      color:"#E8A820",pale:"#FDF0C4",dark:"#8A6010"},
-  {id:"nourishment", label:"Nourishment",   color:"#2A4E8A",pale:"#D4E0F4",dark:"#1A3060"},
-  {id:"water",       label:"Water",         color:"#1E6E9E",pale:"#C8E4F4",dark:"#104868"},
-  {id:"connection",  label:"Connection",    color:"#3A6B3A",pale:"#D4EAD4",dark:"#224422"},
-  {id:"service",     label:"Service",       color:"#7BA7D4",pale:"#D4E8F8",dark:"#2A4E8A"},
-  {id:"stewardship", label:"Stewardship",   color:"#B07C08",pale:"#F4E8C4",dark:"#785204"},
-  {id:"creative",    label:"Creative Play", color:"#7EC8BF",pale:"#D8F4F0",dark:"#2A7A72"},
-  {id:"joy",         label:"Joy & Hygge",   color:"#F0CC55",pale:"#FDF4CC",dark:"#8A7010"},
-  {id:"rest",        label:"Rest",          color:"#82B882",pale:"#D8EED8",dark:"#3A6B3A"}
+  {id:"faith",       label:"Faith",            color:"#2A7A72",pale:"#D4F0EC",dark:"#1A4E48"},
+  {id:"movement",    label:"Movement",         color:"#E8A820",pale:"#FDF0C4",dark:"#8A6010"},
+  {id:"nourishment", label:"Nourishment",      color:"#2A4E8A",pale:"#D4E0F4",dark:"#1A3060"},
+  {id:"water",       label:"Water",            color:"#1E6E9E",pale:"#C8E4F4",dark:"#104868"},
+  {id:"connection",  label:"Connection",       color:"#3A6B3A",pale:"#D4EAD4",dark:"#224422"},
+  {id:"service",     label:"Service",          color:"#7BA7D4",pale:"#D4E8F8",dark:"#2A4E8A"},
+  {id:"stewardship", label:"Stewardship",      color:"#B07C08",pale:"#F4E8C4",dark:"#785204"},
+  {id:"creative",    label:"Creative Hobbies", color:"#7EC8BF",pale:"#D8F4F0",dark:"#2A7A72"},
+  {id:"joy",         label:"Joy & Hygge",      color:"#F0CC55",pale:"#FDF4CC",dark:"#8A7010"},
+  {id:"rest",        label:"Rest",             color:"#82B882",pale:"#D8EED8",dark:"#3A6B3A"}
 ];
 
 var ACTIVITIES={
@@ -79,27 +79,33 @@ var ACTIVITIES={
   rest:["Went to bed on time","Napped intentionally","Turned screens off early","Had a gentle evening","Practiced breathing or meditation","Took a true rest from work"]
 };
 
-var NUDGES={faith:["It has been a few days since faith showed up. Even one quiet moment with Heavenly Father is enough.","Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly.","The Edwardian day began and ended with stillness. A moment of prayer can anchor the whole day."],movement:["Jo March would not have stayed inside on a day like this. The lane is waiting.","The Norwegians say there is no bad weather, only bad clothing. Get outside today.","In Okinawa, movement is simply life. Step outside and let your body do what it was made for."],nourishment:["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.","The Edwardians ate what was in season and avoided excess. One small step toward whole food is enough.","In Blue Zones, the plate is mostly plants and the meal is unhurried. Even one good choice counts."],water:["A glass of water first thing sets the tone for the whole day. Start there.","The Edwardians drank water and weak tea steadily all day. Small sips, often.","Scandinavians drink herbal teas and cold water all day. Your afternoon might feel different with a little more of it."],connection:["It has been a little while since a truly meaningful conversation. A short message to someone who matters is enough.","The Scandinavians have a word for simply being together without agenda. Who could you do that with today?","In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],service:["It has been a few days since service showed up. Even one small act of kindness is enough.","The March girls turned to service whenever life felt heavy. Who could use a little of your attention today?","In Blue Zones, contributing to others is woven into daily life. One small thing today is all it takes."],stewardship:["It has been a few days since stewardship showed up. Even one small act of tending is enough.","The Edwardians understood duty as a form of love. What is waiting for your attention today?","What is in your care that needs you today? Even one errand crossed off is a form of faithfulness."],creative:["Your creative self has been quiet lately. Even ten minutes of something that fills you is enough.","Scandinavians have a deep tradition of craft and making. Your hands want a little of their own work today.","Jo wrote even on the hard days. Make something small, even if it feels unimportant."],joy:["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.","The Danes call it hygge. The Okinawans call it ikigai. Both ask the same question: did you find warmth today?","Coziness is not an accident. It is something you build. What could you create today?"],rest:["A proper wind-down has been missing lately. Give your evening a little more gentleness tonight.","The Edwardians kept strict hours. Work ended, and rest began. Give yourself that boundary tonight.","Blue Zones elders sleep when it is dark. Your body is probably asking for the same."]};
+var THRESHOLDS={
+  water:       {type:"oz",    goal:64},
+  nourishment: {type:"count", goal:3},
+  faith:       {type:"count", goal:3}
+};
 
-var ENCOURAGEMENT={faith:["Your faith has been a thread in your days lately. Marmee wove hers through everything she did.","You have been showing up for your spiritual life consistently. That daily faithfulness compounds.","Connecting with Heavenly Father has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],movement:["Getting outside and moving has been part of your week. The Edwardians and Scandinavians both knew this was non-negotiable.","You have been keeping yourself in motion. Jo March never sat still for long either.","Outdoor movement has become part of your rhythm. In Okinawa and Scandinavia alike, that is simply called living."],nourishment:["You have been tending to your meals with care. Marmee would call that good housekeeping of the soul.","Nourishment has been a priority lately. The Edwardians believed a well-fed body was a well-ordered life.","Something is shifting in how you are feeding yourself. Blue Zones elders would recognize that shift."],water:["You have been drinking your water consistently. Simple, steady, good.","Hydration has been a quiet win this week. The kind the Edwardians called good constitution.","Water has been showing up in your days. In Okinawa, that is one of the first secrets they name."],connection:["You have been showing up for the people in your life in meaningful ways. The March family made that their whole practice.","Real connection has been a thread in your days. The Edwardians built entire lives around regular small gatherings.","You have not been doing this alone. In Sardinia, that is considered the whole point."],service:["Service has been showing up in your days. Marmee always said the surest way out of your own troubles is to tend to someone else.","You have been making other people's days a little brighter. That quiet generosity compounds in ways you cannot see.","Acts of service have been a thread in your week. In Blue Zones, contributing to the community is one of the longest threads of all."],stewardship:["Stewardship has been showing up in your days. Faithful tending of small things is the foundation of a well-ordered life.","You have been attending to what is in your care. The Edwardians called this duty. Blue Zones elders call it purpose.","The things in your care have been getting your attention this week. That quiet faithfulness matters more than it looks."],creative:["Your creative play has been showing up. Jo never let a week pass without making something just for herself.","You have been making things that fill you. The Edwardians believed purposeful making was essential to a full life.","Something creative has found its place in your week. In Blue Zones, play and making are not so different."],joy:["Warmth and delight have been finding their way into your days. That is hygge and ikigai working together.","You have been creating and noticing small joys this week. Amy March and the Danes would both approve.","Joy and coziness have shown up in your days. That is one of the oldest wellness secrets there is."],rest:["Rest has been part of your week. Beth always knew the value of a quiet evening.","You have been winding down with intention. The Edwardians kept strict hours for exactly this reason.","Rest is showing up in your rhythm. Blue Zones elders have always known it is not a luxury."]};
+var NUDGES={faith:["It has been a few days since faith showed up. Even one quiet moment with Heavenly Father is enough.","Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly."],movement:["Jo March would not have stayed inside on a day like this. The lane is waiting.","The Norwegians say there is no bad weather, only bad clothing. Get outside today."],nourishment:["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.","In Blue Zones, the plate is mostly plants and the meal is unhurried. Even one good choice counts."],water:["A glass of water first thing sets the tone for the whole day. Start there.","The Edwardians drank water and weak tea steadily all day. Small sips, often."],connection:["It has been a little while since a truly meaningful conversation. A short message to someone who matters is enough.","In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],service:["It has been a few days since service showed up. Even one small act of kindness is enough.","The March girls turned to service whenever life felt heavy. Who could use a little of your attention today?"],stewardship:["It has been a few days since stewardship showed up. Even one small act of tending is enough.","What is in your care that needs you today? Even one errand crossed off is a form of faithfulness."],creative:["Your creative self has been quiet lately. Even ten minutes of something that fills you is enough.","Jo wrote even on the hard days. Make something small, even if it feels unimportant."],joy:["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.","Coziness is not an accident. It is something you build. What could you create today?"],rest:["A proper wind-down has been missing lately. Give your evening a little more gentleness tonight.","Blue Zones elders sleep when it is dark. Your body is probably asking for the same."]};
 
-var QUOTES=[{text:"The secret of health for both mind and body is not to mourn for the past, nor to worry about the future, but to live the present moment wisely.",source:"Buddhist proverb, Okinawa"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",source:"Louisa May Alcott, Little Women"},{text:"Take long walks in stormy weather or through deep snow in the fields and woods, if you would keep your spirits up.",source:"Edwardian walking guide, c. 1905"},{text:"It is not how much we have, but how much we enjoy, that makes happiness.",source:"Blue Zones wisdom"},{text:"She had a gift for making the most of small pleasures.",source:"Louisa May Alcott, Little Women"},{text:"Eat until you are eight parts full, and let the other two parts nourish your soul.",source:"Hara hachi bu, Okinawa"},{text:"There is no bad weather, only bad clothing.",source:"Norwegian proverb"},{text:"Belonging to a community is one of the most powerful medicines we have.",source:"Blue Zones research"},{text:"Family is the cornerstone of a long life well-lived.",source:"Blue Zones, Sardinia"},{text:"Move, eat, sleep, repeat. But do each one as if it were the only thing.",source:"Sardinian proverb"},{text:"Hygge is not about things. It is about togetherness, presence, and the pleasure of simple moments.",source:"Danish proverb"},{text:"Walking is a man's best medicine.",source:"Hippocrates"},{text:"The people who live the longest do not try to live longer. They live fully.",source:"Blue Zones research"},{text:"An early morning walk is a blessing for the whole day.",source:"Henry David Thoreau, c. 1850"},{text:"The cure for anything is salt water: sweat, tears, or the sea.",source:"Isak Dinesen, c. 1934"},{text:"Let food be thy medicine and medicine be thy food.",source:"Hippocrates"},{text:"She resolved to be the maker of her own happiness.",source:"Louisa May Alcott, Little Women"},{text:"Drink your tea slowly and reverently, as if it is the axis on which the whole earth revolves.",source:"Thich Nhat Hanh"},{text:"The greatest wealth is health.",source:"Virgil"},{text:"Sleep is the golden chain that ties health and our bodies together.",source:"Thomas Dekker, c. 1609"},{text:"One cannot think well, love well, sleep well, if one has not dined well.",source:"Virginia Woolf, c. 1929"},{text:"Marmee always said that a good laugh and a long sleep are the two best cures.",source:"Louisa May Alcott, Little Women"},{text:"Real kindness is doing a little thing well, and doing it every day.",source:"Marmee, Little Women"},{text:"Have regular hours for work and play. Make each day both useful and pleasant.",source:"Marmee, Little Women"},{text:"There is always light, if only we are brave enough to see it.",source:"Louisa May Alcott"},{text:"Lagom is not settling for less. It is knowing that enough is exactly right.",source:"Swedish proverb"},{text:"The body needs movement the way the mind needs stillness.",source:"Scandinavian folk wisdom"}];
+var ENCOURAGEMENT={faith:["Your faith has been a thread in your days lately. Marmee wove hers through everything she did.","Connecting with Heavenly Father has been part of your rhythm. In Blue Zones, faith is one of the longest threads."],movement:["Getting outside and moving has been part of your week. The Edwardians and Scandinavians both knew this was non-negotiable.","Outdoor movement has become part of your rhythm. In Okinawa and Scandinavia alike, that is simply called living."],nourishment:["You have been tending to your meals with care. Marmee would call that good housekeeping of the soul.","Something is shifting in how you are feeding yourself. Blue Zones elders would recognize that shift."],water:["You have been drinking your water consistently. Simple, steady, good.","Water has been showing up in your days. In Okinawa, that is one of the first secrets they name."],connection:["You have been showing up for the people in your life in meaningful ways. The March family made that their whole practice.","You have not been doing this alone. In Sardinia, that is considered the whole point."],service:["Service has been showing up in your days. Marmee always said the surest way out of your own troubles is to tend to someone else.","Acts of service have been a thread in your week. In Blue Zones, contributing to the community is one of the longest threads of all."],stewardship:["Stewardship has been showing up in your days. Faithful tending of small things is the foundation of a well-ordered life.","The things in your care have been getting your attention this week. That quiet faithfulness matters more than it looks."],creative:["Your creative hobbies have been showing up. Jo never let a week pass without making something just for herself.","Something creative has found its place in your week. In Blue Zones, play and making are not so different."],joy:["Warmth and delight have been finding their way into your days. That is hygge and ikigai working together.","Joy and coziness have shown up in your days. That is one of the oldest wellness secrets there is."],rest:["Rest has been part of your week. Beth always knew the value of a quiet evening.","Rest is showing up in your rhythm. Blue Zones elders have always known it is not a luxury."]};
 
-var SEASONAL=[{season:"Winter",text:"January is for hygge. The Danes and Norwegians do not hibernate in winter. They light candles, gather close, and make the indoors feel like a gift. Tend your faith and your warmth this month."},{season:"Winter",text:"February is for connection. The March girls wrote letters and paid visits. Who have you been meaning to reach out to?"},{season:"Spring",text:"March is for opening windows and going outside. Jo March flung hers open every spring morning. In Norway, the first warm day is practically a national holiday. Step out and feel the season turning."},{season:"Spring",text:"April is for movement. The Edwardians cycled and walked the moment the weather turned. Scandinavians head into the forest. Find your version and get outside."},{season:"Spring",text:"May is the month Blue Zones gardeners are most active. Movement as tending, not exercising. Eat something you grew, picked, or bought from someone who did."},{season:"Summer",text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. In Scandinavia, June means long light and meals that go on for hours. Eat the season fully."},{season:"Summer",text:"July is for water and friluftsliv. Scandinavians swim in cold lakes, walk barefoot, and sleep with the windows open. Find your version of being fully outside this month."},{season:"Summer",text:"August is for creative play. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. Use it."},{season:"Autumn",text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely. In Scandinavia, September is for foraging. In Blue Zones, it is for gathering."},{season:"Autumn",text:"October is for connection. In Sardinia, October means communal feasts. In Scandinavia, it means pulling the people you love inside before the dark comes. Gather your people."},{season:"Autumn",text:"November is for faith and hygge. The days are short. Marmee counted her blessings out loud in November. The Scandinavians light every candle they own. What are yours?"},{season:"Winter",text:"December is the heart of hygge season. The March Christmas had very little and it was everything. Blue Zones elders know what enough looks like. Scandinavians know what warmth feels like. Build both this month."}];
+var QUOTES=[{text:"The secret of health for both mind and body is not to mourn for the past, nor to worry about the future, but to live the present moment wisely.",source:"Buddhist proverb, Okinawa"},{text:"I am not afraid of storms, for I am learning how to sail my ship.",source:"Louisa May Alcott, Little Women"},{text:"It is not how much we have, but how much we enjoy, that makes happiness.",source:"Blue Zones wisdom"},{text:"She had a gift for making the most of small pleasures.",source:"Louisa May Alcott, Little Women"},{text:"Eat until you are eight parts full, and let the other two parts nourish your soul.",source:"Hara hachi bu, Okinawa"},{text:"There is no bad weather, only bad clothing.",source:"Norwegian proverb"},{text:"Belonging to a community is one of the most powerful medicines we have.",source:"Blue Zones research"},{text:"Hygge is not about things. It is about togetherness, presence, and the pleasure of simple moments.",source:"Danish proverb"},{text:"Walking is a man's best medicine.",source:"Hippocrates"},{text:"The people who live the longest do not try to live longer. They live fully.",source:"Blue Zones research"},{text:"An early morning walk is a blessing for the whole day.",source:"Henry David Thoreau, c. 1850"},{text:"Let food be thy medicine and medicine be thy food.",source:"Hippocrates"},{text:"She resolved to be the maker of her own happiness.",source:"Louisa May Alcott, Little Women"},{text:"The greatest wealth is health.",source:"Virgil"},{text:"Sleep is the golden chain that ties health and our bodies together.",source:"Thomas Dekker, c. 1609"},{text:"One cannot think well, love well, sleep well, if one has not dined well.",source:"Virginia Woolf, c. 1929"},{text:"Real kindness is doing a little thing well, and doing it every day.",source:"Marmee, Little Women"},{text:"Have regular hours for work and play. Make each day both useful and pleasant.",source:"Marmee, Little Women"},{text:"Lagom is not settling for less. It is knowing that enough is exactly right.",source:"Swedish proverb"},{text:"The body needs movement the way the mind needs stillness.",source:"Scandinavian folk wisdom"}];
 
-var WHY_INSPIRATIONS=[{label:"Blue Zones",color:"#3A6B3A",fg:"#224422",text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. Researcher Dan Buettner identified nine common principles among them. They move naturally throughout the day, eat mostly plants, stop before they are full, and share meals with others. They belong to faith communities and tight social circles. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome."},{label:"Edwardian England",color:"#B07C08",fg:"#785204",text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Days had clear shape: regular mealtimes, defined work hours, purposeful leisure. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden."},{label:"Little Women",color:"#1E6E9E",fg:"#104868",text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. The March family is poor, but their days are full. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness."},{label:"Scandinavian cultures",color:"#2A7A72",fg:"#1A4E48",text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv, the Norwegian concept of free air life, holds that time in nature is essential to human health regardless of season or weather. Hygge, the Danish and Norwegian art of coziness and presence, is about deliberately creating warmth in ordinary moments."}];
+var SEASONAL=[{season:"Winter",text:"January is for hygge. The Danes and Norwegians do not hibernate in winter. They light candles, gather close, and make the indoors feel like a gift."},{season:"Winter",text:"February is for connection. The March girls wrote letters and paid visits. Who have you been meaning to reach out to?"},{season:"Spring",text:"March is for opening windows and going outside. Jo March flung hers open every spring morning. Step out and feel the season turning."},{season:"Spring",text:"April is for movement. The Edwardians cycled and walked the moment the weather turned. Find your version and get outside."},{season:"Spring",text:"May is the month Blue Zones gardeners are most active. Eat something you grew, picked, or bought from someone who did."},{season:"Summer",text:"June is for nourishment. Blue Zones summers are built around fresh food eaten slowly with people you love. Eat the season fully."},{season:"Summer",text:"July is for water and friluftsliv. Scandinavians swim in cold lakes, walk barefoot, and sleep with the windows open."},{season:"Summer",text:"August is for creative hobbies. Amy sketched all summer. Jo wrote. Beth played. The long light gives you time. Use it."},{season:"Autumn",text:"September brings the harvest. Root vegetables, squash, apples. Eat what the season offers freely."},{season:"Autumn",text:"October is for connection. In Sardinia, October means communal feasts. Gather your people."},{season:"Autumn",text:"November is for faith and hygge. The days are short. Marmee counted her blessings out loud in November."},{season:"Winter",text:"December is the heart of hygge season. The March Christmas had very little and it was everything. Build warmth this month."}];
+
+var WHY_INSPIRATIONS=[{label:"Blue Zones",color:"#3A6B3A",fg:"#224422",text:"The Blue Zones are five regions where people consistently live past 100: Okinawa in Japan, Sardinia in Italy, Nicoya in Costa Rica, Ikaria in Greece, and Loma Linda in California. They move naturally throughout the day, eat mostly plants, stop before they are full, and share meals with others. None of them are trying to live longer. They have simply built environments and habits that make long life the natural outcome."},{label:"Edwardian England",color:"#B07C08",fg:"#785204",text:"The Edwardian era, roughly 1901 to 1910, sits just before the industrialization of food and the collapse of structured daily rhythms. People walked everywhere. Fresh air was considered essential medicine. Duty, the faithful tending of ones responsibilities, was understood as a form of love, not burden."},{label:"Little Women",color:"#1E6E9E",fg:"#104868",text:"Louisa May Alcott published Little Women in 1868 and it has never been out of print. At the center is Marmee, a woman of deep faith, practical wisdom, and extraordinary warmth, who teaches her daughters not to chase happiness but to build it through small, consistent acts of goodness."},{label:"Scandinavian cultures",color:"#2A7A72",fg:"#1A4E48",text:"Denmark, Norway, Sweden, and Finland consistently rank among the happiest and healthiest countries on earth. Friluftsliv holds that time in nature is essential to human health regardless of weather. Hygge is about deliberately creating warmth in ordinary moments."}];
 
 var WHY_PILLARS=[
-  {label:"Faith",pid:"faith",tags:["Blue Zones","Little Women","Edwardian"],text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. For members of The Church of Jesus Christ of Latter-day Saints, that connection is personal and covenantal, anchored in prayer, scripture, and a living relationship with Heavenly Father and Jesus Christ."},
-  {label:"Movement",pid:"movement",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Daily movement is the single most researched habit in longevity science. It reduces risk of heart disease, type 2 diabetes, cognitive decline, and depression. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity."},
-  {label:"Nourishment",pid:"nourishment",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation, the root mechanism behind heart disease, cancer, dementia, and metabolic disorders. Eating with intention and stopping before fullness supports better digestion, healthier weight regulation, and a more stable mood."},
-  {label:"Water",pid:"water",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Chronic mild dehydration is one of the most common contributors to fatigue, poor concentration, headaches, and low mood. Each 8 oz splash here is one glass, a simple, steady act of maintenance that most people simply do not do consistently."},
-  {label:"Connection",pid:"connection",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds reduce stress hormones, lower blood pressure, and are the most consistent predictor of happiness across cultures and age groups."},
-  {label:"Service",pid:"service",tags:["Blue Zones","Little Women","Edwardian"],text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. People who regularly serve others report higher life satisfaction and lower rates of depression. Marmee taught her daughters that the surest way out of their own struggles was to look outward."},
-  {label:"Stewardship",pid:"stewardship",tags:["Blue Zones","Edwardian","Little Women"],text:"Having things in your care gives the day shape and meaning. People who feel responsible for something beyond themselves live longer and report higher life satisfaction. Tending faithfully to small things is one of the most underrated forms of self-care."},
-  {label:"Creative Play",pid:"creative",tags:["Edwardian","Little Women","Scandinavian"],text:"This pillar is not about professional output. It is about making things that fill you rather than drain you. Regular creative play is strongly associated with reduced anxiety, lower rates of cognitive decline, and higher reported meaning in life. Even ten minutes of something made for yourself is neurologically different from ten minutes of something consumed."},
-  {label:"Joy & Hygge",pid:"joy",tags:["Blue Zones","Little Women","Scandinavian"],text:"The ability to notice and create small moments of warmth and pleasure is a trainable skill. People who regularly experience positive emotions show greater cardiovascular resilience and longer lives. You do not need large exceptional experiences. You need reliable small ones."},
-  {label:"Rest",pid:"rest",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Sleep is when the body does its most essential maintenance: consolidating memory, regulating hormones, clearing metabolic waste from the brain, and resetting the immune system. The evening routine is not indulgence. It is infrastructure."}
+  {label:"Faith",pid:"faith",tags:["Blue Zones","Little Women","Edwardian"],text:"A consistent spiritual practice is one of the most well-documented predictors of longevity and psychological resilience. This pillar requires 3 activities before it counts toward your cup, encouraging a fuller practice rather than a single quick check-in."},
+  {label:"Movement",pid:"movement",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Daily movement is the single most researched habit in longevity science. Fresh air compounds the effect: time outdoors lowers cortisol, improves sleep quality, and restores attentional capacity."},
+  {label:"Nourishment",pid:"nourishment",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"A diet built around whole foods, plants, and unhurried meals reduces chronic inflammation. This pillar requires 3 healthy behaviors before it counts toward your cup, because real nourishment is a pattern, not a single choice."},
+  {label:"Water",pid:"water",tags:["Blue Zones","Edwardian","Scandinavian"],text:"Chronic mild dehydration is one of the most common contributors to fatigue, poor concentration, headaches, and low mood. Water requires 64 oz before it counts toward your cup."},
+  {label:"Connection",pid:"connection",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Social isolation is as damaging to long-term health as smoking fifteen cigarettes a day. Strong social bonds are the most consistent predictor of happiness across cultures and age groups."},
+  {label:"Service",pid:"service",tags:["Blue Zones","Little Women","Edwardian"],text:"Acts of service are among the most consistently mood-elevating behaviors in psychological research. Marmee taught her daughters that the surest way out of their own struggles was to look outward."},
+  {label:"Stewardship",pid:"stewardship",tags:["Blue Zones","Edwardian","Little Women"],text:"Having things in your care gives the day shape and meaning. Tending faithfully to small things is one of the most underrated forms of self-care."},
+  {label:"Creative Hobbies",pid:"creative",tags:["Edwardian","Little Women","Scandinavian"],text:"This pillar is not about professional output. It is about making things that fill you rather than drain you. Even ten minutes of something made for yourself is neurologically different from ten minutes of something consumed."},
+  {label:"Joy & Hygge",pid:"joy",tags:["Blue Zones","Little Women","Scandinavian"],text:"The ability to notice and create small moments of warmth and pleasure is a trainable skill. You do not need large exceptional experiences. You need reliable small ones."},
+  {label:"Rest",pid:"rest",tags:["Blue Zones","Edwardian","Little Women","Scandinavian"],text:"Sleep is when the body does its most essential maintenance. The evening routine is not indulgence. It is infrastructure."}
 ];
 
 var TODAY=new Date();TODAY.setHours(0,0,0,0);
@@ -110,13 +116,13 @@ function getWeekDates(anchor){var dow=anchor.getDay(),sun=new Date(anchor);sun.s
 function fmtDate(d){return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
 function fmtShort(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
 function localDayIndex(){var d=new Date();return d.getFullYear()*10000+d.getMonth()*100+d.getDate();}
-function loadData(){try{return JSON.parse(localStorage.getItem("ftc-v3")||"{}");} catch(e){return {};}}
+function loadData(){try{return JSON.parse(localStorage.getItem("ftc-v3")||"{}");}catch(e){return {};}}
 function saveData(d){try{localStorage.setItem("ftc-v3",JSON.stringify(d));}catch(e){}}
-function loadCustomActs(){try{return JSON.parse(localStorage.getItem("ftc-custom-acts")||"{}");} catch(e){return {};}}
+function loadCustomActs(){try{return JSON.parse(localStorage.getItem("ftc-custom-acts")||"{}");}catch(e){return {};}}
 function saveCustomActs(d){try{localStorage.setItem("ftc-custom-acts",JSON.stringify(d));}catch(e){}}
-function loadActEdits(){try{return JSON.parse(localStorage.getItem("ftc-act-edits")||"{}");} catch(e){return {};}}
+function loadActEdits(){try{return JSON.parse(localStorage.getItem("ftc-act-edits")||"{}");}catch(e){return {};}}
 function saveActEdits(d){try{localStorage.setItem("ftc-act-edits",JSON.stringify(d));}catch(e){}}
-function loadActOrder(){try{return JSON.parse(localStorage.getItem("ftc-act-order")||"{}");} catch(e){return {};}}
+function loadActOrder(){try{return JSON.parse(localStorage.getItem("ftc-act-order")||"{}");}catch(e){return {};}}
 function saveActOrder(d){try{localStorage.setItem("ftc-act-order",JSON.stringify(d));}catch(e){}}
 function getPillar(id){for(var i=0;i<PILLARS.length;i++){if(PILLARS[i].id===id)return PILLARS[i];}return null;}
 
@@ -129,7 +135,8 @@ function getActivities(pid){
   var all=builtin.concat(custom);
   var order=state.actOrder[pid];
   if(order&&order.length){
-    var map={};all.forEach(function(a){map[a.orig]=a;});
+    var map={};
+    all.forEach(function(a){map[a.orig]=a;});
     var ordered=[];
     order.forEach(function(orig){if(map[orig]){ordered.push(map[orig]);delete map[orig];}});
     all.forEach(function(a){if(map[a.orig])ordered.push(a);});
@@ -138,36 +145,78 @@ function getActivities(pid){
   return all;
 }
 
+function getPillarProgress(pid,splashes){
+  var t=THRESHOLDS[pid];
+  if(!t){return null;}
+  var relevant=splashes.filter(function(s){return s.pillarId===pid;});
+  var count=0;
+  var label="";
+  if(t.type==="oz"){
+    count=relevant.filter(function(s){return s.label==="8 oz of water";}).length*8;
+    label=count+" / "+t.goal+" oz";
+  } else {
+    var seen={};
+    relevant.forEach(function(s){seen[s.label]=true;});
+    count=Object.keys(seen).length;
+    label=count+" / "+t.goal;
+  }
+  var met=count>=t.goal;
+  return{count:count,goal:t.goal,met:met,label:label};
+}
+
 function getCupStats(splashes){
-  var uniquePillars=[],seen={};
-  for(var i=0;i<splashes.length;i++){if(!seen[splashes[i].pillarId]){seen[splashes[i].pillarId]=true;uniquePillars.push(splashes[i].pillarId);}}
-  var total=splashes.length,byPillar={};
-  for(var j=0;j<splashes.length;j++){var pid=splashes[j].pillarId;byPillar[pid]=(byPillar[pid]||0)+1;}
-  var breakdown=Object.keys(byPillar).map(function(id){return{id:id,count:byPillar[id],pct:total>0?Math.round(byPillar[id]/total*100):0,pillar:getPillar(id)};});
+  var seenIds={};
+  splashes.forEach(function(s){seenIds[s.pillarId]=true;});
+  var allIds=Object.keys(seenIds);
+  var uniquePillars=allIds.filter(function(pid){
+    var t=THRESHOLDS[pid];
+    if(!t){return true;}
+    var prog=getPillarProgress(pid,splashes);
+    return prog&&prog.met;
+  });
+  var total=splashes.length;
+  var byPillar={};
+  splashes.forEach(function(s){byPillar[s.pillarId]=(byPillar[s.pillarId]||0)+1;});
+  var breakdown=allIds.map(function(id){
+    var prog=getPillarProgress(id,splashes);
+    var met=prog?prog.met:true;
+    return{id:id,count:byPillar[id]||0,pct:total>0?Math.round((byPillar[id]||0)/total*100):0,pillar:getPillar(id),thresholdMet:met,progress:prog};
+  });
   breakdown.sort(function(a,b){return b.count-a.count;});
-  return{uniquePillars:uniquePillars,uniqueCount:uniquePillars.length,fillLevel:Math.min(1,uniquePillars.length/10),breakdown:breakdown,total:total};
+  var uc=uniquePillars.length;
+  return{uniquePillars:uniquePillars,uniqueCount:uc,fillLevel:Math.min(1,uc/10),breakdown:breakdown,total:total,allIds:allIds,splashes:splashes};
 }
 
 function buildNudge(data,todayKey){
-  var todaySplashes=(data[todayKey]&&data[todayKey].splashes)||[],todayPillarIds={};
-  for(var i=0;i<todaySplashes.length;i++)todayPillarIds[todaySplashes[i].pillarId]=true;
+  var todaySplashes=(data[todayKey]&&data[todayKey].splashes)||[];
+  var todayPillarIds={};
+  todaySplashes.forEach(function(s){todayPillarIds[s.pillarId]=true;});
   var past3=[1,2,3].map(function(i){return getDateKey(offsetDate(new Date(todayKey+"T12:00:00"),-i));});
   var neglected=PILLARS.filter(function(p){
-    if(todayPillarIds[p.id])return false;
+    if(todayPillarIds[p.id]){return false;}
     return past3.every(function(k){var sp=(data[k]&&data[k].splashes)||[];return !sp.some(function(s){return s.pillarId===p.id;});});
   });
-  if(!neglected.length)return null;
-  var idx=localDayIndex(),pick=neglected[idx%neglected.length],pool=NUDGES[pick.id];
-  return pool?{pillar:pick.label,text:pool[idx%pool.length]}:null;
+  if(!neglected.length){return null;}
+  var idx=localDayIndex();
+  var pick=neglected[idx%neglected.length];
+  var pool=NUDGES[pick.id];
+  if(!pool){return null;}
+  return{pillar:pick.label,text:pool[idx%pool.length]};
 }
 
 function buildEncouragement(data){
   var past7=Array.from({length:7},function(_,i){return getDateKey(offsetDate(TODAY,-i-1));});
-  var scored=PILLARS.map(function(p){return{id:p.id,label:p.label,count:past7.filter(function(k){var sp=(data[k]&&data[k].splashes)||[];return sp.some(function(s){return s.pillarId===p.id;});}).length};});
+  var scored=PILLARS.map(function(p){
+    return{id:p.id,label:p.label,count:past7.filter(function(k){
+      var sp=(data[k]&&data[k].splashes)||[];
+      return sp.some(function(s){return s.pillarId===p.id;});
+    }).length};
+  });
   var best=scored.reduce(function(a,b){return b.count>a.count?b:a;},scored[0]);
-  if(best.count<3)return null;
+  if(best.count<3){return null;}
   var pool=ENCOURAGEMENT[best.id];
-  return pool?{pillar:best.label,count:best.count,text:pool[localDayIndex()%pool.length]}:null;
+  if(!pool){return null;}
+  return{pillar:best.label,count:best.count,text:pool[localDayIndex()%pool.length]};
 }
 
 function warmthBg(p){if(!p)return"#EEEAE2";if(p<0.3)return"#DDD9D0";if(p<0.55)return"#EEE0AA";if(p<0.8)return"#DFC06A";return"#C8A030";}
@@ -180,18 +229,45 @@ function renderCup(stats){
   var lR=W/2-rimRx,rR=W/2+rimRx,lB=W/2-baseRx,rB=W/2+baseRx;
   function xL(y){return lR+(lB-lR)*(y-rimY)/bodyH;}
   function xR(y){return rR+(rB-rR)*(y-rimY)/bodyH;}
-  var fillH=bodyH*Math.min(1,uc/10),segs="";
-  if(tot>0&&uc>0){
+  var fillH=bodyH*Math.min(1,uc/10);
+  var segs="";
+  var patternDefs="";
+  if(tot>0){
+    var unmetIds=(stats.allIds||[]).filter(function(id){return up.indexOf(id)===-1;});
     var curY=baseY+ry;
     for(var i=0;i<up.length;i++){
-      var b=null;for(var j=0;j<bd.length;j++){if(bd[j].id===up[i]){b=bd[j];break;}}
-      if(!b)continue;
-      var sh=(b.count/tot)*(fillH+ry),yB=curY,yT=curY-sh;
+      var b=null;
+      for(var j=0;j<bd.length;j++){if(bd[j].id===up[i]){b=bd[j];break;}}
+      if(!b){continue;}
+      var sh=(b.count/tot)*(fillH+ry);
+      var yBm=curY,yTm=curY-sh;
       var col=(b.pillar&&b.pillar.color)||"#CEC8BC";
-      var xLt=xL(Math.min(yT,baseY)),xRt=xR(Math.min(yT,baseY));
-      var xLb=xL(Math.min(yB,baseY)),xRb=xR(Math.min(yB,baseY));
-      segs+="<polygon points='"+xLt.toFixed(1)+","+yT.toFixed(1)+" "+xRt.toFixed(1)+","+yT.toFixed(1)+" "+xRb.toFixed(1)+","+yB.toFixed(1)+" "+xLb.toFixed(1)+","+yB.toFixed(1)+"' fill='"+col+"' opacity='0.92'/>";
-      curY=yT;
+      var xLt=xL(Math.min(yTm,baseY)),xRt=xR(Math.min(yTm,baseY));
+      var xLb=xL(Math.min(yBm,baseY)),xRb=xR(Math.min(yBm,baseY));
+      segs+="<polygon points='"+xLt.toFixed(1)+","+yTm.toFixed(1)+" "+xRt.toFixed(1)+","+yTm.toFixed(1)+" "+xRb.toFixed(1)+","+yBm.toFixed(1)+" "+xLb.toFixed(1)+","+yBm.toFixed(1)+"' fill='"+col+"' opacity='0.92'/>";
+      curY=yTm;
+    }
+    for(var u=0;u<unmetIds.length;u++){
+      var uid2=unmetIds[u];
+      var prog=getPillarProgress(uid2,stats.splashes||[]);
+      if(!prog){continue;}
+      var ratio=Math.min(1,prog.count/prog.goal);
+      if(ratio<=0){continue;}
+      var b2=null;
+      for(var j2=0;j2<bd.length;j2++){if(bd[j2].id===uid2){b2=bd[j2];break;}}
+      if(!b2){continue;}
+      var col2=(b2.pillar&&b2.pillar.color)||"#CEC8BC";
+      var sliver=(b2.count/tot)*(fillH+ry)*ratio;
+      var yBs=curY,yTs=curY-sliver;
+      var xLts=xL(Math.min(yTs,baseY)),xRts=xR(Math.min(yTs,baseY));
+      var xLbs=xL(Math.min(yBs,baseY)),xRbs=xR(Math.min(yBs,baseY));
+      var patId="stripe-"+uid+"-"+u;
+      patternDefs+="<pattern id='"+patId+"' patternUnits='userSpaceOnUse' width='6' height='6' patternTransform='rotate(45)'>"
+        +"<rect width='6' height='6' fill='"+col2+"' opacity='0.18'/>"
+        +"<line x1='0' y1='0' x2='0' y2='6' stroke='"+col2+"' stroke-width='3' opacity='0.55'/>"
+        +"</pattern>";
+      segs+="<polygon points='"+xLts.toFixed(1)+","+yTs.toFixed(1)+" "+xRts.toFixed(1)+","+yTs.toFixed(1)+" "+xRbs.toFixed(1)+","+yBs.toFixed(1)+" "+xLbs.toFixed(1)+","+yBs.toFixed(1)+"' fill='url(#"+patId+")'/>";
+      curY=yTs;
     }
   }
   var l80Y=rimY+bodyH*0.2,ll=xL(l80Y)+2,lr=xR(l80Y)-2;
@@ -200,7 +276,7 @@ function renderCup(stats){
   var uid="c"+(Math.random()*1e8|0);
   var clipPath="M "+lR+","+rimY+" L "+rR+","+rimY+" L "+rB+","+baseY+" A "+baseRx+","+ry+" 0 0,1 "+lB+","+baseY+" Z";
   var svg="<svg width='"+W+"' height='"+(H+20)+"' viewBox='0 0 "+W+" "+(H+20)+"' style='overflow:visible'>"
-    +"<defs><clipPath id='"+uid+"'><path d='"+clipPath+"'/></clipPath></defs>"
+    +"<defs><clipPath id='"+uid+"'><path d='"+clipPath+"'/></clipPath>"+patternDefs+"</defs>"
     +"<path d='"+clipPath+"' fill='"+C.parchment+"'/>"
     +"<ellipse cx='"+W/2+"' cy='"+baseY+"' rx='"+baseRx+"' ry='"+ry+"' fill='"+C.cream+"' stroke='"+sk+"' stroke-width='"+sw+"'/>"
     +"<g clip-path='url(#"+uid+")'>"+segs+"</g>"
@@ -233,7 +309,7 @@ function renderMiniCup(stats,size){
     var cy=baseY+ry;
     for(var i=0;i<up.length;i++){
       var b=null;for(var j=0;j<bd.length;j++){if(bd[j].id===up[i]){b=bd[j];break;}}
-      if(!b)continue;
+      if(!b){continue;}
       var sh=(b.count/tot)*(fillH+ry),yB=cy,yT=cy-sh;
       var col=(b.pillar&&b.pillar.color)||"#CEC8BC";
       var xLt=xLm(Math.min(yT,baseY)),xRt=xRm(Math.min(yT,baseY));
@@ -352,10 +428,12 @@ function buildToday(){
   var bkdn=bd.length>0?"<div style='margin-top:4px;margin-bottom:4px'>"
     +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px'>Pillar breakdown</div>"
     +bd.map(function(b){
+      var progressLabel=b.progress?"<span style='font-family:Inter,sans-serif;font-size:11px;color:"+(b.thresholdMet?"#2A5C39":C.inkLight)+";margin-left:4px'>"+b.progress.label+"</span>":"";
+      var barColor=b.thresholdMet?(b.pillar?b.pillar.color:"#CEC8BC"):(b.pillar?b.pillar.color+"88":"#CEC8BC");
       return "<div style='display:flex;align-items:center;gap:8px;margin-bottom:6px'>"
-        +"<div style='width:9px;height:9px;border-radius:50%;background:"+b.pillar.color+";flex-shrink:0'></div>"
-        +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.ink+";width:112px;flex-shrink:0'>"+b.pillar.label+"</div>"
-        +"<div style='flex:1;height:4px;border-radius:2px;background:"+C.parchDark+";overflow:hidden'><div style='height:100%;border-radius:2px;width:"+b.pct+"%;background:"+b.pillar.color+"'></div></div>"
+        +"<div style='width:9px;height:9px;border-radius:50%;background:"+(b.thresholdMet?b.pillar.color:b.pillar.color+"66")+";flex-shrink:0'></div>"
+        +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.ink+";width:112px;flex-shrink:0;display:flex;align-items:center;gap:4px'>"+b.pillar.label+progressLabel+"</div>"
+        +"<div style='flex:1;height:4px;border-radius:2px;background:"+C.parchDark+";overflow:hidden'><div style='height:100%;border-radius:2px;width:"+b.pct+"%;background:"+barColor+"'></div></div>"
         +"<div style='font-family:Inter,sans-serif;font-size:12px;color:"+C.inkLight+";width:34px;text-align:right;flex-shrink:0'>"+b.pct+"%</div>"
         +"</div>";
     }).join("")+"</div>":"";
@@ -363,7 +441,7 @@ function buildToday(){
     +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px'>Today's splashes</div>"
     +splashes.map(function(s,i){
       var p=getPillar(s.pillarId);
-      if(state.editingIdx===i)return buildEditRow(i,s,p);
+      if(state.editingIdx===i){return buildEditRow(i,s,p);}
       return "<div class='splash-item' style='background:"+(p?p.pale:C.parchment)+";border:1px solid "+(p?p.color:C.parchDark)+"28;cursor:pointer' onclick='startEdit("+i+")'>"
         +"<div style='width:8px;height:8px;border-radius:50%;background:"+(p?p.color:C.parchDark)+";flex-shrink:0'></div>"
         +"<span style='font-family:Inter,sans-serif;font-size:14px;color:"+(p?p.dark:C.inkMid)+";flex:1'>"+s.label+"</span>"
@@ -408,14 +486,13 @@ function buildWeek(){
       +"<div style='font-family:Inter,sans-serif;font-size:10px;color:"+C.inkLight+";margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em'>"+DAYS[i]+"</div>"
       +"<div "+(isFuture||isSun?"":"data-key='"+key+"' onclick='jumpToDay(this.dataset.key)'")+
       " style='cursor:"+(isFuture||isSun?"default":"pointer")+";display:flex;flex-direction:column;align-items:center;padding:5px 0 3px;border-radius:4px;border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";background:"+(isTodayCell?"#D4F0EC":C.cream)+";opacity:"+(isSun?0.4:1)+"'>"
-      +(isSun
-        ?"<div style='font-family:Inter,sans-serif;font-size:9px;color:"+C.inkLight+";padding:8px 2px;text-align:center;line-height:1.3'>Rest<br>day</div>"
+      +(isSun?"<div style='font-family:Inter,sans-serif;font-size:9px;color:"+C.inkLight+";padding:8px 2px;text-align:center;line-height:1.3'>Rest<br>day</div>"
         :renderMiniCup(stats,30)+"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+(stats.uniqueCount>=8?"#1A4E48":C.inkLight)+";margin-top:2px'>"+(stats.uniqueCount||"-")+"</div>")
       +"</div></div>";
   }).join("");
   var wByP={},wTot=0;
   weekDates.forEach(function(dt){
-    if(isSunday(dt))return;
+    if(isSunday(dt)){return;}
     var sp=(state.data[getDateKey(dt)]&&state.data[getDateKey(dt)].splashes)||[];
     sp.forEach(function(s){wByP[s.pillarId]=(wByP[s.pillarId]||0)+1;wTot++;});
   });
@@ -457,21 +534,23 @@ function buildMonth(){
     var dt=new Date(y,m,d),key=getDateKey(dt),stats=getCupStats((state.data[key]&&state.data[key].splashes)||[]);
     var n=stats.uniqueCount,pct=n/10,isTodayCell=key===getDateKey(TODAY),isFuture=dt>TODAY,isSun=isSunday(dt);
     cells+="<div "+(isFuture||isSun?"":"data-key='"+key+"' onclick='jumpToDay(this.dataset.key)'")+
-      " style='aspect-ratio:1;border-radius:4px;background:"+(isSun?C.parchment:isFuture?C.cream:n>0?warmthBg(pct):C.parchment)+";border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:"+(isFuture||isSun?"default":"pointer")+";opacity:"+(isFuture||isSun?0.35:1)+"'>"
+      " style='aspect-ratio:1;border-radius:4px;background:"+(isSun?C.parchment:isFuture?C.cream:n>0?warmthBg(pct):C.parchment)+";border:"+(isTodayCell?"2":"1")+"px solid "+(isTodayCell?"#2A7A72":C.parchDark)+";display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:"+(isFuture||isSun?"default":"pointer")+";opacity:"+(iFuture||isSun?0.35:1)+"'>"
       +"<span style='font-family:Inter,sans-serif;font-size:12px;color:"+(isFuture||isSun?C.inkLight:n>0?warmthFg(pct):C.inkLight)+";font-weight:"+(isTodayCell?700:400)+"'>"+d+"</span>"
       +(n>0&&!isFuture&&!isSun?"<span style='font-family:Inter,sans-serif;font-size:9px;color:"+warmthFg(pct)+";opacity:0.85;margin-top:1px'>"+n+"</span>":"")
       +"</div>";
   }
   var scores=[],at80c=0;
   for(var dd=1;dd<=last.getDate();dd++){
-    var dt2=new Date(y,m,dd);if(dt2>TODAY||isSunday(dt2))continue;
+    var dt2=new Date(y,m,dd);
+    if(dt2>TODAY||isSunday(dt2)){continue;}
     var st=getCupStats((state.data[getDateKey(dt2)]&&state.data[getDateKey(dt2)].splashes)||[]);
-    if(st.uniqueCount>0){scores.push(st.uniqueCount/10);if(st.uniqueCount>=8)at80c++;}
+    if(st.uniqueCount>0){scores.push(st.uniqueCount/10);if(st.uniqueCount>=8){at80c++;}}
   }
   var cnt=scores.length,avg=cnt?Math.round(scores.reduce(function(a,b){return a+b;},0)/cnt*100):0,best=cnt?Math.round(Math.max.apply(null,scores)*100):0;
   var mByP={},mTot=0;
   for(var ddd=1;ddd<=last.getDate();ddd++){
-    var dt3=new Date(y,m,ddd);if(dt3>TODAY||isSunday(dt3))continue;
+    var dt3=new Date(y,m,ddd);
+    if(dt3>TODAY||isSunday(dt3)){continue;}
     var sp2=(state.data[getDateKey(dt3)]&&state.data[getDateKey(dt3)].splashes)||[];
     sp2.forEach(function(s2){mByP[s2.pillarId]=(mByP[s2.pillarId]||0)+1;mTot++;});
   }
@@ -521,7 +600,6 @@ function buildWhy(){
     +"</div>"
     +(managingPillar?buildManagePanel(managingPillar):"<p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkLight+";font-style:italic'>Select a pillar above to manage its list.</p>")
     +"</div>";
-
   return "<div style='display:flex;flex-direction:column'>"
     +"<div style='margin-bottom:28px'><h2 style='font-family:Georgia,serif;font-size:24px;font-weight:400;color:"+C.ink+";margin-bottom:12px'>The idea behind Fill the Cup</h2>"
     +"<p style='font-family:Inter,sans-serif;font-size:15px;color:"+C.inkMid+";line-height:1.8'>Fill the Cup is not a diet app. It does not count calories, track macros, or reward streaks. It is a daily practice, a quiet invitation to add small, deliberate acts of goodness to your day. Each splash represents one thing done well. The goal is not perfection. It is fullness, one pillar at a time.</p></div>"
@@ -530,11 +608,10 @@ function buildWhy(){
     +WHY_INSPIRATIONS.map(function(x){return "<div style='margin-bottom:16px;padding:18px 20px;border-radius:6px;background:"+C.parchment+";border-left:3px solid "+x.color+"'><h3 style='font-family:Georgia,serif;font-size:17px;font-weight:400;color:"+x.fg+";margin-bottom:10px'>"+x.label+"</h3><p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";line-height:1.8;margin:0'>"+x.text+"</p></div>";}).join("")+"</div>"
     +"<div class='divider'></div>"
     +"<div style='margin-bottom:28px'><h2 style='font-family:Georgia,serif;font-size:24px;font-weight:400;color:"+C.ink+";margin-bottom:12px'>The 80% principle</h2>"
-    +"<p style='font-family:Inter,sans-serif;font-size:15px;color:"+C.inkMid+";line-height:1.8'>In Okinawa, people say a phrase before every meal: hara hachi bu. Eat until you are eight parts full. Fill the Cup applies the same principle to your whole day. Eight pillars covered is a genuinely good day. Perfection is fragile. Consistency is sturdy. A cup at 80% every day for a year is a transformed life.</p></div>"
+    +"<p style='font-family:Inter,sans-serif;font-size:15px;color:"+C.inkMid+";line-height:1.8'>In Okinawa, people say a phrase before every meal: hara hachi bu. Eat until you are eight parts full. Fill the Cup applies the same principle to your whole day. Eight pillars covered is a genuinely good day. Perfection is fragile. Consistency is sturdy.</p></div>"
     +"<div class='divider'></div>"
     +"<div style='margin-bottom:28px'><h2 style='font-family:Georgia,serif;font-size:24px;font-weight:400;color:"+C.ink+";margin-bottom:12px'>What counts as a splash</h2>"
-    +"<p style='font-family:Inter,sans-serif;font-size:15px;color:"+C.inkMid+";line-height:1.8;margin-bottom:14px'>A splash is any deliberate act of goodness that belongs to one of the ten pillars. Morning prayer is a splash. A walk outside is a splash. Calling a friend, cooking a real meal, tending the garden, turning the screens off early, each one is a splash.</p>"
-    +"<p style='font-family:Inter,sans-serif;font-size:15px;color:"+C.inkMid+";line-height:1.8'>The fill level of the glass rises each time a new pillar is represented. Within that fill, each pillar segment is sized proportionally by how many splashes came from it. Water is simple: each 8 oz is one splash.</p></div>"
+    +"<p style='font-family:Inter,sans-serif;font-size:15px;color:"+C.inkMid+";line-height:1.8;margin-bottom:14px'>A splash is any deliberate act of goodness that belongs to one of the ten pillars. Some pillars require reaching a threshold before they count toward your cup: Faith and Nourishment need 3 activities, Water needs 64 oz. Progress shows in your breakdown as you build toward it.</p></div>"
     +manageSection
     +"<div class='divider'></div>"
     +"<div><h2 style='font-family:Georgia,serif;font-size:24px;font-weight:400;color:"+C.ink+";margin-bottom:4px'>Ten pillars</h2>"
@@ -552,8 +629,7 @@ function buildWhy(){
         +(open?"<div class='why-pillar-content'><p style='font-family:Inter,sans-serif;font-size:14px;color:"+C.inkMid+";line-height:1.8;margin-bottom:12px'>"+x.text+"</p>"
           +"<div>"+x.tags.map(function(t){return "<span class='tag' style='border:1px solid "+col+";background:"+pale+";color:"+col+"'>"+t+"</span>";}).join("")+"</div></div>":"")
         +"</div>";
-    }).join("")
-    +"</div></div>";
+    }).join("")+"</div></div>";
 }
 
 function buildManagePanel(pid){
@@ -724,19 +800,19 @@ function toggleWhy(label){state.openWhyPillars[label]=!state.openWhyPillars[labe
 function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=1;state.saveCustom=false;render();}
 function closeSheet(){state.showSheet=false;state.selectedActivities={};state.saveCustom=false;render();}
 function backToStep1(){state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.saveCustom=false;render();}
-function selectPillar(id){state.sheetPillar=getPillar(id);state.sheetStep="activity";if(!state.selectedActivities[id])state.selectedActivities[id]={};render();}
-function toggleActivity(act){var id=state.sheetPillar.id;if(!state.selectedActivities[id])state.selectedActivities[id]={};if(state.selectedActivities[id][act])delete state.selectedActivities[id][act];else state.selectedActivities[id][act]=true;render();}
+function selectPillar(id){state.sheetPillar=getPillar(id);state.sheetStep="activity";if(!state.selectedActivities[id]){state.selectedActivities[id]={};}render();}
+function toggleActivity(act){var id=state.sheetPillar.id;if(!state.selectedActivities[id]){state.selectedActivities[id]={};}if(state.selectedActivities[id][act]){delete state.selectedActivities[id][act];}else{state.selectedActivities[id][act]=true;}render();}
 function toggleSaveCustom(){state.saveCustom=!state.saveCustom;render();}
 
 function addCustom(){
-  var el=document.getElementById("cai");if(!el)return;
-  var val=el.value.trim();if(!val)return;
+  var el=document.getElementById("cai");if(!el){return;}
+  var val=el.value.trim();if(!val){return;}
   var id=state.sheetPillar.id;
-  if(!state.selectedActivities[id])state.selectedActivities[id]={};
+  if(!state.selectedActivities[id]){state.selectedActivities[id]={};}
   state.selectedActivities[id][val]=true;
   if(state.saveCustom){
-    if(!state.customActs[id])state.customActs[id]=[];
-    if(state.customActs[id].indexOf(val)===-1)state.customActs[id].push(val);
+    if(!state.customActs[id]){state.customActs[id]=[];}
+    if(state.customActs[id].indexOf(val)===-1){state.customActs[id].push(val);}
     saveCustomActs(state.customActs);
   }
   render();
@@ -745,7 +821,7 @@ function addCustom(){
 
 function confirmActivities(){
   var id=state.sheetPillar.id,sel=state.selectedActivities[id]||{},acts=Object.keys(sel);
-  if(!acts.length)return;
+  if(!acts.length){return;}
   var key=getViewKey(),cur=state.data[key]||{},existing=cur.splashes||[];
   var newSplashes=acts.map(function(label,i){return{pillarId:id,label:label,timestamp:Date.now()+i};});
   state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});
@@ -756,7 +832,7 @@ function adjWater(n){state.waterCount=Math.max(1,Math.min(16,(state.waterCount||
 function confirmWater(){
   var key=getViewKey(),cur=state.data[key]||{},n=state.waterCount,existing=cur.splashes||[];
   var newSplashes=[];
-  for(var i=0;i<n;i++)newSplashes.push({pillarId:"water",label:"8 oz of water",timestamp:Date.now()+i});
+  for(var i=0;i<n;i++){newSplashes.push({pillarId:"water",label:"8 oz of water",timestamp:Date.now()+i});}
   state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});
   saveData(state.data);state.showSheet=false;state.waterCount=1;render();
 }
@@ -768,8 +844,8 @@ function removeSplash(idx){
   showToast(label?"Removed: "+label:"Splash removed",function(){state.data[key]=snap;saveData(state.data);render();});render();
 }
 function clearDay(){state.data[getViewKey()]={};saveData(state.data);state.confirmClear=false;render();}
-function showToast(msg,undoFn){if(state.toastTimer)clearTimeout(state.toastTimer);state.toast={message:msg,undoFn:undoFn};state.toastTimer=setTimeout(function(){state.toast=null;render();},4000);render();}
-function undoToast(){if(state.toastTimer)clearTimeout(state.toastTimer);if(state.toast&&state.toast.undoFn)state.toast.undoFn();state.toast=null;render();}
+function showToast(msg,undoFn){if(state.toastTimer){clearTimeout(state.toastTimer);}state.toast={message:msg,undoFn:undoFn};state.toastTimer=setTimeout(function(){state.toast=null;render();},4000);render();}
+function undoToast(){if(state.toastTimer){clearTimeout(state.toastTimer);}if(state.toast&&state.toast.undoFn){state.toast.undoFn();}state.toast=null;render();}
 
 function startEdit(idx){
   var splashes=getSplashes();
@@ -777,21 +853,21 @@ function startEdit(idx){
   setTimeout(function(){var el=document.getElementById("edit-input-"+idx);if(el){el.focus();el.select();}},30);
 }
 function cancelEdit(){state.editingIdx=null;state.editLabel="";state.editPillarId=null;render();}
-function setEditPillar(id){state.editPillarId=id;render();setTimeout(function(){var el=document.getElementById("edit-input-"+state.editingIdx);if(el)el.focus();},20);}
+function setEditPillar(id){state.editPillarId=id;render();setTimeout(function(){var el=document.getElementById("edit-input-"+state.editingIdx);if(el){el.focus();}},20);}
 function saveEdit(idx){
-  var key=getViewKey(),label=(state.editLabel||"").trim();if(!label)return;
+  var key=getViewKey(),label=(state.editLabel||"").trim();if(!label){return;}
   var splashes=state.data[key]&&state.data[key].splashes?state.data[key].splashes:[];
-  if(!splashes[idx])return;
+  if(!splashes[idx]){return;}
   splashes[idx]=Object.assign({},splashes[idx],{label:label,pillarId:state.editPillarId||splashes[idx].pillarId});
   state.data[key]=Object.assign({},state.data[key],{splashes:splashes});
   saveData(state.data);state.editingIdx=null;state.editLabel="";state.editPillarId=null;render();
 }
 
-function setManagingPillar(id){state.managingPillar=state.managingPillar===id?null:id;state.editingActKey=null;render();setTimeout(function(){var el=document.getElementById("why-custom-input");if(el)el.focus();},30);}
+function setManagingPillar(id){state.managingPillar=state.managingPillar===id?null:id;state.editingActKey=null;render();setTimeout(function(){var el=document.getElementById("why-custom-input");if(el){el.focus();}},30);}
 function addCustomActWhy(pid){
-  var el=document.getElementById("why-custom-input");if(!el)return;
-  var val=el.value.trim();if(!val)return;
-  if(!state.customActs[pid])state.customActs[pid]=[];
+  var el=document.getElementById("why-custom-input");if(!el){return;}
+  var val=el.value.trim();if(!val){return;}
+  if(!state.customActs[pid]){state.customActs[pid]=[];}
   if(state.customActs[pid].indexOf(val)===-1){state.customActs[pid].push(val);saveCustomActs(state.customActs);}
   render();setTimeout(function(){var nel=document.getElementById("why-custom-input");if(nel){nel.value="";nel.focus();}},30);
 }
@@ -800,7 +876,7 @@ function startActEdit(pid,orig,currentLabel){
   setTimeout(function(){var el=document.getElementById("manage-edit-input");if(el){el.focus();el.select();}},30);
 }
 function saveActEdit(){
-  if(!state.editingActKey)return;
+  if(!state.editingActKey){return;}
   var val=(state.editingActVal||"").trim();
   if(!val){state.editingActKey=null;render();return;}
   var parts=state.editingActKey.split("::");
@@ -810,24 +886,24 @@ function saveActEdit(){
   if(customIdx!==-1){
     customList[customIdx]=val;state.customActs[pid]=customList;saveCustomActs(state.customActs);
   } else {
-    if(!state.actEdits[pid])state.actEdits[pid]={renames:{},deletions:{}};
+    if(!state.actEdits[pid]){state.actEdits[pid]={renames:{},deletions:{}};}
     state.actEdits[pid].renames[orig]=val;saveActEdits(state.actEdits);
   }
   state.editingActKey=null;render();
 }
 function deleteAct(pid,orig,isCustom,customIdx){
   if(isCustom){
-    if(!state.customActs[pid])return;
+    if(!state.customActs[pid]){return;}
     state.customActs[pid].splice(customIdx,1);saveCustomActs(state.customActs);
   } else {
-    if(!state.actEdits[pid])state.actEdits[pid]={renames:{},deletions:{}};
+    if(!state.actEdits[pid]){state.actEdits[pid]={renames:{},deletions:{}};}
     state.actEdits[pid].deletions[orig]=true;saveActEdits(state.actEdits);
   }
   render();
 }
 function moveAct(pid,from,to){
   var acts=getActivities(pid);
-  if(to<0||to>=acts.length)return;
+  if(to<0||to>=acts.length){return;}
   var order=acts.map(function(a){return a.orig;});
   var moved=order.splice(from,1)[0];
   order.splice(to,0,moved);
@@ -843,6 +919,7 @@ function bindEsc(){
     }
   };
 }
+
 render();
 </script>
 </body>
