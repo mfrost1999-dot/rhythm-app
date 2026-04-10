@@ -202,7 +202,9 @@ function buildNudge(data,todayKey){
   var pick=neglected[idx%neglected.length];
   var pool=NUDGES[pick.id];
   if(!pool){return null;}
-  return{pillar:pick.label,text:pool[idx%pool.length]};
+  // Use pillar id hash to vary the message independently of the day index
+  var pidHash=pick.id.split("").reduce(function(a,c){return a+c.charCodeAt(0);},0);
+  return{pillar:pick.label,text:pool[(idx+pidHash)%pool.length]};
 }
 
 function buildEncouragement(data){
@@ -213,11 +215,16 @@ function buildEncouragement(data){
       return sp.some(function(s){return s.pillarId===p.id;});
     }).length};
   });
-  var best=scored.reduce(function(a,b){return b.count>a.count?b:a;},scored[0]);
-  if(best.count<3){return null;}
-  var pool=ENCOURAGEMENT[best.id];
+  // Pick the pillar with the highest streak that has a meaningful count
+  var eligible=scored.filter(function(x){return x.count>=3;});
+  if(!eligible.length){return null;}
+  // Rotate which pillar gets highlighted each day so it doesn't always show the same one
+  var idx=localDayIndex();
+  var pick=eligible[idx%eligible.length];
+  var pool=ENCOURAGEMENT[pick.id];
   if(!pool){return null;}
-  return{pillar:best.label,count:best.count,text:pool[localDayIndex()%pool.length]};
+  var pidHash=pick.id.split("").reduce(function(a,c){return a+c.charCodeAt(0);},0);
+  return{pillar:pick.label,count:pick.count,text:pool[(idx+pidHash)%pool.length]};
 }
 
 function warmthBg(p){if(!p)return"#EEEAE2";if(p<0.3)return"#DDD9D0";if(p<0.55)return"#EEE0AA";if(p<0.8)return"#DFC06A";return"#C8A030";}
@@ -391,7 +398,7 @@ function buildToday(){
   var splashes=getSplashes(),stats=getCupStats(splashes);
   var uc=stats.uniqueCount,fl=stats.fillLevel,bd=stats.breakdown,at80=uc>=8;
   var nudge=isToday?buildNudge(state.data,getViewKey()):null;
-  var enc=isToday&&!nudge?buildEncouragement(state.data):null;
+  var enc=isToday?buildEncouragement(state.data):null;
   var nav="<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:16px'>"
     +"<button class='nav-btn' onclick='addDayOffset(-1)'>Earlier</button>"
     +"<div style='text-align:center'>"
@@ -416,11 +423,19 @@ function buildToday(){
     +"<p style='font-family:Georgia,serif;font-style:italic;font-size:15px;color:#1A4E48;line-height:1.7;margin:0'>"
     +(uc>=10?"A truly full cup. Every pillar tended to.":"You reached your 80 today. That is enough.")
     +"</p></div>":"";
-  var nc=nudge||enc;
-  var nudgeCard=isToday&&nc?"<div style='margin-bottom:14px;padding:12px 16px;border-radius:4px;background:"+(nudge?C.goldPale:"#D4F0EC")+";border-left:3px solid "+(nudge?C.gold:"#2A7A72")+"'>"
-    +"<p style='font-family:Georgia,serif;font-style:italic;font-size:13px;color:"+C.inkMid+";line-height:1.7;margin:0'>"+nc.text+"</p>"
-    +"<p style='font-family:Inter,sans-serif;font-size:11px;color:"+(nudge?C.gold:"#2A7A72")+";margin:8px 0 0;letter-spacing:0.05em;text-transform:uppercase'>"+(nudge?nudge.pillar+" - has not shown up in a few days":enc.pillar+" - "+enc.count+" of the last 7 days")+"</p>"
-    +"</div>":"";
+  var nudgeCard="";
+  if(isToday&&nudge){
+    nudgeCard+="<div style='margin-bottom:12px;padding:12px 16px;border-radius:4px;background:"+C.goldPale+";border-left:3px solid "+C.gold+"'>"
+      +"<p style='font-family:Georgia,serif;font-style:italic;font-size:13px;color:"+C.inkMid+";line-height:1.7;margin:0'>"+nudge.text+"</p>"
+      +"<p style='font-family:Inter,sans-serif;font-size:11px;color:"+C.gold+";margin:8px 0 0;letter-spacing:0.05em;text-transform:uppercase'>"+nudge.pillar+" - has not shown up in a few days</p>"
+      +"</div>";
+  }
+  if(isToday&&enc){
+    nudgeCard+="<div style='margin-bottom:12px;padding:12px 16px;border-radius:4px;background:#D4F0EC;border-left:3px solid #2A7A72'>"
+      +"<p style='font-family:Georgia,serif;font-style:italic;font-size:13px;color:"+C.inkMid+";line-height:1.7;margin:0'>"+enc.text+"</p>"
+      +"<p style='font-family:Inter,sans-serif;font-size:11px;color:#2A7A72;margin:8px 0 0;letter-spacing:0.05em;text-transform:uppercase'>"+enc.pillar+" - "+enc.count+" of the last 7 days</p>"
+      +"</div>";
+  }
   var greet=isToday&&!at80?"<p style='font-family:Georgia,serif;font-size:18px;color:"+C.inkMid+";margin-bottom:16px;font-style:italic'>"
     +(uc===0?"How is today unfolding?":uc<4?"Every splash counts. Keep going.":"More than halfway there. You are doing well.")
     +"</p>":"";
