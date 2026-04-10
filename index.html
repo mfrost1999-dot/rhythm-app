@@ -729,20 +729,15 @@ function buildWaterSheet(p){
   var wc=state.waterCount;
   var customActs=state.customActs[p.id]||[];
   var sel=state.selectedActivities[p.id]||{};
-  var customRows="";
-  if(customActs.length>0){
-    customRows="<div style='margin-bottom:12px'>"
-      +"<div style='font-family:Inter,sans-serif;font-size:11px;color:"+C.inkLight+";letter-spacing:0.06em;text-transform:uppercase;padding:0 0 6px'>My activities</div>"
-      +customActs.map(function(act){
-        var isSel=!!sel[act];
-        var safeAct=act.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
-        return "<button class='activity-row' onclick='toggleActivity(\""+safeAct+"\")'>"
-          +"<div style='display:flex;align-items:center;gap:10px'>"
-          +"<div style='width:16px;height:16px;border-radius:3px;border:1.5px solid "+(isSel?p.color:C.parchDark)+";background:"+(isSel?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0'>"
-          +(isSel?"<svg width='10' height='10' viewBox='0 0 10 10'><path d='M1.5 5.5l2.5 2.5 5-5' stroke='#fff' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>":"")
-          +"</div><span>"+act+"</span></div></button>";
-      }).join("")+"</div>";
-  }
+  var actRows=customActs.map(function(act){
+    var isSel=!!sel[act];
+    var safeAct=act.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
+    return "<button class='activity-row' onclick='toggleActivity(\""+safeAct+"\")'>"
+      +"<div style='display:flex;align-items:center;gap:10px'>"
+      +"<div style='width:16px;height:16px;border-radius:3px;border:1.5px solid "+(isSel?p.color:C.parchDark)+";background:"+(isSel?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0'>"
+      +(isSel?"<svg width='10' height='10' viewBox='0 0 10 10'><path d='M1.5 5.5l2.5 2.5 5-5' stroke='#fff' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>":"")
+      +"</div><span>"+act+"</span></div></button>";
+  }).join("");
   var selCount=Object.keys(sel).length;
   var saveToggleHtml="<label class='save-toggle'>"
     +"<div style='width:18px;height:18px;border-radius:3px;border:1.5px solid "+(state.saveCustom?p.color:C.parchDark)+";background:"+(state.saveCustom?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0' onclick='toggleSaveCustom()'>"
@@ -755,25 +750,25 @@ function buildWaterSheet(p){
     +"<div style='font-family:Georgia,serif;font-size:20px;color:"+p.dark+"'>Water</div>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-top:3px'>Log glasses or add a custom activity.</div></div>"
     +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button></div>"
-    +customRows
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:6px'>Glasses (8 oz each)</div>"
     +"<div class='water-stepper'>"
     +"<button class='w-btn' onclick='adjWater(-1)'"+(wc<=1?" disabled":"")+">-</button>"
     +"<div class='w-count'>"+wc+"</div>"
     +"<button class='w-btn' onclick='adjWater(1)'>+</button>"
     +"</div>"
-    +"<div style='text-align:center;font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:12px'>"+wc*8+" oz total</div>"
-    +"<button onclick='confirmWater()' style='display:block;width:100%;padding:13px;border-radius:6px;border:none;background:"+p.color+";color:#fff;font-family:Georgia,serif;font-size:17px;margin-bottom:"+(selCount>0?"12":"0")+"px'>Add "+wc+" glass splash"+(wc!==1?"es":"")+"</button>"
-    +(selCount>0?"<div style='padding-top:12px;border-top:1px solid "+C.parchDark+";display:flex;align-items:center;justify-content:space-between'>"
-      +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkMid+"'>"+selCount+" activity selected</div>"
-      +"<button onclick='confirmActivities()' style='padding:10px 24px;border-radius:6px;border:none;background:"+p.color+";color:#fff;font-family:Georgia,serif;font-size:15px'>Add splash</button>"
-      +"</div>":"")
+    +"<div style='text-align:center;font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:16px'>"+wc*8+" oz total</div>"
+    +(customActs.length>0?"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:4px'>My activities (1 splash each)</div>"
+      +"<div>"+actRows+"</div>":"")
     +"<div style='margin-top:14px;padding-top:12px;border-top:1px solid "+C.parchDark+"'>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:7px'>Or write your own:</div>"
     +"<div style='display:flex;gap:8px;margin-bottom:8px'>"
     +"<input id='cai' class='custom-input' type='text' placeholder='What did you do?' onkeydown='if(event.key===\"Enter\"){event.preventDefault();addCustom();}'/>"
     +"<button onclick='addCustom()' style='padding:9px 16px;border-radius:4px;border:none;background:"+p.color+";color:#fff;font-family:Inter,sans-serif;font-size:13px'>Add</button>"
     +"</div>"+saveToggleHtml+"</div>"
+    +"<div style='margin-top:16px;padding-top:14px;border-top:1px solid "+C.parchDark+";display:flex;align-items:center;justify-content:space-between'>"
+    +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkMid+"'>"+wc+" glass"+(wc!==1?"es":"")+(selCount>0?", "+selCount+" activity":"")+"</div>"
+    +"<button onclick='confirmWater()' style='padding:10px 24px;border-radius:6px;border:none;background:"+p.color+";color:#fff;font-family:Georgia,serif;font-size:15px'>Add splashes</button>"
+    +"</div>"
     +"</div></div>";
 }
 
