@@ -82,7 +82,8 @@ var ACTIVITIES={
 var THRESHOLDS={
   water:       {type:"oz",    goal:64},
   nourishment: {type:"count", goal:3},
-  faith:       {type:"count", goal:3}
+  faith:       {type:"count", goal:3},
+  movement:    {type:"count", goal:3}
 };
 
 var NUDGES={faith:["It has been a few days since faith showed up. Even one quiet moment with Heavenly Father is enough.","Marmee began each morning in quiet prayer. Your spiritual life is worth tending today, even briefly."],movement:["Jo March would not have stayed inside on a day like this. The lane is waiting.","The Norwegians say there is no bad weather, only bad clothing. Get outside today."],nourishment:["The March table was always full of simple, real food. Try to get a fruit or vegetable in today.","In Blue Zones, the plate is mostly plants and the meal is unhurried. Even one good choice counts."],water:["A glass of water first thing sets the tone for the whole day. Start there.","The Edwardians drank water and weak tea steadily all day. Small sips, often."],connection:["It has been a little while since a truly meaningful conversation. A short message to someone who matters is enough.","In Sardinia, no one eats alone if they can help it. Who have you been meaning to call?"],service:["It has been a few days since service showed up. Even one small act of kindness is enough.","The March girls turned to service whenever life felt heavy. Who could use a little of your attention today?"],stewardship:["It has been a few days since stewardship showed up. Even one small act of tending is enough.","What is in your care that needs you today? Even one errand crossed off is a form of faithfulness."],creative:["Your creative self has been quiet lately. Even ten minutes of something that fills you is enough.","Jo wrote even on the hard days. Make something small, even if it feels unimportant."],joy:["Small joys and cozy moments have been scarce lately. Light something, make something warm, or simply notice one thing beautiful today.","Coziness is not an accident. It is something you build. What could you create today?"],rest:["A proper wind-down has been missing lately. Give your evening a little more gentleness tonight.","Blue Zones elders sleep when it is dark. Your body is probably asking for the same."]};
@@ -339,7 +340,7 @@ var CLOSE_ICON="<svg width='14' height='14' viewBox='0 0 14 14' fill='none'><pat
 var state={
   view:"today",data:loadData(),customActs:loadCustomActs(),actEdits:loadActEdits(),actOrder:loadActOrder(),
   dayOffset:0,weekOffset:0,monthOffset:0,
-  showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,
+  showSheet:false,sheetStep:"pillar",sheetPillar:null,selectedActivities:{},waterCount:1,walkCount:1,
   confirmClear:false,toast:null,toastTimer:null,openWhyPillars:{},
   editingIdx:null,editLabel:"",editPillarId:null,
   saveCustom:false,managingPillar:null,editingActKey:null,editingActVal:""
@@ -686,6 +687,7 @@ function buildSheet(){
   }
   var p=state.sheetPillar;
   if(p.id==="water"){return buildWaterSheet(p);}
+  if(p.id==="movement"){return buildMovementSheet(p);}
   var acts=getActivities(p.id);
   var sel=state.selectedActivities[p.id]||{};
   var actRows=acts.map(function(act){
@@ -797,7 +799,7 @@ function addWeekOffset(n){state.weekOffset=Math.min(0,state.weekOffset+n);render
 function addMonthOffset(n){state.monthOffset=Math.min(0,state.monthOffset+n);render();}
 function jumpToDay(key){var dt=new Date(key+"T12:00:00");state.dayOffset=Math.round((dt-TODAY)/86400000);state.view="today";render();}
 function toggleWhy(label){state.openWhyPillars[label]=!state.openWhyPillars[label];render();}
-function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=1;state.saveCustom=false;render();}
+function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=1;state.walkCount=1;state.saveCustom=false;render();}
 function closeSheet(){state.showSheet=false;state.selectedActivities={};state.saveCustom=false;render();}
 function backToStep1(){state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.saveCustom=false;render();}
 function selectPillar(id){state.sheetPillar=getPillar(id);state.sheetStep="activity";if(!state.selectedActivities[id]){state.selectedActivities[id]={};}render();}
@@ -828,7 +830,73 @@ function confirmActivities(){
   saveData(state.data);state.showSheet=false;state.selectedActivities={};state.saveCustom=false;render();
 }
 
-function adjWater(n){state.waterCount=Math.max(1,Math.min(16,(state.waterCount||1)+n));render();}
+function buildMovementSheet(p){
+  var wk=state.walkCount;
+  var acts=getActivities(p.id).filter(function(a){return a.label!=="Walked outside for at least 30 minutes";});
+  var sel=state.selectedActivities[p.id]||{};
+  var actRows=acts.map(function(act){
+    var isSel=!!sel[act.label];
+    var safeAct=act.label.replace(/\\/g,"\\\\").replace(/"/g,"&quot;");
+    return "<button class='activity-row' onclick='toggleActivity(\""+safeAct+"\")'>"
+      +"<div style='display:flex;align-items:center;gap:10px'>"
+      +"<div style='width:16px;height:16px;border-radius:3px;border:1.5px solid "+(isSel?p.color:C.parchDark)+";background:"+(isSel?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0'>"
+      +(isSel?"<svg width='10' height='10' viewBox='0 0 10 10'><path d='M1.5 5.5l2.5 2.5 5-5' stroke='#fff' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>":"")
+      +"</div><span>"+act.label+"</span></div></button>";
+  }).join("");
+  var selCount=Object.keys(sel).length+(wk>0?wk:0);
+  var saveToggleHtml="<label class='save-toggle'>"
+    +"<div style='width:18px;height:18px;border-radius:3px;border:1.5px solid "+(state.saveCustom?p.color:C.parchDark)+";background:"+(state.saveCustom?p.color:"transparent")+";display:flex;align-items:center;justify-content:center;flex-shrink:0' onclick='toggleSaveCustom()'>"
+    +(state.saveCustom?"<svg width='10' height='10' viewBox='0 0 10 10'><path d='M1.5 5.5l2.5 2.5 5-5' stroke='#fff' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>":"")
+    +"</div><span onclick='toggleSaveCustom()'>Save to my list for this pillar</span></label>";
+  var totalSplashes=Object.keys(sel).length+wk;
+  return "<div class='sheet-overlay' onclick='if(event.target===this)closeSheet()'>"
+    +"<div class='sheet'>"
+    +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:20px'>"
+    +"<div><button onclick='backToStep1()' style='background:none;border:none;font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";text-decoration:underline;margin-bottom:4px'>Back</button>"
+    +"<div style='font-family:Georgia,serif;font-size:20px;color:"+p.dark+"'>Movement</div>"
+    +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-top:3px'>3 splashes fills this pillar.</div></div>"
+    +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button></div>"
+    +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:6px'>Walking (30 min = 1 splash)</div>"
+    +"<div class='water-stepper'>"
+    +"<button class='w-btn' onclick='adjWalk(-1)'"+(wk<=0?" disabled":"")+">-</button>"
+    +"<div class='w-count'>"+wk+"</div>"
+    +"<button class='w-btn' onclick='adjWalk(1)'>+</button>"
+    +"</div>"
+    +"<div style='text-align:center;font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:16px'>"+(wk*30)+" min</div>"
+    +(acts.length>0?"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:4px'>Other activities (1 splash each)</div>"
+      +"<div>"+actRows+"</div>":"")
+    +"<div style='margin-top:14px;padding-top:12px;border-top:1px solid "+C.parchDark+"'>"
+    +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:7px'>Or write your own:</div>"
+    +"<div style='display:flex;gap:8px;margin-bottom:8px'>"
+    +"<input id='cai' class='custom-input' type='text' placeholder='What did you do?' onkeydown='if(event.key===\"Enter\"){event.preventDefault();addCustom();}'/>"
+    +"<button onclick='addCustom()' style='padding:9px 16px;border-radius:4px;border:none;background:"+p.color+";color:#fff;font-family:Inter,sans-serif;font-size:13px'>Add</button>"
+    +"</div>"+saveToggleHtml+"</div>"
+    +(totalSplashes>0?"<div style='margin-top:16px;padding-top:14px;border-top:1px solid "+C.parchDark+";display:flex;align-items:center;justify-content:space-between'>"
+      +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkMid+"'>"+totalSplashes+" splash"+(totalSplashes!==1?"es":"")+" to add</div>"
+      +"<button onclick='confirmMovement()' style='padding:10px 24px;border-radius:6px;border:none;background:"+p.color+";color:#fff;font-family:Georgia,serif;font-size:15px'>Add splashes</button>"
+      +"</div>":"")
+    +"</div></div>";
+}
+
+function adjWalk(n){state.walkCount=Math.max(0,Math.min(10,(state.walkCount||0)+n));render();}
+
+function confirmMovement(){
+  var id="movement";
+  var sel=state.selectedActivities[id]||{};
+  var key=getViewKey(),cur=state.data[key]||{},existing=cur.splashes||[];
+  var newSplashes=[];
+  for(var i=0;i<state.walkCount;i++){
+    newSplashes.push({pillarId:id,label:"30 min walk",timestamp:Date.now()+i});
+  }
+  var actKeys=Object.keys(sel);
+  actKeys.forEach(function(label,i){
+    newSplashes.push({pillarId:id,label:label,timestamp:Date.now()+state.walkCount+i});
+  });
+  if(!newSplashes.length){return;}
+  state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});
+  saveData(state.data);
+  state.showSheet=false;state.selectedActivities={};state.saveCustom=false;state.walkCount=1;render();
+}
 function confirmWater(){
   var key=getViewKey(),cur=state.data[key]||{},n=state.waterCount,existing=cur.splashes||[];
   var newSplashes=[];
