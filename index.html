@@ -251,15 +251,13 @@ function renderCup(stats){
     for(var u=0;u<unmetIds.length;u++){
       var uid2=unmetIds[u];
       var prog=getPillarProgress(uid2,stats.splashes||[]);
-      if(!prog){continue;}
-      var ratio=Math.min(1,prog.count/prog.goal);
-      if(ratio<=0){continue;}
+      if(!prog||prog.count<=0){continue;}
       var b2=null;
       for(var j2=0;j2<bd.length;j2++){if(bd[j2].id===uid2){b2=bd[j2];break;}}
       if(!b2){continue;}
       var col2=(b2.pillar&&b2.pillar.color)||"#CEC8BC";
-      var sliver=(b2.count/tot)*(fillH+ry)*ratio;
-      var yBs=curY,yTs=curY-sliver;
+      var fullSh=(fillH+ry)/10;
+      var yBs=curY,yTs=curY-fullSh;
       var xLts=xL(Math.min(yTs,baseY)),xRts=xR(Math.min(yTs,baseY));
       var xLbs=xL(Math.min(yBs,baseY)),xRbs=xR(Math.min(yBs,baseY));
       var patId="stripe-"+uid+"-"+u;
