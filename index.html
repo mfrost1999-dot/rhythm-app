@@ -752,7 +752,7 @@ function buildWaterSheet(p){
     +"<button onclick='closeSheet()' style='background:none;border:none;padding:4px'>"+CLOSE_ICON+"</button></div>"
     +"<div style='font-family:Inter,sans-serif;font-size:13px;color:"+C.inkLight+";margin-bottom:6px'>Glasses (8 oz each)</div>"
     +"<div class='water-stepper'>"
-    +"<button class='w-btn' onclick='adjWater(-1)'"+(wc<=1?" disabled":"")+">-</button>"
+    +"<button class='w-btn' onclick='adjWater(-1)'"+(wc<=0?" disabled":"")+">-</button>"
     +"<div class='w-count'>"+wc+"</div>"
     +"<button class='w-btn' onclick='adjWater(1)'>+</button>"
     +"</div>"
@@ -794,7 +794,7 @@ function addWeekOffset(n){state.weekOffset=Math.min(0,state.weekOffset+n);render
 function addMonthOffset(n){state.monthOffset=Math.min(0,state.monthOffset+n);render();}
 function jumpToDay(key){var dt=new Date(key+"T12:00:00");state.dayOffset=Math.round((dt-TODAY)/86400000);state.view="today";render();}
 function toggleWhy(label){state.openWhyPillars[label]=!state.openWhyPillars[label];render();}
-function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=1;state.walkCount=1;state.saveCustom=false;render();}
+function openSheet(){state.showSheet=true;state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.waterCount=0;state.walkCount=0;state.saveCustom=false;render();}
 function closeSheet(){state.showSheet=false;state.selectedActivities={};state.saveCustom=false;render();}
 function backToStep1(){state.sheetStep="pillar";state.sheetPillar=null;state.selectedActivities={};state.saveCustom=false;render();}
 function selectPillar(id){state.sheetPillar=getPillar(id);state.sheetStep="activity";if(!state.selectedActivities[id]){state.selectedActivities[id]={};}render();}
@@ -873,6 +873,18 @@ function buildMovementSheet(p){
     +"</div></div>";
 }
 
+function adjWater(n){state.waterCount=Math.max(0,Math.min(16,(state.waterCount||0)+n));render();}
+function confirmWater(){
+  var key=getViewKey(),cur=state.data[key]||{},existing=cur.splashes||[];
+  var newSplashes=[];
+  var wc=state.waterCount;
+  for(var i=0;i<wc;i++){newSplashes.push({pillarId:"water",label:"8 oz of water",timestamp:Date.now()+i});}
+  var sel=state.selectedActivities["water"]||{};
+  Object.keys(sel).forEach(function(label,i){newSplashes.push({pillarId:"water",label:label,timestamp:Date.now()+wc+i});});
+  if(!newSplashes.length){return;}
+  state.data[key]=Object.assign({},cur,{splashes:existing.concat(newSplashes)});
+  saveData(state.data);state.showSheet=false;state.waterCount=0;state.selectedActivities={};state.saveCustom=false;render();
+}
 function adjWalk(n){state.walkCount=Math.max(0,Math.min(10,(state.walkCount||0)+n));render();}
 
 function confirmMovement(){
