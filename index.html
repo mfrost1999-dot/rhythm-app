@@ -398,7 +398,7 @@ function buildToday(){
   var splashes=getSplashes(),stats=getCupStats(splashes);
   var uc=stats.uniqueCount,fl=stats.fillLevel,bd=stats.breakdown,at80=uc>=8;
   var nudge=isToday?buildNudge(state.data,getViewKey()):null;
-  var enc=isToday?buildEncouragement(state.data):null;
+  var enc=isToday?buildEncouragement(state.data,nudge?nudge.pid:null):null;
   var nav="<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:16px'>"
     +"<button class='nav-btn' onclick='addDayOffset(-1)'>Earlier</button>"
     +"<div style='text-align:center'>"
