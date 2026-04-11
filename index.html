@@ -156,9 +156,7 @@ function getPillarProgress(pid,splashes){
     count=relevant.filter(function(s){return s.label==="8 oz of water";}).length*8;
     label=count+" / "+t.goal+" oz";
   } else {
-    var seen={};
-    relevant.forEach(function(s){seen[s.label]=true;});
-    count=Object.keys(seen).length;
+    count=relevant.length;
     label=count+" / "+t.goal;
   }
   var met=count>=t.goal;
